@@ -1,6 +1,6 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 5.0, for the PostgreSQL 7.3-1PGDG RPMset.
+Version 6.0, for the PostgreSQL 7.4-0.1PGDG RPMset.
 Lamar Owen <lamar.owen@wgcr.org> 
 -----------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ This document exists to explain the layout of the RPM's for PostgreSQL,to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 7.3 of PostgreSQL, 
+This document is written to be applicable to version 7.4 of PostgreSQL, 
 which is the current version of the RPM's as of this writing. More to the 
 point, versions prior to 7.3 are not documented here.
 
@@ -54,9 +54,12 @@ documented in the regular documentation.  That is, you must dump, upgrade,
 initdb, and restore your data.  The 7.2 to 7.3 migration can be quite
 difficult, even to the point of requiring hand-editing of the dumpfile.
 
-Thus, the 7.3 postgresql-server RPM specifically conflicts with prior
+Thus, the 7.3 postgresql-server RPM specifically conflicted with prior
 versions.  The old server subpackage must be removed first, the new package
-installed, and the data restored from dump.
+installed, and the data restored from dump.  However, RPM itself did not
+honor this.  A new method of running multiple versions of PostgreSQL, along
+with the capability to run multiple postmasters, is in development, but was
+not ready for this release.
 
 A new section on running multiple postmasters has replaced the old upgrade
 instructions.
@@ -80,6 +83,9 @@ bash, and the home directory set to /var/lib/pgsql.  This user also has no
 default password -- in order to be able to su to from a non-root account
 or login as 'postgres' you will need to set a password using passwd.
 
+While PygreSQL was split out from the main tarball, thanks to Kaj's work it
+is still included as the python subpackage.
+
 CREDITS
 -----------------------------------------------------------------------------
 Thomas Lockhart
@@ -95,6 +101,9 @@ Jeff Johnson
 Reinhard Max
 Peter Eisentraut
 Joe Conway
+Andrew Overholt
+David Jee
+Kaj J. Niemi
 
 POSTGRESQL RPM PACKAGES AND RATIONALE.
 -----------------------------------------------------------------------------
@@ -339,5 +348,7 @@ pgsql-ports@postgresql.org -- please include an [RPM] string in the subject, as
 I use automatic mail folder processing to put mail in the right place.
 
 SuSE information is available at SuSE's website and information contacts.
+A 7.4 SuSE RPM is available on ftp.postgresql.org.  It is different from this
+RPM due to SuSE's different needs.
 -----------------------------------------------------------------------------
 
