@@ -1,14 +1,18 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 4.0, for the PostgreSQL 7.2-1PGDG RPMset.
+Version 4.1, for the PostgreSQL 7.2.1-2PGDG RPMset.
 Lamar Owen <lamar.owen@wgcr.org> 
-----------------------------------------------------------------------------
+
+DISCLAIMER: the following information is provided in the hope that it helps
+people install and use PostgreSQL.  It is being provided without warranty of
+any kind, so, use at your own risk.
+-----------------------------------------------------------------------------
 
 Contents:
  0.)	Quick -i note.
  1.)	Introduction, QuickStart, and credits
  2.)	PostgreSQL RPM packages and rationale
- 3.)	Upgrading from an older version of PostgreSQL without losing data.
+ 3.)	Upgrading. (Deprecated.  Will be removed in a future README)
  4.)	Regression Testing
  5.)	Starting postmaster automatically on startup
  6.)	Grand Unified Configuration(GUC) File.
@@ -31,18 +35,21 @@ This document exists to explain the layout of the RPM's for PostgreSQL, to
 explain how to migrate from an older version, and to explain WHY it can be
 so difficult to upgrade PostgreSQL.
 
-This document is written to be applicable to version 7.2 of PostgreSQL, 
+This document is written to be applicable to version 7.2.1 of PostgreSQL, 
 which is the current version of the RPM's as of this writing.
 
-Official PostgreSQL Global Development Group RPM's will from version 7.1.2
-on carry a 'PGDG' after the release number.  Other RPMset's as distributed
-with Linux distributions may have a different release number and initials.
+Official PostgreSQL Global Development Group RPM's carry a 'PGDG' after the
+release number.  Other RPMset's as distributed with Linux distributions may
+have a different release number and initials.
 
 It is preferable for the distribution-specific set to be the one used, as
 the PGDG set is intentionally generic.  So, if your distro has a set of RPMs,
 use them in preference.  If you want to stay up-to-date on the PostgreSQL
 core itself, use the PGDG generic set -- but understand that it is a 
-GENERIC set.
+GENERIC set.  In particular, SuSE and RedHat users that use late-model
+distributions should definitely use their RPMs.  Trond and Reinhard do a 
+good job keeping them up to date.  The Polish(ed) Linux Distribution also
+does an excellent job with the PLD RPM version.
 
 These RPMs are designed to be LSB-compliant -- if you find this not to be the
 case, please let me know by way of the pgsql-ports@postgresql.org mailing
@@ -80,69 +87,41 @@ Jeff Johnson
 Reinhard Max
 Peter Eisentraut
 
+A big THANK YOU to Trond, particularly.  He has poured an amazing amount of
+work into this package, particularly in cleaning up my errors, as well as
+getting the contrib package to actually be useful.
+
 POSTGRESQL RPM PACKAGES AND RATIONALE.
 -----------------------------------------------------------------------------
-On RedHat Linux, prior to version 6.5, PostgreSQL was packaged in RPM form in
-three (or four) packages:
+[This section has been edited.  See prior versions for older history]
 
-postgresql:		The server and documentation
-postgresql-clients:	The client libraries, the cli, and the tcl interface
-postgresql-devel:	Development libraries (for the client-side)
-postgresql-data:	A sample database -- not shipped with the 6.4 RPMS.
-
-However, it was decided that a different split would be more appropriate for
-users.  The 7.0 splitup allows more flexibility in installation, as well as
-making the new clients into their own packages.  The new packages are:
+PostgreSQL is a large, multifaceted program, with many clients and options
+that all users will not need.  So, several subpackages are built.  Here is
+the list of the current (7.2.1) packages:
 
 postgresql:		Some clients and libraries, and documentation
 postgresql-server:	Server executables and data files
 postgresql-devel:	Client-side development libraries
-postgresql-tcl:		TCL/TK client libraries and the pgaccess client
 postgresql-perl:	PERL client module
 postgresql-python:	The PygreSQL client library
 postgresql-odbc:	Linux ODBC client (not required to use ODBC from Win95)
 postgresql-jdbc:	JAR of the JDBC client
 postgresql-test:	The regression tests and associated files.
-
-For version 7.0.x, another package is being shipped, and one package has been
-trimmed:
 postgresql-tk:		Tk client and pgaccess.
 postgresql-tcl:		Tcl client and PL ONLY.
-
-For version 7.1, more packages are being shipped:
 postgresql-libs:	client shared libraries.
 postgresql-docs:	extra documentation,such as the SGML doc sources.
 postgresql-contrib:	The contrib source tree, as well as selected binaries.
 
-For SuSE Linux <= 7.0, the packages are named differently, but with the same
-functionality.  Here is a mapping:
-SuSE:			RedHat:
------			-----------------
-postgres		postgresql
-pg_serv			postgresql-server
-pg_devel		postgresql-devel
-pg_tcl			postgresql-tcl
-pg_perl			postgresql-perl
-pg_pyth			postgresql-python
-pg_odbc			postgresql-odbc
-pg_jdbc			postgresql-jdbc
-pg_test			postgresql-test
-
-There are other changes to the SuSE packages to make them conform to the
-SuSE packaging standards.  SuSE Linux has been shipping their own packages.
-
-While the repackaging will initially cause some confusion, it makes it
-possible  to set up a RedHat linux machine to be only a client -- the server
-is no longer required.  The clients were split out -- after all, a person who
-needs the perl client may very well not need the tcl client, etc.  And, the
-regression tests were added to give some confidence of the suitability of
-PostgreSQL, as well as the stability of the server machine.  Additionally,
-the regression tests can be used to help find hardware errors.
+The postgresql-libs package is required for all installations.  Otherwise, a 
+mix and match installation may be made.  The devel package is required to
+do any compilation of a program that uses either the client libs or the 
+server (SPI) interface.
 
 RPM FILE LOCATIONS.
 -----------------------------------------------------------------------------
-In compliance with the Linux FHS, the PostgreSQL RPM's install files in a manner
-not consistent with most of the PostgreSQL documentation.  According to the
+In compliance with the LSB, the PostgreSQL RPM's install files in a manner
+not consistent with much of the PostgreSQL documentation.  According to the
 standard PostgreSQL documentation, PostgreSQL is installed under the directory
 /usr/local/pgsql, with executables, source, and data existing in various 
 subdirectories.
@@ -184,6 +163,17 @@ cause thembe be non-compliant, please let me know.
 
 UPGRADING.
 -----------------------------------------------------------------------------
+WARNING: This information is deprecated.  Make sure to fully back up
+your database files BEFORE upgrading the RPM.  Unfortunately, even then
+you may have problems -- so be ready to hand-edit dump files.
+
+A pg_upgrade utility is found in the contrib tree -- but it is not really
+production quality code.  If this lack of easy upgrades bothers you, please
+let the developer list (pgsql-hackers@postgresql.org) know about it -- maybe
+seamless upgrades can be made a higher prioriy if enough users complain.
+
+Use the following information at your own risk.
+
 CAUTION: While a semi-automatic upgrade process has been implemented, it is
 STRONGLY recommended that a full dump of your database (using pg_dumpall) is
 performed BEFORE upgrading the RPMs!  If you have already done the upgrade
@@ -195,11 +185,8 @@ I cannot overemphasize this precaution.
 NOTE: moving your existing data from /var/lib/pgsql to /var/lib/pgsql/data is
 not currently automatic -- you will need to do this yourself at this release!
 This change occurred between 6.5.3 and 7.0, so upgrading from prior to 7.0 to
-7.0 or later might be difficult.  
-
-NOTE: This program is not included in the packages distributed with
-Red Hat Linux. The releasenotes specifies a dump before a system
-upgrade. 
+7.0 or later might be difficult.  The rh-dump script is provided to ease this,
+see below.
 
 The single biggest problem with upgrading PostgreSQL RPM's has been the lack 
 of a reasonably automated upgrade process.  PostgreSQL has the property of 
@@ -245,6 +232,14 @@ The basic sequence is:
 postgresql-dump -t /var/lib/pgsql/backup/db.bak -p /var/lib/pgsql/backup/old -d
 (you can abort the ASCII dump with 'Q', as it uses more) Then, (as user root):
 
+***** NOTE ***** ***** NOTE *****
+
+The above script is broken. Use "rh-pgdump.sh targetfile" instead, remove the
+old databases (/var/lib/pgsql/base) (or safer - move them somewhere else first),
+start the database and follow the insert procedure described below.
+
+***** NOTE ***** ***** NOTE *****
+
 service postgresql start
 
 (which will automatically create a new database structure) And finally,
@@ -278,6 +273,11 @@ upgrade your database. As a matter of fact you will lose your data included
 in the template1 database. Please look at www.postgresql.org for information 
 on upgrading the template1 database. This is a known bug in the PostgreSQL
 pg_dump and pg_dumpall utilities.
+
+The above information is considered deprecated.  The utilities it mentions
+are also considered deprecated and will be removed from a future release of 
+the RPMset due to the difficulty involved with a dump-restore upgrade and the
+hand-editing of dumpfiles that are sometimes necessary.
 
 REGRESSION TESTING
 -------------------------------------------------------------------------------
@@ -366,6 +366,10 @@ environment to rebuild the full RPM set.
 This release of the RPMset includes the ability to conditionally build 
 sets of packages.  The parameters, their defaults, and the meanings are:
 
+build6x		undef	#build for RHL 6.x. Define to 1 to build for 6.x,
+			# undefined otherwise.
+			#currently, this disables the kerberos, nls, and ssl
+			# builds, as well as correcting dependencies for 6.x
 beta		0	#build with cassert and do not strip the binaries
 perl		1	#build the postgresql-perl package.
 tcl		1	#build the postgresql-tcl package.
@@ -383,6 +387,7 @@ nls		1	#build with national language support.
 enable_mb	1	#enable multibyte encodings.
 pgaccess	1	#build the pgaccess client, part of postgresql-tk.
 newintarray	0	#substitute a newer intarray contrib.
+pam		1	#build --with-pam
 
 To use these defines, invoke a rebuild like this:
 rpm --rebuild --define 'perl 0' --define 'tcl 0' --define 'tkpkg 0'\
@@ -392,7 +397,6 @@ This line would disable the perl, tcl, tk, and test subpackages, enable the
 newer intarray code, and disable kerberos support.
 
 More of these conditionals will be added in the future.
-
 
 CONTRIB FILES
 -------------------------------------------------------------------------------
