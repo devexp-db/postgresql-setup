@@ -1,11 +1,11 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 3.99, for PostgreSQL 7.2 beta cycle.
+Version 4.0, for the PostgreSQL 7.2-1PGDG RPMset.
 Lamar Owen <lamar.owen@wgcr.org> 
 -----------------------------------------------------------------------------
 
 Contents:
- 0.)	Quickie -i note.
+ 0.)	Quick -i note.
  1.)	Introduction, QuickStart, and credits
  2.)	PostgreSQL RPM packages and rationale
  3.)	Upgrading from an older version of PostgreSQL without losing data.
@@ -17,7 +17,7 @@ Contents:
  9.)	Logging set up
 10.)	Further Information Resource
 
-QUICKIE '-i' NOTE
+QUICK '-i' NOTE
 -----------------------------------------------------------------------------
 The postmaster '-i' option is NOT used by default in the initscript shipped
 with these RPMs.  Please do NOT modify the initscript to add the '-i' back
@@ -31,7 +31,7 @@ This document exists to explain the layout of the RPM's for PostgreSQL, to
 explain how to migrate from an older version, and to explain WHY it can be
 so difficult to upgrade PostgreSQL.
 
-This document is written to be applicable to version 7.1.2 of PostgreSQL, 
+This document is written to be applicable to version 7.2 of PostgreSQL, 
 which is the current version of the RPM's as of this writing.
 
 Official PostgreSQL Global Development Group RPM's will from version 7.1.2
@@ -48,20 +48,11 @@ These RPMs are designed to be LSB-compliant -- if you find this not to be the
 case, please let me know by way of the pgsql-ports@postgresql.org mailing
 list.
 
-NOTE:
-This RPMset is part of the PostgreSQL beta cycle.  Beta means BETA -- there
-may be some rough edges.  Testers are welcome; but please don't put this in
-production on a mission-critical system unless you know _exactly_ what you
-are doing.  The first few 7.2beta RPMset's will likely have many problems --
-we will work through those as the  cycle proceeds.
-
 QUICKSTART
 -----------------------------------------------------------------------------
 If this is an upgrade, please go to section 3, UPGRADING.
 If this is a fresh installation, simply start the postmaster using:
  /etc/rc.d/init.d/postgresql start  (on RedHat and TurboLinux)
-
-On SuSE, please see the file 'README.linux' in this directory.
 
 The file /var/lib/pgsql/.bash_profile is now packaged to help with the 
 setting of environment variables. You may edit this file, and it won't be
@@ -87,7 +78,7 @@ Karl DeBisschop
 Roger Luethi
 Jeff Johnson
 Reinhard Max
-
+Peter Eisentraut
 
 POSTGRESQL RPM PACKAGES AND RATIONALE.
 -----------------------------------------------------------------------------
@@ -188,6 +179,9 @@ also seem like more work to keep track of where everything is -- but, that's
 the beauty of RPM -- you don't have to keep track of the files, RPM does it
 for you.
 
+These RPM's are meant to be LSB-compliant.  If you find errors in them that
+cause thembe be non-compliant, please let me know.
+
 UPGRADING.
 -----------------------------------------------------------------------------
 CAUTION: While a semi-automatic upgrade process has been implemented, it is
@@ -196,11 +190,12 @@ performed BEFORE upgrading the RPMs!  If you have already done the upgrade
 with the RPM, and want to return to your previous version to do the dump,
 find the old RPM's and use 'rpm -U --oldpackage' to downgrade.
 
+I cannot overemphasize this precaution.
+
 NOTE: moving your existing data from /var/lib/pgsql to /var/lib/pgsql/data is
 not currently automatic -- you will need to do this yourself at this release!
-This change occurred between 6.5.3 and 7.0, so upgrading from priot to 7.0 to
-7.0 or later might be difficult.  The rh-dump script is provided to ease this,
-see below.
+This change occurred between 6.5.3 and 7.0, so upgrading from prior to 7.0 to
+7.0 or later might be difficult.  
 
 The single biggest problem with upgrading PostgreSQL RPM's has been the lack 
 of a reasonably automated upgrade process.  PostgreSQL has the property of 
@@ -245,14 +240,6 @@ The basic sequence is:
 (as user postgres):
 postgresql-dump -t /var/lib/pgsql/backup/db.bak -p /var/lib/pgsql/backup/old -d
 (you can abort the ASCII dump with 'Q', as it uses more) Then, (as user root):
-
-***** NOTE ***** ***** NOTE *****
-
-The above script is broken. Use "rh-pgdump.sh targetfile" instead, remove the
-old databases (/var/lib/pgsql/base) (or safer - move them somewhere else first),
-start the database and follow the insert procedure described below.
-
-***** NOTE ***** ***** NOTE *****
 
 service postgresql start
 
@@ -332,13 +319,13 @@ There are other parameters to this script -- /etc/rc.d/init.d/postgresql for a
 listing.
 
 To get this script to run at system startup or any time the system switches into
-runlevels 4, 5, or 6, run 'chkconfig --add postgresql', and the proper symlinks 
-will be created.  Check the chkconfig man page for more information.
-
-This same script also works for TurboLinux, and any other distribution similar
-enough to RedHat.  SuSE Linux uses a different approach, using a different
-location and a different script, found at either /sbin/init.d/postgres or
-/usr/sbin/rcpostgres.  Please see the SuSE 'README.linux' for more information.
+runlevels 3, 4, or 5, run:
+chkconfig --add postgresql
+chkconfig --level 345 postgresql on
+and the proper symlinks will be created.  Check the chkconfig man page for more
+information.  Note that this is manual -- while the startup script can include
+tags to allow chkconfig to automatically perform the symlinking, this is not
+done at this time.
 
 SuSE has maintained their own RPMset for some time -- their documentation
 supercedes any found in this file.
@@ -375,6 +362,7 @@ environment to rebuild the full RPM set.
 This release of the RPMset includes the ability to conditionally build 
 sets of packages.  The parameters, their defaults, and the meanings are:
 
+beta		0	#build with cassert and do not strip the binaries
 perl		1	#build the postgresql-perl package.
 tcl		1	#build the postgresql-tcl package.
 tkpkg		1	#build the postgresql-tk package.  
@@ -387,6 +375,7 @@ forceplperl	0	#don't force a build of pl/perl over libperl.a
 plperl		0	#don't build the postgresql-plperl package.
 ssl		1	#use OpenSSL support.
 kerberos	1	#use Kerberos 5 support.
+nls		1	#build with national language support.
 enable_mb	1	#enable multibyte encodings.
 pgaccess	1	#build the pgaccess client, part of postgresql-tk.
 newintarray	0	#substitute a newer intarray contrib.
@@ -436,10 +425,4 @@ I use automatic mail folder processing to put mail in the right place.
 
 SuSE information is available at SuSE's website and information contacts.
 -----------------------------------------------------------------------------
-
-
-
-
-
-
 
