@@ -2,7 +2,7 @@ README.rpm-dist
 -----------------------------------------------------------------------------
 Version 4.0, for the PostgreSQL 7.2-1PGDG RPMset.
 Lamar Owen <lamar.owen@wgcr.org> 
------------------------------------------------------------------------------
+----------------------------------------------------------------------------
 
 Contents:
  0.)	Quick -i note.
@@ -196,6 +196,10 @@ NOTE: moving your existing data from /var/lib/pgsql to /var/lib/pgsql/data is
 not currently automatic -- you will need to do this yourself at this release!
 This change occurred between 6.5.3 and 7.0, so upgrading from prior to 7.0 to
 7.0 or later might be difficult.  
+
+NOTE: This program is not included in the packages distributed with
+Red Hat Linux. The releasenotes specifies a dump before a system
+upgrade. 
 
 The single biggest problem with upgrading PostgreSQL RPM's has been the lack 
 of a reasonably automated upgrade process.  PostgreSQL has the property of 
