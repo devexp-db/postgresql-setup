@@ -1,7 +1,8 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 3.6, for PostgreSQL 7.1.3
+Version 3.7, for PostgreSQL 7.1.3
 Lamar Owen <lamar.owen@wgcr.org> 
+Trond Eivind Glomsrød <teg@redhat.com>
 -----------------------------------------------------------------------------
 
 Contents:
@@ -52,7 +53,7 @@ QUICKSTART
 -----------------------------------------------------------------------------
 If this is an upgrade, please go to section 3, UPGRADING.
 If this is a fresh installation, simply start the postmaster using:
- /etc/rc.d/init.d/postgresql start  (on RedHat and TurboLinux)
+ /etc/rc.d/init.d/postgresql start  (on Red Hat Linux and TurboLinux)
 
 On SuSE, please see the file 'README.linux' in this directory.
 
@@ -72,19 +73,19 @@ CREDITS
 Thomas Lockhart
 Uncle George
 Ryan Kirkpatrick
-Trond Eivind Glomsrød
+Trond Eivind Glomsrød <teg@redhat.com>
 Mark Knox
 Mike Mascari
 Nicolas Huillard
 Karl DeBisschop
 Roger Luethi
-Jeff Johnson
+Jeff Johnson <jbj@redhat.com>
 Reinhard Max
 
 
 POSTGRESQL RPM PACKAGES AND RATIONALE.
 -----------------------------------------------------------------------------
-On RedHat Linux, prior to version 6.5, PostgreSQL was packaged in RPM form in
+On Red Hat Linux, prior to version 6.5, PostgreSQL was packaged in RPM form in
 three (or four) packages:
 
 postgresql:		The server and documentation
@@ -118,7 +119,7 @@ postgresql-contrib:	The contrib source tree, as well as selected binaries.
 
 For SuSE Linux <= 7.0, the packages are named differently, but with the same
 functionality.  Here is a mapping:
-SuSE:			RedHat:
+SuSE:			Red Hat Linux:
 -----			-----------------
 postgres		postgresql
 pg_serv			postgresql-server
@@ -134,12 +135,13 @@ There are other changes to the SuSE packages to make them conform to the
 SuSE packaging standards.  SuSE Linux has been shipping their own packages.
 
 While the repackaging will initially cause some confusion, it makes it
-possible  to set up a RedHat linux machine to be only a client -- the server
-is no longer required.  The clients were split out -- after all, a person who
-needs the perl client may very well not need the tcl client, etc.  And, the
-regression tests were added to give some confidence of the suitability of
-PostgreSQL, as well as the stability of the server machine.  Additionally,
-the regression tests can be used to help find hardware errors.
+possible to set up a Red Hat Linux machine to be only a client -- the
+server is no longer required.  The clients were split out -- after
+all, a person who needs the perl client may very well not need the tcl
+client, etc.  And, the regression tests were added to give some
+confidence of the suitability of PostgreSQL, as well as the stability
+of the server machine.  Additionally, the regression tests can be used
+to help find hardware errors.
 
 RPM FILE LOCATIONS.
 -----------------------------------------------------------------------------
@@ -152,7 +154,7 @@ subdirectories.
 Different distributions have different ideas of some of these file locations.
 In particular, the documentation directory can be /usr/doc, /usr/doc/packages,
 /usr/share/doc, /usr/share/doc/packages, or some other similar path.  The
-RedHat 7 locations are listed below. On SuSE <7.1, substitute 'postgres' for 
+Red Hat Linux 7 locations are listed below. On SuSE <7.1, substitute 'postgres' for 
 'postgresql' below, and 'pg_tk' for 'postgresql-tk' below.
 
 However, the RPM's install the files like this:
@@ -171,7 +173,7 @@ Other shared data:	/usr/share/pgsql
 Regression tests:	/usr/lib/pgsql/test/regress  (in the -test package)
 Documentation SGML:	/usr/share/doc/postgresql-docs-x.y.z
 
-The above list references the Red Hat 7.x structure.  These locations may 
+The above list references the Red Hat Linux 7.x structure.  These locations may 
 change for other distributions.  Use of 'rpm -ql' for each package is
 recommended as the 'Official' location source.
 
@@ -201,38 +203,41 @@ the binary on-disk database format changing between major versions (like
 between 6.3 and 6.4).  However, a change from 6.5 to 6.5.3 does not change 
 the on-disk format.
 
-This property (feature, misfeature, bug, whatever) has been a known property of
-PostgreSQL since before it was called PostgreSQL -- it has always been this
-way.  However, the means by which an upgrade is performed is not readily 
-performed in a fully automated fashion, as a "dump-initdb-restore" cycle has
-to be performed. This doesn't appear to be too difficult -- however, dumping
-the old database requires the old executables -- and, if you've already done
-an rpm -U postgresql* (or upgraded from an older version of RedHat and didn't
-specifically exclude the postgresql rpms), you no longer have the older 
-executables to dump your data. And your data is useless (until you reinstall
-the old version, that is). All RPM's prior to late releases of version 6.5.
-1 have this upgrade issue.
+This property (feature, misfeature, bug, whatever) has been a known
+property of PostgreSQL since before it was called PostgreSQL -- it has
+always been this way.  However, the means by which an upgrade is
+performed is not readily performed in a fully automated fashion, as a
+"dump-initdb-restore" cycle has to be performed. This doesn't appear
+to be too difficult -- however, dumping the old database requires the
+old executables -- and, if you've already done an rpm -U postgresql*
+(or upgraded from an older version of Red Hat Linux and didn't
+specifically exclude the postgresql rpms), you no longer have the
+older executables to dump your data. And your data is useless (until
+you reinstall the old version, that is). All RPM's prior to late
+releases of version 6.5.  1 have this upgrade issue.
 
-The newest RPM's for PostgreSQL attempt to make your job in upgrading a little
-easier.  First, during the installation of the new RPM's, a copy is made of
-all the executable files and libraries necessary to make a backup of your data.
-Second, the initialization script in the new postgresql-server package detects
-the version of any database found -- if the version is old, then the startup
-of the new version is aborted.  However, if no database is found, a new one 
-is made.
+The newest RPM's for PostgreSQL attempt to make your job in upgrading
+a little easier.  First, during the installation of the new RPM's, a
+copy is made of all the executable files and libraries necessary to
+make a backup of your data.  Second, the initialization script in the
+new postgresql-server package detects the version of any database
+found -- if the version is old, then the startup of the new version is
+aborted.  However, if no database is found, a new one is made.
 
-One thing must be remembered -- due to the restructuring of the PostgreSQL
-RPM's, you will have to manually select the postgresql-server package if you
-want the server -- it is not installed by default in an upgrade. You can either
-select it during the upgrade/install, or you can mount your RedHat CD and 
+One thing must be remembered -- due to the restructuring of the
+PostgreSQL RPM's, you will have to manually select the
+postgresql-server package if you want the server -- it is not
+installed by default in an upgrade. You can either select it during
+the upgrade/install, or you can mount your Red Hat Linux CD and
 install manually with rpm -i.
 
-To facilitate upgrading, the postgresql-dump utility has been provided.  Look
-at the man page for postgresql-dump to see its usage.  All executables to
-restore the immediately prior version of the PostgreSQL database are placed in
-the directory /usr/lib/pgsql/backup, and are accessed by the postgresql-dump
-script.  The directory /usr/lib/pgsql/backup is owned by the postgres user -- 
-you can use this directory to hold dump files and preserve directories.
+To facilitate upgrading, the postgresql-dump utility has been
+provided.  Look at the man page for postgresql-dump to see its usage.
+All executables to restore the immediately prior version of the
+PostgreSQL database are placed in the directory /usr/lib/pgsql/backup,
+and are accessed by the postgresql-dump script.  The directory
+/usr/lib/pgsql/backup is owned by the postgres user -- you can use
+this directory to hold dump files and preserve directories.
 
 The basic sequence is:
 (as user postgres):
@@ -301,37 +306,40 @@ If tests fail, please see the file regression.diffs in that directory.  If
 you need help interpreting that file, contact the pgsql-ports list on
 postgresql.org.
 
-There are some tests that will almost always fail with RedHat Linux 5.x and 6.x
-installations.  The geometry, float8, and on occassion the random test will 
-fail.  These failures are normal for RedHat 5.2 and 6.1.  For RedHat 6.1 with
-certain i18n settings, there will be other tests fail.
+There are some tests that will almost always fail with Red Hat Linux
+5.x and 6.x installations.  The geometry, float8, and on occassion the
+random test will fail.  These failures are normal for Red Hat Linux
+5.2 and 6.1.  For Red Hat Linux 6.1 with certain i18n settings, there
+will be other tests fail.
 
-For 7.1RC1, all 76 tests passed on RedHat 6.2 and RedHat 7.0. This
-was accomplished by fiddling with the locale settings.  In version 7.1.2 this
-capability was removed -- you need to set your locale to 'C' before executing
-the first postmaster startup, or many more regression tests will fail.
+For 7.1RC1, all 76 tests passed on Red Hat Linux 6.2 and RedHat
+7.0. This was accomplished by fiddling with the locale settings.  In
+version 7.1.2 this capability was removed -- you need to set your
+locale to 'C' before executing the first postmaster startup, or many
+more regression tests will fail. With the locale set to 'C', all 76
+tests pass on Red Hat Linux 7.1.
 
 For interpretation of the regression tests, see the PostgreSQL documentation.
 
 STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
 -------------------------------------------------------------------------------
-RedHat Linux uses the System V Init package.  A startup script for PostgreSQL
+Red Hat Linux uses the System V Init system.  A startup script for PostgreSQL
 is provided in the server package, as /etc/rc.d/init.d/postgresql.  To start
-the postmaster, with sanity checking, as root, run
-/etc/rc.d/init.d/postgresql start
-to shut postmaster down,
-/etc/rc.d/init.d/postgresql stop
+the postmaster, with sanity checking, as root, run "service postgresql start"
+to shut postmaster down, "service postgresql stop"
+
 There are other parameters to this script -- /etc/rc.d/init.d/postgresql for a
 listing.
 
 To get this script to run at system startup or any time the system switches into
-runlevels 4, 5, or 6, run 'chkconfig --add postgresql', and the proper symlinks 
+runlevels 3, 4, or 5, run 'chkconfig --add postgresql', and the proper symlinks 
 will be created.  Check the chkconfig man page for more information.
 
-This same script also works for TurboLinux, and any other distribution similar
-enough to RedHat.  SuSE Linux uses a different approach, using a different
-location and a different script, found at either /sbin/init.d/postgres or
-/usr/sbin/rcpostgres.  Please see the SuSE 'README.linux' for more information.
+This same script also works for TurboLinux, and any other distribution
+similar enough to Red Hat Linux.  SuSE Linux uses a different
+approach, using a different location and a different script, found at
+either /sbin/init.d/postgres or /usr/sbin/rcpostgres.  Please see the
+SuSE 'README.linux' for more information.
 
 SuSE has maintained their own RPMset for some time -- their documentation
 supercedes any found in this file.
@@ -361,9 +369,9 @@ you will need to rebuild from the source RPM.  Download the .src.rpm for this
 release.  You will need to be root to rebuild, unless you have already set up
 a non-root build environment.
 
-Install the source RPM with rpm -i, then CD to the rpm building area (on RedHat
-this is /usr/src/redhat by default).  You will have to have a full development
-environment to rebuild the full RPM set.
+Install the source RPM with rpm -i, then CD to the rpm building area
+(on Red Hat Linux this is /usr/src/redhat by default).  You will have
+to have a full development environment to rebuild the full RPM set.
 
 This release of the RPMset includes the ability to conditionally build 
 sets of packages.  The parameters, their defaults, and the meanings are:
