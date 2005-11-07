@@ -1,6 +1,6 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 8.0, for the PostgreSQL 8.0.0-1PGDG RPMset.
+Version 8.1, for the PostgreSQL 8.1.0-1 RPMset.
 Lamar Owen <lamar.owen@wgcr.org> 
 -----------------------------------------------------------------------------
 
@@ -33,9 +33,9 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 8.0 of PostgreSQL, 
+This document is written to be applicable to version 8.1 of PostgreSQL, 
 which is the current version of the RPMs as of this writing. More to the 
-point, versions prior to 8.0 are not documented here.
+point, versions prior to 8.1 are not documented here.
 
 Official PostgreSQL Global Development Group RPMs have from version 7.1.2
 on carried a 'PGDG' after the release number.  Other RPMsets distributed
@@ -173,8 +173,8 @@ the beauty of RPM -- you don't have to keep track of the files, RPM does it
 for you.
 
 These RPMs are designed to be LSB-compliant -- if you find this not to be the
-case, please let me know by way of the pgsql-ports@postgresql.org mailing
-list.
+case, please let us know by way of the pgsqlrpms-hackers@PostgreSQL.org 
+mailing list.
 
 MULTIPLE POSTMASTERS
 -------------------------------------------------------------------------------
@@ -272,15 +272,13 @@ you will need to rebuild from the source RPM.  Download the .src.rpm for this
 release.  You will need to be root to rebuild, unless you have already set up
 a non-root build environment.
 
-Install the source RPM with rpm -i, then CD to the rpm building area (on RedHat
-this is /usr/src/redhat by default).  You will have to have a full development
-environment to rebuild the full RPM set.
+Install the source RPM with rpm -i, then CD to the rpm building area (on Red
+Hat or Fedora Core this is /usr/src/redhat by default).  You will have to have
+a full development environment to rebuild the full RPM set.
 
 This release of the RPMset includes the ability to conditionally build 
 sets of packages.  The parameters, their defaults, and the meanings are:
 
-build6x		undef	#don't build for Red Hat 6.x.  Define it to cause
-			# other options to be tailored to 6.x.
 beta		0	#build with cassert and do not strip the binaries
 perl		1	#build the postgresql-perl package.
 tcl		1	#build the postgresql-tcl package.
@@ -299,7 +297,7 @@ runselftest	1	#do "make check" during the build.
 To use these defines, invoke a rebuild like this:
 rpm --rebuild --define 'perl 0' --define 'tcl 0' \
 	--define 'test 0' --define 'runselftest 1' --define 'kerberos 0' \
-	postgresql-8.0.0-1PGDG.src.rpm
+	postgresql-8.1.0-1.src.rpm
 This line would disable the perl, tcl, and test subpackages, enable the
 regression test run during build, and disable kerberos support.
 
@@ -324,12 +322,14 @@ MORE INFORMATION
 -------------------------------------------------------------------------------
 You can get more information at http://www.postgresql.org
 
-Please help make this packaging better -- let me know if you find problems, or
-better ways of doing things.  You can reach me by e-mail at
-pgsql-ports@postgresql.org -- please include an [RPM] string in the subject, as
-I use automatic mail folder processing to put mail in the right place.
+Please help make this packaging better -- let us know if you find problems, or
+better ways of doing things.  You can reach us by e-mail at
+pgsqlrpms-hackers@PostgreSQL.org .
 
-SuSE information is available at SuSE's website and information contacts.
-A 7.4 SuSE RPM is available on ftp.postgresql.org.  It is different from this
-RPM due to SuSE's different needs.
------------------------------------------------------------------------------
+SUSE products usually ship with the latest version of PostgreSQL that
+was available at the time they were released. RPMs for newer versions
+of PostgreSQL can be found on the SUSE FTP server and it's mirrors.
+
+ftp://ftp.suse.com/pub/projects/postgresql
+http://www.novell.com/products/linuxprofessional/downloads/ftp/int_mirrors.html
+-------------------------------------------------------------------------------
