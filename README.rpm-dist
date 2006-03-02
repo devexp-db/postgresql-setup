@@ -1,6 +1,6 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 8.1, for the PostgreSQL 8.1.0-1 RPMset.
+Version 8.1, for the PostgreSQL 8.1.1-1 RPMset.
 Lamar Owen <lamar.owen@wgcr.org> 
 -----------------------------------------------------------------------------
 
@@ -23,9 +23,7 @@ The postmaster '-i' option is NOT used by default in the initscript shipped
 with these RPMs.  Please do NOT modify the initscript to add the '-i' back
 in -- it will get overwritten on the next package upgrade.  Rather, see the
 section below on the Grand Unified Configuration file, which includes the
-recommended way to get '-i' functionality.  Note that as of PostgreSQL 8.0,
-you don't need '-i' anyway if all you want to allow is local TCP/IP
-connections.
+recommended way to get '-i' functionality.
 
 INTRODUCTION
 -----------------------------------------------------------------------------
@@ -173,7 +171,7 @@ the beauty of RPM -- you don't have to keep track of the files, RPM does it
 for you.
 
 These RPMs are designed to be LSB-compliant -- if you find this not to be the
-case, please let us know by way of the pgsqlrpms-hackers@PostgreSQL.org 
+case, please let us know by way of the pgsqlrpms-hackers@pgfoundry.org 
 mailing list.
 
 MULTIPLE POSTMASTERS
@@ -280,7 +278,6 @@ This release of the RPMset includes the ability to conditionally build
 sets of packages.  The parameters, their defaults, and the meanings are:
 
 beta		0	#build with cassert and do not strip the binaries
-perl		1	#build the postgresql-perl package.
 tcl		1	#build the postgresql-tcl package.
 jdbc		1	#build the postgresql-jdbc package.
 pls		1	#build the postgresql-pl package.
@@ -293,12 +290,14 @@ kerberos	1	#use Kerberos 5 support.
 nls		1	#build with national language support.
 pam		1	#build with PAM support.
 runselftest	1	#do "make check" during the build.
+xml		1	#build contrib/xml2
+pgfts		1	#build with --enable-thread-safety
 
 To use these defines, invoke a rebuild like this:
-rpm --rebuild --define 'perl 0' --define 'tcl 0' \
+rpmbuild --rebuild --define 'python 0' --define 'tcl 0' \
 	--define 'test 0' --define 'runselftest 1' --define 'kerberos 0' \
-	postgresql-8.1.0-1.src.rpm
-This line would disable the perl, tcl, and test subpackages, enable the
+	postgresql-8.1.1-1.src.rpm
+This line would disable the python, tcl, and test subpackages, enable the
 regression test run during build, and disable kerberos support.
 
 You might need to disable runselftest if there is an installed version of
@@ -320,11 +319,12 @@ and dependencies.
 
 MORE INFORMATION
 -------------------------------------------------------------------------------
-You can get more information at http://www.postgresql.org
+You can get more information at http://www.postgresql.org and 
+http://pgfoundry.org/projects/pgsqlrpms
 
 Please help make this packaging better -- let us know if you find problems, or
 better ways of doing things.  You can reach us by e-mail at
-pgsqlrpms-hackers@PostgreSQL.org .
+pgsqlrpms-hackers@pgfoundry.org
 
 SUSE products usually ship with the latest version of PostgreSQL that
 was available at the time they were released. RPMs for newer versions
