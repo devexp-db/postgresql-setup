@@ -1,7 +1,7 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 8.1, for the PostgreSQL 8.1.1-1 RPMset.
-Lamar Owen <lamar.owen@wgcr.org> 
+Version 8.2, for the PostgreSQL 8.2.1-2 RPMset.
+Devrim Gündüz <devrim@CommandPrompt.com>, Lamar Owen <lowen@pari.edu>
 -----------------------------------------------------------------------------
 
 Contents:
@@ -31,9 +31,9 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 8.1 of PostgreSQL, 
+This document is written to be applicable to version 8.2 of PostgreSQL, 
 which is the current version of the RPMs as of this writing. More to the 
-point, versions prior to 8.1 are not documented here.
+point, versions prior to 8.2 are not documented here.
 
 Official PostgreSQL Global Development Group RPMs have from version 7.1.2
 on carried a 'PGDG' after the release number.  Other RPMsets distributed
@@ -94,6 +94,7 @@ Joe Conway
 Andrew Overholt
 David Jee
 Kaj J. Niemi
+Devrim Gunduz
 
 POSTGRESQL RPM PACKAGES AND RATIONALE.
 -----------------------------------------------------------------------------
@@ -106,23 +107,24 @@ postgresql:		Key clients and libraries, and documentation
 postgresql-libs:	Client shared libraries
 postgresql-server:	Server executables and data files
 postgresql-devel:	Development libraries and include files
-postgresql-jdbc:	JARs for the JDBC client library
-postgresql-python:	The PygreSQL client library
+postgresql-python:	The PyGreSQL client library
 postgresql-tcl:		Tcl client library (Pgtcl)
 postgresql-test:	The regression tests and associated files
 postgresql-docs:	Extra documentation, such as the tutorial files
 postgresql-contrib:	The contrib source tree, as well as selected binaries
-postgresql-pl:		PL/Perl (if possible on this dist), PL/Python, and PL/Tcl
+postgresql-plperl:	PL/Perl procedural language
+postgresql-plpython:	PL/Python procedural language
+postgresql-pltcl:	PL/Tcl procedural language
 
 You have to install postgresql and postgresql-libs to do anything.
 postgresql-server is needed unless you only plan to use the clients to work
 with a remote PostgreSQL server. The others are optional.
 
-Note that there is no postgresql-perl, postgresql-odbc, postgresql-tk, or
-postgresql-plperl package any longer.  This is due to these portions being
-removed from the PostgreSQL source tarball.
+Note that there is no postgresql-perl, postgresql-jdbc, postgresql-odbc, or
+postgresql-tk package any longer.  This is due to these portions being split
+into separate source distributions.
 
-While PygreSQL was split out from the core PostgreSQL distribution, thanks to
+While PyGreSQL was split out from the core PostgreSQL distribution, thanks to
 Kaj's work it is still included as the python subpackage.  Also, Pgtcl is
 still included as the tcl subpackage, although it is not part of the core
 distribution anymore.
@@ -138,8 +140,7 @@ various subdirectories.
 Different distributions have different ideas of some of these file locations.
 In particular, the documentation directory can be /usr/doc, /usr/doc/packages,
 /usr/share/doc, /usr/share/doc/packages, or some other similar path.  The
-Red Hat/Fedora locations are listed below. On SuSE <7.1, substitute 'postgres'
-for 'postgresql' below.
+Red Hat / Fedora Core locations are listed below.
 
 However, the RPMs install the files like this:
 Executables:		/usr/bin
@@ -160,8 +161,8 @@ Extra documentation:	/usr/share/doc/postgresql-docs-x.y.z
 
 On some 64-bit architectures, /usr/lib64 is used instead of /usr/lib.
 
-The above list describes the Red Hat/Fedora layout.  These locations may 
-change for other distributions.  Use of 'rpm -ql' for each package is
+The above list describes the Red Hat / Fedora Core layout.  These locations
+may change for other distributions.  Use of 'rpm -ql' for each package is
 recommended as the 'official' information source.
 
 While it may seem gratuitous to place these files in different locations, the
@@ -171,7 +172,7 @@ the beauty of RPM -- you don't have to keep track of the files, RPM does it
 for you.
 
 These RPMs are designed to be LSB-compliant -- if you find this not to be the
-case, please let us know by way of the pgsqlrpms-hackers@pgfoundry.org 
+case, please let us know by way of the pgsqlrpms-hackers@pgfoundry.org
 mailing list.
 
 MULTIPLE POSTMASTERS
@@ -278,13 +279,12 @@ This release of the RPMset includes the ability to conditionally build
 sets of packages.  The parameters, their defaults, and the meanings are:
 
 beta		0	#build with cassert and do not strip the binaries
-tcl		1	#build the postgresql-tcl package.
-jdbc		1	#build the postgresql-jdbc package.
-pls		1	#build the postgresql-pl package.
-test		1	#build the postgresql-test package.
 python		1	#build the postgresql-python package.
-pltcl		1	#build the pltcl portion of the postgresql-pl package.
-plperl		1	#build the plperl portion of the postgresql-pl package.
+tcl		1	#build the postgresql-tcl package.
+test		1	#build the postgresql-test package.
+plpython	1	#build the PL/Python package
+pltcl		1	#build the PL/Tcl package.
+plperl		1	#build the PL/Perl package.
 ssl		1	#use OpenSSL support.
 kerberos	1	#use Kerberos 5 support.
 nls		1	#build with national language support.
@@ -296,7 +296,7 @@ pgfts		1	#build with --enable-thread-safety
 To use these defines, invoke a rebuild like this:
 rpmbuild --rebuild --define 'python 0' --define 'tcl 0' \
 	--define 'test 0' --define 'runselftest 1' --define 'kerberos 0' \
-	postgresql-8.1.1-1.src.rpm
+	postgresql-8.2.1-1.src.rpm
 This line would disable the python, tcl, and test subpackages, enable the
 regression test run during build, and disable kerberos support.
 
