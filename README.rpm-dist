@@ -1,12 +1,12 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 8.2, for the PostgreSQL 8.2.1-2 RPMset.
-Devrim Gündüz <devrim@CommandPrompt.com>, Lamar Owen <lowen@pari.edu>
+Version 8.4, for the PostgreSQL 8.4 RPM set.
+Devrim Gündüz <devrim@CommandPrompt.com>
 -----------------------------------------------------------------------------
 
 Contents:
  0.)	Quick note about '-i'
- 1.)	Introduction, QuickStart, and credits
+ 1.)	Introduction and QuickStart
  2.)	PostgreSQL RPM packages and rationale
  3.)	Starting multiple postmasters
  4.)	Regression Testing
@@ -31,70 +31,55 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 8.2 of PostgreSQL, 
+This document is written to be applicable to version 8.4 of PostgreSQL, 
 which is the current version of the RPMs as of this writing. More to the 
-point, versions prior to 8.2 are not documented here.
+point, versions prior to 8.4 are not documented here.
 
-Official PostgreSQL Global Development Group RPMs have from version 7.1.2
-on carried a 'PGDG' after the release number.  Other RPMsets distributed
-with Linux distributions may have a different release number and initials.
+Official PostgreSQL Global Development Group RPMs carry a 'PGDG after the
+release number.  Other RPMsets as distributed with Linux distributions may 
+have a different release number and initials.
 
-It is preferable for the distribution-specific set to be the one used, as
-the PGDG set is intentionally generic.  So, if your distro has a set of RPMs,
-use them in preference.  If you want to stay up-to-date on the PostgreSQL
-core itself, use the PGDG generic set -- but understand that it is a 
-GENERIC set.
+If you want to stay up-to-date on the PostgreSQL core itself, you may 
+want to use PGDG set, instead of the binaries supplied by distribution.
 
-These RPMs no longer support any sort of upgrading process other than that
-documented in the regular documentation.  That is, you must dump, upgrade,
-initdb, and restore your data.  Dump first, then remove the old server
-subpackage, install the new package, and restore the data from dump. (A new
-method of running multiple versions of PostgreSQL, along with the capability
-to run multiple postmasters, is in development, but was not ready for this
-release.)
+These RPMs do not support any sort of major version upgrading process 
+other than that documented in the regular documentation.  That is, you 
+must dump, upgrade,initdb, and restore your data if you are 
+performing a major version update. This is not needed for minor version 
+updates.
 
-SuSE has maintained their own RPMset for some time -- their documentation
-supercedes any found in this file.
+For major version upgrade, dump first, then remove the old server 
+subpackage, install the new package, and restore the data from dump. 
+
+This document is intended for use only with Red Hat, CentOS and Fedora.
 
 QUICKSTART
 -----------------------------------------------------------------------------
-For a fresh installation on a recent Red Hat or similar system, a simple
-	service postgresql start
-as root will prepare a new database (initdb), and start a postmaster that
-will listen on localhost and Unix socket 5432 only.  Edit
-/var/lib/pgsql/data/postgresql.conf and pg_hba.conf if you want to allow
-remote access -- see the section on Grand Unified Configuration.
+For a fresh installation, you will need to initialize the cluster first. Run:
 
-The file /var/lib/pgsql/.bash_profile is now packaged to help with the 
+	service postgresql initdb
+
+as root, and it will prepare a new database cluster for you. Then you will 
+need to start PostgreSQL. Again as root, run:
+
+	service postgresql start
+
+This command will start a postmaster that willl listen on localhost and Unix 
+socket 5432 only.  Edit /var/lib/pgsql/data/postgresql.conf and pg_hba.conf 
+if you want to allow remote access -- see the section on Grand Unified 
+Configuration.
+
+The file /var/lib/pgsql/.bash_profile is packaged to help with the 
 setting of environment variables. You may edit this file, and it won't be
-overwritten during an upgrade.  However, enhancements and bugfixes may be added
-to this file, so be sure to check .bash_profile.rpmnew after upgrading.
+overwritten during an upgrade.  However, enhancements and bugfixes may 
+be added to this file, so be sure to check .bash_profile.rpmnew after 
+upgrading.
 
 The user 'postgres' is created during installation of the server subpackage.
 This user by default is UID and GID 26. The user has the default shell set to
 bash, and the home directory set to /var/lib/pgsql.  This user also has no
 default password -- in order to be able to su to it from a non-root account
 or login as 'postgres' you will need to set a password using passwd.
-
-CREDITS
------------------------------------------------------------------------------
-Thomas Lockhart
-Uncle George
-Ryan Kirkpatrick
-Trond Eivind Glomsrd
-Mark Knox
-Mike Mascari
-Nicolas Huillard
-Karl DeBisschop
-Roger Luethi
-Jeff Johnson
-Reinhard Max
-Peter Eisentraut
-Joe Conway
-Andrew Overholt
-David Jee
-Kaj J. Niemi
-Devrim Gunduz
 
 POSTGRESQL RPM PACKAGES AND RATIONALE.
 -----------------------------------------------------------------------------
@@ -139,31 +124,25 @@ various subdirectories.
 
 Different distributions have different ideas of some of these file locations.
 In particular, the documentation directory can be /usr/doc, /usr/doc/packages,
-/usr/share/doc, /usr/share/doc/packages, or some other similar path.  The
-Red Hat / Fedora Core locations are listed below.
+/usr/share/doc, /usr/share/doc/packages, or some other similar path.
 
-However, the RPMs install the files like this:
+However, the Red Hat / CentOS / Fedora RPM's install the files like 
+this:
+
 Executables:		/usr/bin
-Libraries:		/usr/lib
-Documentation:		/usr/share/doc/postgresql-x.y.z
+Libraries:		/usr/lib (or /usr/lib64)
+Documentation:		/usr/share/doc/postgresql-docs-x.y.z/html
 Contrib documentation:	/usr/share/doc/postgresql-contrib-x.y.z
 Source:			not installed
 Data:			/var/lib/pgsql/data
-Backup area:		/var/lib/pgsql/backup
+Backup area:		/var/lib/pgsql/backups
 Templates:		/usr/share/pgsql
-Procedural Languages:	/usr/lib/pgsql
+Procedural Languages:	/usr/lib/pgsql or /usr/lib64/pgsql
 Development Headers:	/usr/include/pgsql
-Localization data:	/usr/share/locale
 Other shared data:	/usr/share/pgsql
 Regression tests:	/usr/lib/pgsql/test/regress  (in the -test package)
-Tutorial:		/usr/lib/pgsql/tutorial (in the -docs package)
-Extra documentation:	/usr/share/doc/postgresql-docs-x.y.z
-
-On some 64-bit architectures, /usr/lib64 is used instead of /usr/lib.
-
-The above list describes the Red Hat / Fedora Core layout.  These locations
-may change for other distributions.  Use of 'rpm -ql' for each package is
-recommended as the 'official' information source.
+			or /usr/lib64/pgsql/test/regress
+Documentation SGML:	/usr/share/doc/postgresql-docs-x.y.z/sgml
 
 While it may seem gratuitous to place these files in different locations, the
 FHS requires it -- distributions should not ever touch /usr/local.  It may
@@ -211,24 +190,26 @@ your database machine is up to the task.
 To run the regression tests under the RPM installation, make sure that
 postmaster has been started (if not, su to root and execute the
 "/etc/rc.d/init.d/postgresql start" init script), cd to
-/usr/lib/pgsql/test/regress, su to postgres, and execute "make check".
+/usr/lib/pgsql/test/regress (or /usr/lib64/pgsql/test/regress),
+su to postgres, and execute "make check".
 This command will start the regression tests and will both show the
 results to the screen and store the results in the file regress.out.
 
 If any tests fail, see the file regression.diffs in that directory for details,
 and read the "Regression Tests" section of the PostgreSQL documentation to
 find out whether the differences are actually significant.  If you need help
-interpreting the results, contact the pgsql-ports list at postgresql.org or
-the pgsqlrpms-general list at pgfoundry.org.
+interpreting the results, contact the pgsql-general list at 
+postgresql.org.
 
 After testing, say "make clean" to remove the files generated by the test
 script.
 
 STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
 -------------------------------------------------------------------------------
-Red Hat Linux uses the System V Init package.  A startup script for PostgreSQL
-is provided in the server package, as /etc/rc.d/init.d/postgresql.  To start
-the postmaster, with sanity checking, as root, run
+Fedora / Red Hat / CentOS use the System V Init package.  A startup
+script for PostgreSQL is provided in the server package, as
+/etc/rc.d/init.d/postgresql.  To start the postmaster, with sanity
+checking, as root, run
 	service postgresql start
 To shut the postmaster down,
 	service postgresql stop
@@ -269,12 +250,12 @@ REBUILDING FROM SOURCE RPM
 -------------------------------------------------------------------------------
 If your distribution is not supported by the binary RPMs from PostgreSQL.org, 
 you will need to rebuild from the source RPM.  Download the .src.rpm for this
-release.  You will need to be root to rebuild, unless you have already set up
-a non-root build environment.
+release.  You will need to be root to rebuild, unless you have set up
+a non-root build environment (which is the recommended method anyway).
 
-Install the source RPM with rpm -i, then CD to the rpm building area (on Red
-Hat or Fedora Core this is /usr/src/redhat by default).  You will have to have
-a full development environment to rebuild the full RPM set.
+Install the source RPM with rpm -i, then cd to the rpm building area
+(which is /usr/src/redhat by default).  You will have to have a full
+development environment to rebuild the full RPM set.
 
 This release of the RPMset includes the ability to conditionally build 
 sets of packages.  The parameters, their defaults, and the meanings are:
@@ -283,22 +264,25 @@ beta		0	#build with cassert and do not strip the binaries
 python		1	#build the postgresql-python package.
 tcl		1	#build the postgresql-tcl package.
 test		1	#build the postgresql-test package.
-plpython	1	#build the PL/Python package
-pltcl		1	#build the PL/Tcl package.
-plperl		1	#build the PL/Perl package.
+plpython	1	#build the PL/Python procedural language package.
+pltcl		1	#build the PL/Tcl procedural language package.
+plperl		1	#build the PL/Perl procedural language package.
 ssl		1	#use OpenSSL support.
 kerberos	1	#use Kerberos 5 support.
 nls		1	#build with national language support.
+ldap		1	#build with LDAP support.
 pam		1	#build with PAM support.
 runselftest	1	#do "make check" during the build.
-xml		1	#build contrib/xml2
+sdt		1	#build with SystemTap support.
+xml		1	#build with XML support
 pgfts		1	#build with --enable-thread-safety
+uuid		1	#build contrib/uuid-ossp
 
 To use these defines, invoke a rebuild like this:
 rpmbuild --rebuild --define 'python 0' --define 'tcl 0' \
-	--define 'test 0' --define 'runselftest 1' --define 'kerberos 0' \
-	postgresql-8.2.1-1.src.rpm
-This line would disable the python, tcl, and test subpackages, enable the
+	--define 'test 0' --define 'runselftest 0' --define 'kerberos 0' \
+	postgresql-8.4.0-1.src.rpm
+This line would disable the python, tcl, and test subpackages, disable the
 regression test run during build, and disable kerberos support.
 
 You might need to disable runselftest if there is an installed version of
@@ -314,23 +298,16 @@ CONTRIB FILES
 The contents of the contrib tree are packaged into the -contrib subpackage
 and are processed with make and make install.  There is documentation in
 /usr/share/doc/postgresql-contrib-VERSION for these modules.  Most of the
-modules are in /usr/lib/pgsql for loadable modules, and binaries are in 
-/usr/bin.  In the future these files may be split out, depending upon function
-and dependencies.
+modules are in /usr/lib/pgsql (or /usr/lib64/pgsql) for loadable
+modules, and binaries are in /usr/bin.  In the future these files may be
+split out, depending upon function and dependencies.
 
 MORE INFORMATION
 -------------------------------------------------------------------------------
 You can get more information at http://www.postgresql.org and 
-http://pgfoundry.org/projects/pgsqlrpms
+http://yum.pgsqlrpms.org
 
 Please help make this packaging better -- let us know if you find problems, or
-better ways of doing things.  You can reach us by e-mail at
+better ways of doing things. You can reach us by e-mail at
 pgsqlrpms-hackers@pgfoundry.org
-
-SUSE products usually ship with the latest version of PostgreSQL that
-was available at the time they were released. RPMs for newer versions
-of PostgreSQL can be found on the SUSE FTP server and it's mirrors.
-
-ftp://ftp.suse.com/pub/projects/postgresql
-http://www.novell.com/products/linuxprofessional/downloads/ftp/int_mirrors.html
 -------------------------------------------------------------------------------
