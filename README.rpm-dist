@@ -1,29 +1,21 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 8.4, for the PostgreSQL 8.4 RPM set.
+Version 9.0, for the PostgreSQL 9.0 RPM set.
 Devrim Gündüz <devrim@CommandPrompt.com>
 -----------------------------------------------------------------------------
 
 Contents:
- 0.)	Quick note about '-i'
  1.)	Introduction and QuickStart
- 2.)	PostgreSQL RPM packages and rationale
- 3.)	Starting multiple postmasters
- 4.)	Regression Testing
- 5.)	Starting postmaster automatically on startup
- 6.)	Grand Unified Configuration(GUC) File
- 7.)	Logging set up
- 8.)	Rebuilding from the source RPM
- 9.)	Contrib files
-10.)	Further Information Resource
-
-QUICK NOTE ABOUT '-i'
------------------------------------------------------------------------------
-The postmaster '-i' option is NOT used by default in the initscript shipped
-with these RPMs.  Please do NOT modify the initscript to add the '-i' back
-in -- it will get overwritten on the next package upgrade.  Rather, see the
-section below on the Grand Unified Configuration file, which includes the
-recommended way to get '-i' functionality.
+ 2.)	Upgrading an installation
+ 3.)	PostgreSQL RPM packages and rationale
+ 4.)	Starting multiple postmasters
+ 5.)	Regression Testing
+ 6.)	Starting postmaster automatically on startup
+ 7.)	Grand Unified Configuration(GUC) File
+ 8.)	Logging set up
+ 9.)	Rebuilding from the source RPM
+10.)	Contrib files
+11.)	Further Information Resource
 
 INTRODUCTION
 -----------------------------------------------------------------------------
@@ -31,27 +23,14 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 8.4 of PostgreSQL, 
+This document is written to be applicable to version 9.0 of PostgreSQL,
 which is the current version of the RPMs as of this writing. More to the 
-point, versions prior to 8.4 are not documented here.
+point, versions prior to 9.0 are not documented here.
 
-Official PostgreSQL Global Development Group RPMs carry a 'PGDG after the
-release number.  Other RPMsets as distributed with Linux distributions may 
-have a different release number and initials.
-
-If you want to stay up-to-date on the PostgreSQL core itself, you may 
-want to use PGDG set, instead of the binaries supplied by distribution.
-
-These RPMs do not support any sort of major version upgrading process 
-other than that documented in the regular documentation.  That is, you 
-must dump, upgrade,initdb, and restore your data if you are 
-performing a major version update. This is not needed for minor version 
-updates.
-
-For major version upgrade, dump first, then remove the old server 
-subpackage, install the new package, and restore the data from dump. 
-
-This document is intended for use only with Red Hat, CentOS and Fedora.
+This document is intended for use only with the RPMs supplied in Red Hat
+Enterprise Linux, CentOS and Fedora.  Note that there are also "PGDG"
+RPMs available directly from the upstream PostgreSQL project.  Those are
+slightly different.
 
 QUICKSTART
 -----------------------------------------------------------------------------
@@ -78,8 +57,42 @@ upgrading.
 The user 'postgres' is created during installation of the server subpackage.
 This user by default is UID and GID 26. The user has the default shell set to
 bash, and the home directory set to /var/lib/pgsql.  This user also has no
-default password -- in order to be able to su to it from a non-root account
+default password.  If you want to be able to su to it from a non-root account
 or login as 'postgres' you will need to set a password using passwd.
+
+UPGRADING AN INSTALLATION
+-----------------------------------------------------------------------------
+For a minor-version upgrade (such as 9.0.1 to 9.0.2), just install the
+new RPMs; there's usually nothing more to it than that.  Upgrading
+across a major release of PostgreSQL (for example, from 8.3.x to 8.4.x)
+requires more effort.
+
+If you are upgrading across more than one major release of PostgreSQL
+(for example, from 8.3.x to 9.0.x), you will need to follow the "traditional"
+dump and reload process to bring your data into the new version.  That is:
+*before* upgrading, run pg_dumpall to extract all your data into a SQL file.
+Shut down the old postmaster, upgrade to the new version RPMs, initdb,
+and run the dump file through psql to restore your data.
+
+In some major releases, the RPMs also support in-place upgrade from the
+immediately previous major release.  Currently, you can upgrade in-place
+from 8.4.x to 9.0.x.  This is much faster than a dump and reload.
+To do an in-place upgrade:
+* shut down the old postmaster
+* optionally make a backup of /var/lib/pgsql/data/
+* install the new version's RPMs (install all the ones you had before,
+  plus postgresql-upgrade)
+* as root, run "service postgresql upgrade"
+* update the configuration files /var/lib/pgsql/data/*.conf with any
+  customizations you had before (your old configuration files are in
+  /var/lib/pgsql/data-old/)
+* as root, run "service postgresql start"
+* postgresql-upgrade can be removed after the update is complete
+
+NOTE: The in-place upgrade process is new and relatively poorly tested,
+so if your data is critical it's a really good idea to make a tarball
+backup of /var/lib/pgsql/data/ before running the upgrade.  This will
+let you get back to where you were in case of disaster.
 
 POSTGRESQL RPM PACKAGES AND RATIONALE.
 -----------------------------------------------------------------------------
@@ -88,13 +101,12 @@ choose' what pieces are needed, and what dependencies are required.
 
 The RPMset is packaged in the following subpackages:
 
-postgresql:		Key clients and libraries, and documentation
+postgresql:		Key client programs and documentation
 postgresql-libs:	Client shared libraries
 postgresql-server:	Server executables and data files
 postgresql-devel:	Development libraries and include files
-postgresql-python:	The PyGreSQL client library
-postgresql-tcl:		Tcl client library (Pgtcl)
 postgresql-test:	The regression tests and associated files
+postgresql-upgrade:	Support files for upgrading from previous major version
 postgresql-docs:	Extra documentation, such as the tutorial files
 postgresql-contrib:	The contrib source tree, as well as selected binaries
 postgresql-plperl:	PL/Perl procedural language
@@ -105,14 +117,10 @@ You have to install postgresql and postgresql-libs to do anything.
 postgresql-server is needed unless you only plan to use the clients to work
 with a remote PostgreSQL server. The others are optional.
 
-Note that there is no postgresql-perl, postgresql-jdbc, postgresql-odbc, or
-postgresql-tk package any longer.  This is due to these portions being split
-into separate source distributions.
-
-While PyGreSQL was split out from the core PostgreSQL distribution, thanks to
-Kaj's work it is still included as the python subpackage.  Also, Pgtcl is
-still included as the tcl subpackage, although it is not part of the core
-distribution anymore.
+Note that there are no postgresql-perl, postgresql-jdbc, postgresql-odbc,
+postgresql-python, postgresql-tcl, or postgresql-tk subpackages any longer.
+Those programs have been split off into separate source distributions.
+They are still available, but in some cases not under those RPM names.
 
 RPM FILE LOCATIONS.
 -----------------------------------------------------------------------------
@@ -142,7 +150,6 @@ Development Headers:	/usr/include/pgsql
 Other shared data:	/usr/share/pgsql
 Regression tests:	/usr/lib/pgsql/test/regress  (in the -test package)
 			or /usr/lib64/pgsql/test/regress
-Documentation SGML:	/usr/share/doc/postgresql-docs-x.y.z/sgml
 
 While it may seem gratuitous to place these files in different locations, the
 FHS requires it -- distributions should not ever touch /usr/local.  It may
@@ -171,14 +178,9 @@ As an example, let us create a secondary postmaster called, creatively enough,
 	here.  Since $PGDATA/postgresql.conf will override many of these
 	settings, except PGDATA, you might be surprised on startup.
 3.)	create the target PGDATA.
-4.)	Initdb the targe PGDATA as documented in the main documentation.  
-	Automatic initdb may or may not work for you, so a manual one is
-	preferred.  This must be done as user 'postgres'
+4.)	Initdb the target PGDATA with 'service secondary initdb'.
 5.)	Edit postgresql.conf to change the port, address, tcpip settings, etc.
 6.)	Start the postmaster with 'service secondary start'.
-
-Note that there may be problems with the standard symlink -- consider this
-support experimental at this point in time.
 
 REGRESSION TESTING
 -------------------------------------------------------------------------------
@@ -188,9 +190,8 @@ results that give you assurances that the installation is complete, and that
 your database machine is up to the task.
 
 To run the regression tests under the RPM installation, make sure that
-postmaster has been started (if not, su to root and execute the
-"/etc/rc.d/init.d/postgresql start" init script), cd to
-/usr/lib/pgsql/test/regress (or /usr/lib64/pgsql/test/regress),
+postmaster has been started (if not, su to root and do "service postgresql
+start"), cd to /usr/lib/pgsql/test/regress (or /usr/lib64/pgsql/test/regress),
 su to postgres, and execute "make check".
 This command will start the regression tests and will both show the
 results to the screen and store the results in the file regress.out.
@@ -208,8 +209,8 @@ STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
 -------------------------------------------------------------------------------
 Fedora / Red Hat / CentOS use the System V Init package.  A startup
 script for PostgreSQL is provided in the server package, as
-/etc/rc.d/init.d/postgresql.  To start the postmaster, with sanity
-checking, as root, run
+/etc/rc.d/init.d/postgresql.  To start the postmaster manually,
+as root run
 	service postgresql start
 To shut the postmaster down,
 	service postgresql stop
@@ -281,7 +282,7 @@ uuid		1	#build contrib/uuid-ossp
 To use these defines, invoke a rebuild like this:
 rpmbuild --rebuild --define 'python 0' --define 'tcl 0' \
 	--define 'test 0' --define 'runselftest 0' --define 'kerberos 0' \
-	postgresql-8.4.0-1.src.rpm
+	postgresql-9.0.2-1.src.rpm
 This line would disable the python, tcl, and test subpackages, disable the
 regression test run during build, and disable kerberos support.
 
