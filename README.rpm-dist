@@ -36,17 +36,23 @@ QUICKSTART
 -----------------------------------------------------------------------------
 For a fresh installation, you will need to initialize the cluster first. Run:
 
-	service postgresql initdb
+	postgresql-setup initdb
 
 as root, and it will prepare a new database cluster for you. Then you will 
 need to start PostgreSQL. Again as root, run:
 
-	service postgresql start
+	systemctl start postgresql.service
 
 This command will start a postmaster that willl listen on localhost and Unix 
 socket 5432 only.  Edit /var/lib/pgsql/data/postgresql.conf and pg_hba.conf 
 if you want to allow remote access -- see the section on Grand Unified 
 Configuration.
+
+You will probably also want to do
+
+	systemctl enable postgresql.service
+
+so that the postmaster is automatically started during future reboots.
 
 The file /var/lib/pgsql/.bash_profile is packaged to help with the 
 setting of environment variables. You may edit this file, and it won't be
@@ -78,15 +84,15 @@ In some major releases, the RPMs also support in-place upgrade from the
 immediately previous major release.  Currently, you can upgrade in-place
 from 8.4.x to 9.0.x.  This is much faster than a dump and reload.
 To do an in-place upgrade:
-* shut down the old postmaster
+* shut down the old postmaster ("systemctl stop postgresql.service")
 * optionally make a backup of /var/lib/pgsql/data/
 * install the new version's RPMs (install all the ones you had before,
   plus postgresql-upgrade)
-* as root, run "service postgresql upgrade"
+* as root, run "postgresql-setup upgrade"
 * update the configuration files /var/lib/pgsql/data/*.conf with any
   customizations you had before (your old configuration files are in
   /var/lib/pgsql/data-old/)
-* as root, run "service postgresql start"
+* as root, run "systemctl start postgresql.service"
 * postgresql-upgrade can be removed after the update is complete
 
 NOTE: The in-place upgrade process is new and relatively poorly tested,
@@ -163,24 +169,29 @@ mailing list.
 
 MULTIPLE POSTMASTERS
 -------------------------------------------------------------------------------
-The postgresql-server RPM contains an 'initscript' that is used to start the
-postmaster.  The current version of this script has logic to be able to start
-multiple postmasters, with different data areas, listening on different ports,
-etc.  To use this functionality requires root access.
+The postgresql-server RPM contains a systemd "unit" file, postgresql.service,
+that is used to start the PostgreSQL postmaster.  If you need to run multiple
+postmasters on one machine, you should clone this file and modify it as
+necessary.
 
 As an example, let us create a secondary postmaster called, creatively enough,
 'secondary'.  Here are the steps:
-1.)	create a hard link in /etc/rc.d/init.d (or equivalent location)
-	to postgresql named 'secondary' : ln postgresql secondary   Pick
-	a name not already used in /etc/rc.d/init.d!
-2.)	create a file in /etc/sysconfig/pgsql named secondary.  This file is
-	a shell script -- typically you would define PGDATA, PGPORT, and PGOPTS
-	here.  Since $PGDATA/postgresql.conf will override many of these
-	settings, except PGDATA, you might be surprised on startup.
-3.)	create the target PGDATA.
-4.)	Initdb the target PGDATA with 'service secondary initdb'.
-5.)	Edit postgresql.conf to change the port, address, tcpip settings, etc.
-6.)	Start the postmaster with 'service secondary start'.
+1.)	Copy /lib/systemd/system/postgresql.service to
+	/etc/systemd/system/secondary.service.
+	(Note that user-created unit files must go into /etc not /lib!)
+2.)	Edit /etc/systemd/system/secondary.service to change the PGDATA and
+	PGPORT settings so they don't conflict with any other postmaster.
+3.)	Create the target PGDATA directory.
+4.)	Initdb the target PGDATA with 'postgresql-setup initdb secondary'.
+5.)	Edit postgresql.conf in the target PGDATA to change settings as needed.
+6.)	Start the new postmaster with 'systemctl start secondary.service'.
+	You will probably also want to do 'systemctl enable secondary.service'
+	so that the new postmaster is automatically started in future reboots.
+
+When doing a major-version upgrade of a secondary postmaster, mention the
+service name in the postgresql-setup command, for example 'postgresql-setup
+upgrade secondary'.  This will let postgresql-setup find the correct data
+directory from the service file.
 
 REGRESSION TESTING
 -------------------------------------------------------------------------------
@@ -189,10 +200,11 @@ regression tests.  These tests stress your database installation and produce
 results that give you assurances that the installation is complete, and that
 your database machine is up to the task.
 
-To run the regression tests under the RPM installation, make sure that
-postmaster has been started (if not, su to root and do "service postgresql
-start"), cd to /usr/lib/pgsql/test/regress (or /usr/lib64/pgsql/test/regress),
-su to postgres, and execute "make check".
+To run the regression tests under the RPM installation, make sure that the
+postmaster has been started (if not, su to root and do "systemctl start
+postgresql.service"), cd to /usr/lib/pgsql/test/regress (or
+/usr/lib64/pgsql/test/regress on a 64-bit machine), su to postgres,
+and execute "make check".
 This command will start the regression tests and will both show the
 results to the screen and store the results in the file regress.out.
 
@@ -207,24 +219,20 @@ script.
 
 STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
 -------------------------------------------------------------------------------
-Fedora / Red Hat / CentOS use the System V Init package.  A startup
-script for PostgreSQL is provided in the server package, as
-/etc/rc.d/init.d/postgresql.  To start the postmaster manually,
+Fedora / Red Hat / CentOS use the systemd package to manage server startup.
+A systemd unit file for PostgreSQL is provided in the server package, as
+/lib/systemd/system/postgresql.service.  To start the postmaster manually,
 as root run
-	service postgresql start
+	systemctl start postgresql.service
 To shut the postmaster down,
-	service postgresql stop
-There are other possible commands to this script -- execute
-'service postgresql' for a listing.
-
-To get this script to run at system startup or any time the system switches
-into runlevels 3, 4, or 5, run:
-	chkconfig --add postgresql
-	chkconfig --level 345 postgresql on
-and the proper symlinks will be created.  See the chkconfig man page for more
-information.  Note that this is manual -- while the startup script can include
-tags to allow chkconfig to automatically perform the symlinking, this is not
-done at this time.
+	systemctl stop postgresql.service
+These two commands only change the postmaster's current status.  If you
+want the postmaster to be started automatically during future system startups,
+run
+	systemctl enable postgresql.service
+To undo that again,
+	systemctl disable postgresql.service
+See "man systemctl" for other possible subcommands.
 
 GRAND UNIFIED CONFIGURATION (GUC) FILE
 -------------------------------------------------------------------------------
@@ -232,7 +240,7 @@ The PostgreSQL server has many tunable parameters -- the file
 /var/lib/pgsql/data/postgresql.conf is the master configuration file for the
 whole system.  
 
-The RPM ships with the default file -- you will need to tune the
+The RPM ships with a mostly-default file -- you will need to tune the
 parameters for your installation.  In particular, you might want to allow
 nonlocal TCP/IP socket connections -- in order to allow these, you will need
 to edit the postgresql.conf file.  The line in question contains the string 
