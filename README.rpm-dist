@@ -1,6 +1,6 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 9.0, for the PostgreSQL 9.0 RPM set.
+Version 9.1, for the PostgreSQL 9.1 RPM set.
 Devrim Gündüz <devrim@gunduz.org>
 -----------------------------------------------------------------------------
 
@@ -23,9 +23,9 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 9.0 of PostgreSQL,
+This document is written to be applicable to version 9.1 of PostgreSQL,
 which is the current version of the RPMs as of this writing. More to the 
-point, versions prior to 9.0 are not documented here.
+point, versions prior to 9.1 are not documented here.
 
 This document is intended for use only with the RPMs supplied in Red Hat
 Enterprise Linux, CentOS and Fedora.  Note that there are also "PGDG"
@@ -68,9 +68,9 @@ or login as 'postgres' you will need to set a password using passwd.
 
 UPGRADING AN INSTALLATION
 -----------------------------------------------------------------------------
-For a minor-version upgrade (such as 9.0.1 to 9.0.2), just install the
+For a minor-version upgrade (such as 9.1.1 to 9.1.2), just install the
 new RPMs; there's usually nothing more to it than that.  Upgrading
-across a major release of PostgreSQL (for example, from 8.3.x to 8.4.x)
+across a major release of PostgreSQL (for example, from 9.0.x to 9.1.x)
 requires more effort.
 
 If you are upgrading across more than one major release of PostgreSQL
@@ -82,10 +82,10 @@ and run the dump file through psql to restore your data.
 
 In some major releases, the RPMs also support in-place upgrade from the
 immediately previous major release.  Currently, you can upgrade in-place
-from 8.4.x to 9.0.x.  This is much faster than a dump and reload.
+from 9.0.x to 9.1.x.  This is much faster than a dump and reload.
 To do an in-place upgrade:
 * shut down the old postmaster ("systemctl stop postgresql.service")
-* optionally make a backup of /var/lib/pgsql/data/
+* optionally make a backup of /var/lib/pgsql/data/ (recommended!)
 * install the new version's RPMs (install all the ones you had before,
   plus postgresql-upgrade)
 * as root, run "postgresql-setup upgrade"
@@ -93,7 +93,8 @@ To do an in-place upgrade:
   customizations you had before (your old configuration files are in
   /var/lib/pgsql/data-old/)
 * as root, run "systemctl start postgresql.service"
-* postgresql-upgrade can be removed after the update is complete
+* the postgresql-upgrade RPM can be removed after the update is complete,
+  as can /var/lib/pgsql/data-old/
 
 NOTE: The in-place upgrade process is new and relatively poorly tested,
 so if your data is critical it's a really good idea to make a tarball
@@ -290,7 +291,7 @@ uuid		1	#build contrib/uuid-ossp
 To use these defines, invoke a rebuild like this:
 rpmbuild --rebuild --define 'python 0' --define 'tcl 0' \
 	--define 'test 0' --define 'runselftest 0' --define 'kerberos 0' \
-	postgresql-9.0.2-1.src.rpm
+	postgresql-9.1.2-1.src.rpm
 This line would disable the python, tcl, and test subpackages, disable the
 regression test run during build, and disable kerberos support.
 
