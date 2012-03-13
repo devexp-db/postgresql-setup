@@ -26,6 +26,10 @@ fi
 if [ -f "/etc/systemd/system/${SERVICE_NAME}.service" ]
 then
     SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+elif [ -f "/usr/lib/systemd/system/${SERVICE_NAME}.service" ]
+then
+    SERVICE_FILE="/usr/lib/systemd/system/${SERVICE_NAME}.service"
+# this case should go away eventually, but not till F16 is dead:
 elif [ -f "/lib/systemd/system/${SERVICE_NAME}.service" ]
 then
     SERVICE_FILE="/lib/systemd/system/${SERVICE_NAME}.service"
@@ -35,8 +39,8 @@ else
 fi
 
 # Get port number and data directory from the service file
-PGPORT=`sed -n 's/Environment=PGPORT=//p' "${SERVICE_FILE}"`
-PGDATA=`sed -n 's/Environment=PGDATA=//p' "${SERVICE_FILE}"`
+PGPORT=`sed -n 's/^[ \t]*Environment=PGPORT=//p' "${SERVICE_FILE}"`
+PGDATA=`sed -n 's/^[ \t]*Environment=PGDATA=//p' "${SERVICE_FILE}"`
 
 # Log file for initdb
 PGLOG=/var/lib/pgsql/initdb.log
