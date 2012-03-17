@@ -14,6 +14,12 @@
 #	Environment=PGPORT=5433
 # This will override the setting appearing below.
 
+# Note: do not use a PGDATA pathname containing spaces, or you will
+# break postgresql-setup.
+
+# Note: in F-17 and beyond, /usr/lib/... is recommended in the .include line
+# though /lib/... will still work.
+
 [Unit]
 Description=PostgreSQL database server
 After=syslog.target
@@ -24,9 +30,6 @@ Type=forking
 
 User=postgres
 Group=postgres
-
-# Note: avoid inserting whitespace in these Environment= lines, or you may
-# break postgresql-setup.
 
 # Port number for server to listen on
 Environment=PGPORT=5432
