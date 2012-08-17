@@ -172,17 +172,24 @@ MULTIPLE POSTMASTERS
 -------------------------------------------------------------------------------
 The postgresql-server RPM contains a systemd "unit" file, postgresql.service,
 that is used to start the PostgreSQL postmaster.  If you need to run multiple
-postmasters on one machine, you should clone this file and modify it as
-necessary.
+postmasters on one machine, you can create additional unit files derived
+from this one.
 
 As an example, let us create a secondary postmaster called, creatively enough,
 'secondary'.  Here are the steps:
-1.)	Copy /lib/systemd/system/postgresql.service to
-	/etc/systemd/system/secondary.service.
+1.)	Create a file named /etc/systemd/system/secondary.service.
 	(Note that user-created unit files must go into /etc not /lib!)
-2.)	Edit /etc/systemd/system/secondary.service to change the PGDATA and
-	PGPORT settings so they don't conflict with any other postmaster.
-3.)	Create the target PGDATA directory.
+	Put these lines in it:
+		.include /lib/systemd/system/postgresql.service
+		[Service]
+		Environment=PGPORT=nnnn
+		Environment=PGDATA=/path/to/data/directory
+	Replace "nnnn" and "/path/to/data/directory" with appropriate
+	settings that don't conflict with any other postmaster.
+2.)	As root, do "/bin/systemctl daemon-reload" to ensure systemd has
+	noticed your updates to the service file.
+3.)	Create the target PGDATA directory, making sure that its parent
+	directories have appropriate ownership and permissions.
 4.)	Initdb the target PGDATA with 'postgresql-setup initdb secondary'.
 5.)	Edit postgresql.conf in the target PGDATA to change settings as needed.
 6.)	Start the new postmaster with 'systemctl start secondary.service'.
@@ -193,6 +200,19 @@ When doing a major-version upgrade of a secondary postmaster, mention the
 service name in the postgresql-setup command, for example 'postgresql-setup
 upgrade secondary'.  This will let postgresql-setup find the correct data
 directory from the service file.
+
+If you are running SELinux in enforcing mode (which is highly recommended,
+particularly for network-exposed services like PostgreSQL) you will need to
+adjust SELinux policy to allow the postmaster to use non-default PGPORT or
+PGDATA settings.  To allow use of a non-default port, say 5433, do this
+as root:
+	semanage port -a -t postgresql_port_t -p tcp 5433
+To allow use of a non-default data directory, say /special/pgdata, do:
+	semanage fcontext -a -t postgresql_db_t "/special/pgdata(/.*)?"
+If you already created the directory, follow that with:
+	restorecon -R /special/pgdata
+These settings are persistent across reboots.  For more information
+see "man semanage".
 
 REGRESSION TESTING
 -------------------------------------------------------------------------------

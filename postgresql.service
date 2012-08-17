@@ -14,6 +14,9 @@
 #	Environment=PGPORT=5433
 # This will override the setting appearing below.
 
+# Note: changing PGPORT or PGDATA will typically require adjusting SELinux
+# configuration as well; see /usr/share/doc/postgresql-*/README.rpm-dist.
+
 # Note: do not use a PGDATA pathname containing spaces, or you will
 # break postgresql-setup.
 
