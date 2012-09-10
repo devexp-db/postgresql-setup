@@ -1,6 +1,6 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 9.1, for the PostgreSQL 9.1 RPM set.
+Version 9.2, for the PostgreSQL 9.2 RPM set.
 Devrim Gündüz <devrim@gunduz.org>
 -----------------------------------------------------------------------------
 
@@ -23,9 +23,9 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 9.1 of PostgreSQL,
+This document is written to be applicable to version 9.2 of PostgreSQL,
 which is the current version of the RPMs as of this writing. More to the 
-point, versions prior to 9.1 are not documented here.
+point, versions prior to 9.2 are not documented here.
 
 This document is intended for use only with the RPMs supplied in Red Hat
 Enterprise Linux, CentOS and Fedora.  Note that there are also "PGDG"
@@ -63,14 +63,15 @@ upgrading.
 The user 'postgres' is created during installation of the server subpackage.
 This user by default is UID and GID 26. The user has the default shell set to
 bash, and the home directory set to /var/lib/pgsql.  This user also has no
-default password.  If you want to be able to su to it from a non-root account
-or login as 'postgres' you will need to set a password using passwd.
+default password, so the only way to become this user is to su to it from root.
+If you want to be able to su to it from a non-root account or log in directly
+as 'postgres' you will need to set a password using passwd.
 
 UPGRADING AN INSTALLATION
 -----------------------------------------------------------------------------
-For a minor-version upgrade (such as 9.1.1 to 9.1.2), just install the
+For a minor-version upgrade (such as 9.2.1 to 9.2.2), just install the
 new RPMs; there's usually nothing more to it than that.  Upgrading
-across a major release of PostgreSQL (for example, from 9.0.x to 9.1.x)
+across a major release of PostgreSQL (for example, from 9.1.x to 9.2.x)
 requires more effort.
 
 If you are upgrading across more than one major release of PostgreSQL
@@ -82,7 +83,7 @@ and run the dump file through psql to restore your data.
 
 In some major releases, the RPMs also support in-place upgrade from the
 immediately previous major release.  Currently, you can upgrade in-place
-from 9.0.x to 9.1.x.  This is much faster than a dump and reload.
+from 9.1.x to 9.2.x.  This is much faster than a dump and reload.
 To do an in-place upgrade:
 * shut down the old postmaster ("systemctl stop postgresql.service")
 * optionally make a backup of /var/lib/pgsql/data/ (recommended!)
@@ -115,9 +116,10 @@ postgresql-devel:	Development libraries and include files
 postgresql-test:	The regression tests and associated files
 postgresql-upgrade:	Support files for upgrading from previous major version
 postgresql-docs:	Extra documentation, such as the tutorial files
-postgresql-contrib:	The contrib source tree, as well as selected binaries
+postgresql-contrib:	Add-on loadable modules and programs
 postgresql-plperl:	PL/Perl procedural language
-postgresql-plpython:	PL/Python procedural language
+postgresql-plpython:	PL/Python procedural language (for Python 2)
+postgresql-plpython3:	PL/Python procedural language (for Python 3)
 postgresql-pltcl:	PL/Tcl procedural language
 
 You have to install postgresql and postgresql-libs to do anything.
@@ -145,7 +147,7 @@ However, the Red Hat / CentOS / Fedora RPM's install the files like
 this:
 
 Executables:		/usr/bin
-Libraries:		/usr/lib (or /usr/lib64)
+Libraries:		/usr/lib (or /usr/lib64 on 64-bit machines)
 Documentation:		/usr/share/doc/postgresql-docs-x.y.z/html
 Contrib documentation:	/usr/share/doc/postgresql-contrib-x.y.z
 Source:			not installed
@@ -196,8 +198,8 @@ As an example, let us create a secondary postmaster called, creatively enough,
 	You will probably also want to do 'systemctl enable secondary.service'
 	so that the new postmaster is automatically started in future reboots.
 
-When doing a major-version upgrade of a secondary postmaster, mention the
-service name in the postgresql-setup command, for example 'postgresql-setup
+When doing a major-version upgrade of a secondary postmaster, add the
+service name to the postgresql-setup command, for example 'postgresql-setup
 upgrade secondary'.  This will let postgresql-setup find the correct data
 directory from the service file.
 
@@ -223,8 +225,8 @@ your database machine is up to the task.
 
 To run the regression tests under the RPM installation, make sure that the
 postmaster has been started (if not, su to root and do "systemctl start
-postgresql.service"), cd to /usr/lib/pgsql/test/regress (or
-/usr/lib64/pgsql/test/regress on a 64-bit machine), su to postgres,
+postgresql.service"), su to postgres, cd to /usr/lib/pgsql/test/regress
+(or /usr/lib64/pgsql/test/regress on a 64-bit machine),
 and execute "make check".
 This command will start the regression tests and will both show the
 results to the screen and store the results in the file regress.out.
@@ -235,8 +237,8 @@ find out whether the differences are actually significant.  If you need help
 interpreting the results, contact the pgsql-general list at 
 postgresql.org.
 
-After testing, say "make clean" to remove the files generated by the test
-script.
+After testing, run "make clean" to remove the files generated by the test
+script.  Then you can remove the postgresql-test RPM, if you wish.
 
 STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
 -------------------------------------------------------------------------------
@@ -279,41 +281,52 @@ day of the week.  You can adjust this by changing postgresql.conf settings.
 REBUILDING FROM SOURCE RPM
 -------------------------------------------------------------------------------
 If your distribution is not supported by the binary RPMs from PostgreSQL.org, 
-you will need to rebuild from the source RPM.  Download the .src.rpm for this
-release.  You will need to be root to rebuild, unless you have set up
-a non-root build environment (which is the recommended method anyway).
+you will need to rebuild from the source RPM.
 
-Install the source RPM with rpm -i, then cd to the rpm building area
-(which is /usr/src/redhat by default).  You will have to have a full
-development environment to rebuild the full RPM set.
+If you have not previously rebuilt any RPMs, set up the required environment:
+make a work directory, say ~/rpmwork, then cd into it and do
+	mkdir BUILD BUILDROOT RPMS SOURCES SPECS SRPMS
+Then make a file ~/.rpmmacros containing
+	%_topdir <full path to work directory here>
+
+Download the postgresql .src.rpm for the release you want and place it in
+the SRPMS subdirectory, then cd there and execute
+	rpmbuild --rebuild postgresql-nnn.src.rpm
+The results will appear under the RPMS subdirectory.
+
+You will have to have a full development environment to rebuild the RPM set.
+If rpmbuild complains of lack of certain packages, install them and try
+again.  In some cases, you can disable features to avoid needing some
+development packages, as detailed next.
 
 This release of the RPMset includes the ability to conditionally build 
 sets of packages.  The parameters, their defaults, and the meanings are:
 
 beta		0	#build with cassert and do not strip the binaries
-python		1	#build the postgresql-python package.
-tcl		1	#build the postgresql-tcl package.
-test		1	#build the postgresql-test package.
-plpython	1	#build the PL/Python procedural language package.
-pltcl		1	#build the PL/Tcl procedural language package.
-plperl		1	#build the PL/Perl procedural language package.
-ssl		1	#use OpenSSL support.
-kerberos	1	#use Kerberos 5 support.
-nls		1	#build with national language support.
-ldap		1	#build with LDAP support.
-pam		1	#build with PAM support.
-runselftest	1	#do "make check" during the build.
-sdt		1	#build with SystemTap support.
+runselftest	1	#do "make check" during the build
+test		1	#build the postgresql-test package
+upgrade		1	#build the postgresql-upgrade package
+plpython	1	#build the PL/Python procedural language package
+plpython3	1	#build the PL/Python3 procedural language package
+pltcl		1	#build the PL/Tcl procedural language package
+plperl		1	#build the PL/Perl procedural language package
+ssl		1	#build with OpenSSL support
+kerberos	1	#build with Kerberos 5 support
+ldap		1	#build with LDAP support
+nls		1	#build with national language support
+pam		1	#build with PAM support
+sdt		1	#build with SystemTap support
 xml		1	#build with XML support
 pgfts		1	#build with --enable-thread-safety
+selinux		1	#build contrib/selinux
 uuid		1	#build contrib/uuid-ossp
 
 To use these defines, invoke a rebuild like this:
-rpmbuild --rebuild --define 'python 0' --define 'tcl 0' \
+rpmbuild --rebuild --define 'plpython 0' --define 'pltcl 0' \
 	--define 'test 0' --define 'runselftest 0' --define 'kerberos 0' \
-	postgresql-9.1.2-1.src.rpm
-This line would disable the python, tcl, and test subpackages, disable the
-regression test run during build, and disable kerberos support.
+	postgresql-9.2.0-1.src.rpm
+This line would disable the plpython, pltcl, and test subpackages, disable
+the regression test run during build, and disable kerberos support.
 
 You might need to disable runselftest if there is an installed version of
 PostgreSQL that is a different major version from what you are trying to
