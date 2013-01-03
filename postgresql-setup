@@ -91,6 +91,7 @@ perform_initdb(){
 	mkdir "$PGDATA/pg_log"
 	chown postgres:postgres "$PGDATA/pg_log"
 	chmod go-rwx "$PGDATA/pg_log"
+	[ -x /sbin/restorecon ] && /sbin/restorecon "$PGDATA/pg_log"
 
 	if [ -f "$PGDATA/PG_VERSION" ]
 	then
