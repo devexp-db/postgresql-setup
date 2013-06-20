@@ -32,7 +32,7 @@ Enterprise Linux, CentOS and Fedora.  Note that there are also "PGDG"
 RPMs available directly from the upstream PostgreSQL project.  Those are
 slightly different.
 
-QUICKSTART
+QUICKSTART (note that this requires postgresql-server installed)
 -----------------------------------------------------------------------------
 For a fresh installation, you will need to initialize the cluster first. Run:
 
