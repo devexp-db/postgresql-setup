@@ -1,6 +1,6 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 9.2, for the PostgreSQL 9.2 RPM set.
+Version 9.3, for the PostgreSQL 9.3 RPM set.
 Devrim Gündüz <devrim@gunduz.org>
 -----------------------------------------------------------------------------
 
@@ -23,9 +23,9 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 9.2 of PostgreSQL,
+This document is written to be applicable to version 9.3 of PostgreSQL,
 which is the current version of the RPMs as of this writing. More to the 
-point, versions prior to 9.2 are not documented here.
+point, versions prior to 9.3 are not documented here.
 
 This document is intended for use only with the RPMs supplied in Red Hat
 Enterprise Linux, CentOS and Fedora.  Note that there are also "PGDG"
@@ -69,9 +69,9 @@ as 'postgres' you will need to set a password using passwd.
 
 UPGRADING AN INSTALLATION
 -----------------------------------------------------------------------------
-For a minor-version upgrade (such as 9.2.1 to 9.2.2), just install the
+For a minor-version upgrade (such as 9.3.1 to 9.3.2), just install the
 new RPMs; there's usually nothing more to it than that.  Upgrading
-across a major release of PostgreSQL (for example, from 9.1.x to 9.2.x)
+across a major release of PostgreSQL (for example, from 9.2.x to 9.3.x)
 requires more effort.
 
 If you are upgrading across more than one major release of PostgreSQL
@@ -83,7 +83,7 @@ and run the dump file through psql to restore your data.
 
 In some major releases, the RPMs also support in-place upgrade from the
 immediately previous major release.  Currently, you can upgrade in-place
-from 9.1.x to 9.2.x.  This is much faster than a dump and reload.
+from 9.2.x to 9.3.x.  This is much faster than a dump and reload.
 To do an in-place upgrade:
 * shut down the old postmaster ("systemctl stop postgresql.service")
 * optionally make a backup of /var/lib/pgsql/data/ (recommended!)
@@ -148,8 +148,9 @@ this:
 
 Executables:		/usr/bin
 Libraries:		/usr/lib (or /usr/lib64 on 64-bit machines)
-Documentation:		/usr/share/doc/postgresql-docs-x.y.z/html
-Contrib documentation:	/usr/share/doc/postgresql-contrib-x.y.z
+Documentation:		/usr/share/doc/postgresql/html
+PDF documentation:	/usr/share/doc/postgresql-docs
+Contrib documentation:	/usr/share/doc/postgresql-contrib
 Source:			not installed
 Data:			/var/lib/pgsql/data
 Backup area:		/var/lib/pgsql/backups
@@ -167,7 +168,7 @@ the beauty of RPM -- you don't have to keep track of the files, RPM does it
 for you.
 
 These RPMs are designed to be LSB-compliant -- if you find this not to be the
-case, please let us know by way of the pgsqlrpms-hackers@pgfoundry.org
+case, please let us know by way of the pgsql-pkg-yum@postgresql.org
 mailing list.
 
 MULTIPLE POSTMASTERS
@@ -340,7 +341,7 @@ CONTRIB FILES
 -------------------------------------------------------------------------------
 The contents of the contrib tree are packaged into the -contrib subpackage
 and are processed with make and make install.  There is documentation in
-/usr/share/doc/postgresql-contrib-VERSION for these modules.  Most of the
+/usr/share/doc/postgresql-contrib for these modules.  Most of the
 modules are in /usr/lib/pgsql (or /usr/lib64/pgsql) for loadable
 modules, and binaries are in /usr/bin.  In the future these files may be
 split out, depending upon function and dependencies.
@@ -348,9 +349,9 @@ split out, depending upon function and dependencies.
 MORE INFORMATION
 -------------------------------------------------------------------------------
 You can get more information at http://www.postgresql.org and 
-http://yum.pgsqlrpms.org
+http://yum.postgresql.org
 
 Please help make this packaging better -- let us know if you find problems, or
 better ways of doing things. You can reach us by e-mail at
-pgsqlrpms-hackers@pgfoundry.org
+pgsql-pkg-yum@postgresql.org
 -------------------------------------------------------------------------------
