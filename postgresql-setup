@@ -153,6 +153,20 @@ upgrade(){
     rm -rf "$PGDATAOLD"
     mv "$PGDATA" "$PGDATAOLD" || exit 1
 
+    # Create configuration file for upgrade process
+    HBA_CONF_BACKUP="$PGDATAOLD/pg_hba.conf.postgresql-setup.`date +%s`"
+    HBA_CONF_BACKUP_EXISTS=0
+
+    if [ ! -f $HBA_CONF_BACKUP ]; then
+        mv "$PGDATAOLD/pg_hba.conf" "$HBA_CONF_BACKUP"
+        HBA_CONF_BACKUP_EXISTS=1
+
+        # For fluent upgrade 'postgres' user should be able to connect
+        # to any database without password.  Temporarily, no other type
+        # of connection is needed.
+        /usr/bin/echo -e "local all postgres ident" > "$PGDATAOLD/pg_hba.conf"
+    fi
+
     echo -n $"Upgrading database: "
 
     # Create empty new-format database
@@ -177,9 +191,18 @@ upgrade(){
 	script_result=1
     fi
 
+    if [ x$HBA_CONF_BACKUP_EXISTS = x1 ]; then
+        mv -f "$HBA_CONF_BACKUP" "$PGDATAOLD/pg_hba.conf"
+    fi
+
+
     if [ $script_result -eq 0 ]
     then
-	    echo $"OK"
+        echo $"OK"
+        echo
+        echo $"The configuration files was replaced by default configuration."
+        echo $"The previous configuration and data are stored in folder"
+        echo $PGDATAOLD.
     else
 	    # Clean up after failure
 	    rm -rf "$PGDATA"
