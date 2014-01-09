@@ -130,10 +130,6 @@ upgrade(){
         exit 5
     fi
 
-    # Make sure service is stopped
-    # Using service here makes it work both with systemd and other init systems
-    service "$SERVICE_NAME" stop
-
     # Set up log file for pg_upgrade
     rm -f "$PGUPLOG"
     touch "$PGUPLOG" || exit 1
