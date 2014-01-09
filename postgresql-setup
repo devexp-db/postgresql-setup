@@ -2,6 +2,8 @@
 #
 # postgresql-setup - Initialization and upgrade operations for PostgreSQL
 
+test x"$PGSETUP_DEBUG" != x && set -x
+
 # PGVERSION is the full package version, e.g., 9.0.2
 # Note: the specfile inserts the correct value during package build
 PGVERSION=xxxx
@@ -24,6 +26,34 @@ SERVICE_NAME="$2"
 if [ x"$SERVICE_NAME" = x ]; then
     SERVICE_NAME=postgresql
 fi
+
+# Pathname of the RPM distribution README
+README_RPM_DIST=xxxx
+
+USAGE_STRING=$"
+Usage: $0 {initdb|upgrade} [SERVICE_NAME]
+
+Script is aimed to help sysadmin with basic database cluster administration.
+
+The SERVICE_NAME is used for selection of proper unit configuration file; For
+more info and howto/when use this script please look at the docu file
+$README_RPM_DIST.  The 'postgresql'
+string is used when no SERVICE_NAME is explicitly passed.
+
+Available operation mode:
+  initdb        Create a new PostgreSQL database cluster.  This is usually the
+                first action you perform after PostgreSQL server installation.
+  upgrade       Upgrade PostgreSQL database cluster to be usable with new
+                server.  Use this if upgraded to newer PostgreSQL major version,
+                e.g. from 9.1 to 9.2.
+
+Environment:
+  PGSETUP_INITDB_OPTIONS  Options carried by this variable are passed to
+                          subsequent call of \`initdb\` binary (see man
+                          initdb(1)).  This variable is used also during
+                          'upgrade' mode because the new cluster is actually
+                          re-initialized from the old one.
+  PGSETUP_DEBUG           Set to '1' if you want to see debugging output."
 
 # this parsing technique fails for PGDATA pathnames containing spaces,
 # but there's not much I can do about it given systemctl's output format...
@@ -209,8 +239,12 @@ case "$1" in
     upgrade)
         upgrade
         ;;
+    --version)
+        # note that this output is at least useful for help2man processing
+        echo "postgresql-setup $PGVERSION"
+        ;;
     *)
-        echo $"Usage: $0 {initdb|upgrade} [ service_name ]"
+        echo "$USAGE_STRING"
         exit 2
 esac
 
