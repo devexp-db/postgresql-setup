@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # postgresql-setup - Initialization and upgrade operations for PostgreSQL
 
