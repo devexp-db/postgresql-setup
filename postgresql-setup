@@ -55,6 +55,18 @@ Environment:
                           re-initialized from the old one.
   PGSETUP_DEBUG           Set to '1' if you want to see debugging output."
 
+# note that these options are useful at least for help2man processing
+case "$1" in
+    --version)
+        echo "postgresql-setup $PGVERSION"
+        exit 0
+        ;;
+    --help|--usage)
+        echo "$USAGE_STRING"
+        exit 0
+        ;;
+esac
+
 # this parsing technique fails for PGDATA pathnames containing spaces,
 # but there's not much I can do about it given systemctl's output format...
 PGDATA=`systemctl show -p Environment "${SERVICE_NAME}.service" |
@@ -239,12 +251,8 @@ case "$1" in
     upgrade)
         upgrade
         ;;
-    --version)
-        # note that this output is at least useful for help2man processing
-        echo "postgresql-setup $PGVERSION"
-        ;;
     *)
-        echo "$USAGE_STRING"
+        echo >&2 "$USAGE_STRING"
         exit 2
 esac
 
