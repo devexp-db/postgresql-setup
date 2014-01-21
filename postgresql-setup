@@ -48,12 +48,16 @@ Available operation mode:
                 e.g. from 9.1 to 9.2.
 
 Environment:
-  PGSETUP_INITDB_OPTIONS  Options carried by this variable are passed to
-                          subsequent call of \`initdb\` binary (see man
-                          initdb(1)).  This variable is used also during
-                          'upgrade' mode because the new cluster is actually
-                          re-initialized from the old one.
-  PGSETUP_DEBUG           Set to '1' if you want to see debugging output."
+  PGSETUP_INITDB_OPTIONS     Options carried by this variable are passed to
+                             subsequent call of \`initdb\` binary (see man
+                             initdb(1)).  This variable is used also during
+                             'upgrade' mode because the new cluster is actually
+                             re-initialized from the old one.
+  PGSETUP_PGUPGRADE_OPTIONS  Options in this variable are passed next to the
+                             subsequent call of \`pg_upgrade\`.  For more info
+                             about possible options please look at man
+                             pg_upgrade(1).
+  PGSETUP_DEBUG              Set to '1' if you want to see debugging output."
 
 # note that these options are useful at least for help2man processing
 case "$1" in
@@ -212,7 +216,9 @@ upgrade(){
                         '--new-datadir=$PGDATA' \
                         --link \
                         '--old-port=$PGPORT' '--new-port=$PGPORT' \
-                        --user=postgres" >> "$PGUPLOG" 2>&1 < /dev/null
+                        --user=postgres \
+                        $PGSETUP_PGUPGRADE_OPTIONS" \
+                                >> "$PGUPLOG" 2>&1 < /dev/null
         if [ $? -ne 0 ]; then
             # pg_upgrade failed
             script_result=1
