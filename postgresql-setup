@@ -2,6 +2,8 @@
 #
 # postgresql-setup - Initialization and upgrade operations for PostgreSQL
 
+test -z "$PATH" && export PATH="/sbin:/usr/sbin:/bin:/usr/bin"
+
 test x"$PGSETUP_DEBUG" != x && set -x
 
 # PGVERSION is the full package version, e.g., 9.0.2
@@ -100,7 +102,7 @@ export PGDATA
 export PGPORT
 
 # For SELinux we need to use 'runuser' not 'su'
-if [ -x /sbin/runuser ]; then
+if command -v runuser &>/dev/null; then
     SU=runuser
 else
     SU=su
