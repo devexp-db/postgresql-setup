@@ -1,0 +1,19 @@
+2014-06-21  Pavel Raiskup  <praiskup@redhat.com>
+	postgresql-setup: do not resist on PGPORT in service file
+
+	We use /etc/sysconfig/postgresql for PGDATA configuration.  PGPORT there
+	is optional as it is possible (and it is by default) to configure it in
+	postgresql.conf.
+
+2014-06-21  Pavel Raiskup  <praiskup@redhat.com>
+
+	postgresql-setup: split this script from postgresql package
+
+	Maintenance of postgresql-setup script becoming harder and dealing with
+	its development in Fedora Rawhide dist-git costs quite a lot of work.
+	Turns out that it would be better to start development separately and
+	possibly package it separately also in future (which would be beneficial
+	because we could not respin whole PostgreSQL package for hot-fix in
+	postgresql-setup).
+
+	Possibly, this package could be useful for other distributions.
