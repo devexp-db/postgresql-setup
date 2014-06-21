@@ -6,39 +6,33 @@ test -z "$PATH" && export PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 
 test x"$PGSETUP_DEBUG" != x && set -x && PS4='${LINENO}: '
 
-# PGVERSION is the full package version, e.g., 9.0.2
-# Note: the specfile inserts the correct value during package build
-PGVERSION=xxxx
+# Full PostgreSQL version, e.g. 9.0.2
+PGVERSION=@PGVERSION@
 
-# PGMAJORVERSION is the major version, e.g. 9.0
-PGMAJORVERSION=xxxx
+# Major version of PostgreSQL, e.g. 9.0
+PGMAJORVERSION=@PGMAJORVERSION@
 
-# PGENGINE is the directory containing the postmaster executable
-PGENGINE=xxxx
+# Directory containing the postmaster executable
+PGENGINE=@PGENGINE@
 
-# PREVMAJORVERSION is the previous major version, e.g., 8.4, for upgrades
-PREVMAJORVERSION=xxxx
+# Previous major version, e.g., 8.4, for upgrades
+PREVMAJORVERSION=@PREVMAJORVERSION@
 
-# PREVPGENGINE is the directory containing the previous postmaster executable
-PREVPGENGINE=xxxx
+# Directory containing the previous postmaster executable
+PREVPGENGINE=@PREVPGENGINE@
 
-# Pathname of the RPM distribution README
-README_RPM_DIST=xxxx
+# Distribution README file
+README_DIST=@README_DIST@
 
 # Log file for initdb
-PGLOG=/var/lib/pgsql/initdb.log
+PGLOG=@INITDB_LOG@
 
 # Log file for pg_upgrade
-PGUPLOG=/var/lib/pgsql/pgupgrade.log
+PGUPLOG=@UPGRADE_LOG@
 
-SYSCONFIG_DIR=/etc/sysconfig
+SYSCONFIG_DIR=@SYSCONFIG_DIR@
 
-# For SELinux we need to use 'runuser' not 'su'
-if [ -x /sbin/runuser ]; then
-    SU=runuser
-else
-    SU=su
-fi
+SU=@SU@
 
 USAGE_STRING=$"
 Usage: $0 {initdb|upgrade} [--name SERVICE_NAME]
@@ -47,7 +41,7 @@ Script is aimed to help sysadmin with basic database cluster administration.
 
 The SERVICE_NAME is used for selection of proper unit configuration file; For
 more info and howto/when use this script please look at the docu file
-$README_RPM_DIST.  The 'postgresql'
+$README_DIST.  The 'postgresql'
 string is used when no SERVICE_NAME is explicitly passed.
 
 Available operation mode:
