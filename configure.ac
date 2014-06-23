@@ -1,6 +1,6 @@
 AC_INIT([postgresql-setup], [0.9], [praiskup@redhat.com])
 AM_INIT_AUTOMAKE([-Wall])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile doc/Makefile])
 AC_CONFIG_FILES([postgresql-setup], [chmod +x postgresql-setup])
 
 # For SELinux purposes use rather runuser

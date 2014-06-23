@@ -34,15 +34,15 @@ SYSCONFIG_DIR=@SYSCONFIG_DIR@
 
 SU=@SU@
 
-USAGE_STRING=$"
-Usage: $0 {initdb|upgrade} [--name SERVICE_NAME]
+USAGE_STRING=$"\
+Usage: $0 MODE [OPTION...] [--unit UNIT_NAME]
 
 Script is aimed to help sysadmin with basic database cluster administration.
 
-The SERVICE_NAME is used for selection of proper unit configuration file; For
-more info and howto/when use this script please look at the docu file
+The UNIT_NAME is used for selection of proper sysconfig or unit configuration
+file; For more info and howto/when use this script please look at the docu file
 $README_DIST.  The 'postgresql'
-string is used when no SERVICE_NAME is explicitly passed.
+string is used when no UNIT_NAME is explicitly passed.
 
 Available operation mode:
   --initdb      Create a new PostgreSQL database cluster.  This is usually the
@@ -51,6 +51,12 @@ Available operation mode:
                 server.  Use this if you upgraded your PostgreSQL server to
                 newer major version (currently from $PREVMAJORVERSION \
 to $PGMAJORVERSION).
+
+Options:
+  --unit        unit ID of PostgreSQL to run against
+  --help        show this help
+  --version     show version of this package
+  --debug       show basic debugging information
 
 Environment:
   PGSETUP_INITDB_OPTIONS     Options carried by this variable are passed to
@@ -64,12 +70,21 @@ Environment:
                              pg_upgrade(1).
   PGSETUP_DEBUG              Set to '1' if you want to see debugging output."
 
+
 die()     { echo >&2 $"FATAL: $@" ; exit 1 ; }
 error()   { echo >&2 $"ERROR: $@" ; }
 error_q() { echo >&2 $"       $@" ; }
 warn()    { echo >&2 $"WARNING: $@" ; }
 info()    { echo >&2 $" * $@" ; }
 debug()   { test "$option_debug" = "1" && echo >&2 $"DEBUG: $@";  }
+
+
+print_version()
+{
+    echo "@PACKAGE@ @VERSION@"
+    echo $"Built against PostgreSQL version @PGMAJORVERSION@ and configured"
+    echo $"to upgrade from PostgreSQL version @PREVMAJORVERSION@."
+}
 
 
 # code shared between initdb and upgrade actions
@@ -338,31 +353,40 @@ case "$1" in initdb|upgrade)
         shift
     fi
 
-    set -- $additional_opts "$action" --service "$service" "$@"
+    set -- $additional_opts "$action" --unit "$service" "$@"
     warn "arguments transformed to: ${0##*/} $@"
 esac
 # </Compat>
 
+
+# postgresql-setup arguments are parsed into those variables
 option_mode=none
 option_service=postgresql
 option_port=
 option_debug=0
 
+# Content of /etc/sysconfig/$option_service fills those:
 sysconfig_pgdata=
 sysconfig_pgport=
 
+# Configuration from (/etc/systemd/system/$option_service.service) fills those
+# variables (this is here for compat, users should user rather sysconfig).
 unit_pgdata=
 unit_pgport=
 
+# Configuration from postgresql.conf:
 conf_pgport=
 
+# Key variables.  Try to fill them postgresql.conf, sysconfig or unit file
+# configuration (the later mentioned has more priority).
 pgdata=default
 pgport=default
+
 
 short_opts=""
 long_opts="\
 initdb,upgrade,\
-service:,port:,\
+unit:,service:,port:,\
 debug,\
 version,help,usage"
 
@@ -382,7 +406,7 @@ while true; do
             shift
             ;;
 
-        --service)
+        --unit|--service)
             option_service=$2
             shift 2
             ;;
@@ -403,7 +427,7 @@ while true; do
             ;;
 
         --version)
-            echo "postgresql-setup $PGVERSION"
+            print_version
             exit 0
             ;;
 
@@ -465,7 +489,6 @@ export PGDATA=$pgdata
 export PGPORT=$pgport
 
 script_result=0
-
 
 # See how we were called.
 case "$option_mode" in

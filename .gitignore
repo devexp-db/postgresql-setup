@@ -10,3 +10,5 @@ missing
 *.log
 postgresql-setup
 INSTALL
+postgresql-setup.1
+*.tar.gz

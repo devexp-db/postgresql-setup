@@ -1,3 +1,8 @@
+2014-06-23  Pavel Raiskup  <praiskup@redhat.com>
+	docs: generate manual page
+
+	The help2man utility is needed for man-page generation.
+
 2014-06-21  Pavel Raiskup  <praiskup@redhat.com>
 	postgresql-setup: do not resist on PGPORT in service file
 
