@@ -109,13 +109,13 @@ choose' what pieces are needed, and what dependencies are required.
 
 The RPMset is packaged in the following subpackages:
 
-postgresql:		Key client programs and documentation
+postgresql:		Key client programs and basic documentation
 postgresql-libs:	Client shared libraries
 postgresql-server:	Server executables and data files
 postgresql-devel:	Development libraries and include files
 postgresql-test:	The regression tests and associated files
 postgresql-upgrade:	Support files for upgrading from previous major version
-postgresql-docs:	Extra documentation, such as the tutorial files
+postgresql-docs:	Full documentation in HTML and PDF, the tutorial files
 postgresql-contrib:	Add-on loadable modules and programs
 postgresql-plperl:	PL/Perl procedural language
 postgresql-plpython:	PL/Python procedural language (for Python 2)
