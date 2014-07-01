@@ -13,7 +13,7 @@ Type=forking
 User=postgres
 Group=postgres
 
-EnvironmentFile=@PKGCONFIG_DIR@/%p
+EnvironmentFile=-@PKGCONFIG_DIR@/%N
 
 # Where to send early-startup messages from the server (before the logging
 # options of postgresql.conf take effect)
