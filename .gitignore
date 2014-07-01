@@ -13,3 +13,5 @@ postgresql*-setup
 postgresql*-ctl
 postgresql*-setup.1
 *.tar.gz
+conf/postgresql*
+postgresql*.service

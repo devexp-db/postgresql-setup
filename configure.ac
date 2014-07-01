@@ -120,8 +120,12 @@ test -z "$INITDB_LOG" &&
 test -z "$UPGRADE_LOG" &&
     UPGRADE_LOG=/var/lib/pgsql/pgupgrade.log
 
-if test -z "$SYSCONFIG_DIR" -a "$distro_family" = redhat; then
-    SYSCONFIG_DIR=/etc/sysconfig
+if test -z "$PKGCONFIG_DIR" -a "$distro_family" = redhat; then
+    PKGCONFIG_DIR=/etc/postgresql
+fi
+
+if test -z "$PGDATADIR" -a "$distro_family" = redhat; then
+    PGDATADIR=/var/lib/pgsql/data
 fi
 
 # Deal with previous versions
@@ -133,6 +137,7 @@ subst_required_var([PREVPGENGINE],      [directory where old PG server resides])
 subst_required_var([README_DIST],       [README file for distribution])
 subst_required_var([INITDB_LOG],        [log file for initdb])
 subst_required_var([UPGRADE_LOG],       [log file for pg_upgrade])
-subst_required_var([SYSCONFIG_DIR],     [log file for pg_upgrade])
+subst_required_var([PKGCONFIG_DIR],     [where configuration should be stored])
+subst_required_var([PGDATADIR],         [full path to postgres data dir])
 
 AC_OUTPUT
