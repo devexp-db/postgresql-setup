@@ -10,6 +10,10 @@ AM_SILENT_RULES([yes])
 AC_ARG_VAR([DISTSUFF], [Append string suffix to all binaries])
 AC_SUBST([DISTSUFF])
 
+AC_PATH_PROG([SED], [sed])
+test -z "$ac_cv_path_SED" &&
+    AC_MSG_ERROR([Sed is needed but not found.])
+
 # For SELinux purposes use rather runuser
 AC_PATH_PROG([SU], [runuser])
 test -z "$ac_cv_path_SU" &&
@@ -129,7 +133,7 @@ if test -z "$PGDATADIR" -a "$distro_family" = redhat; then
 fi
 
 # TODO
-pgdocdir=/usr/share/postgresql/doc
+pgdocdir=/usr/share/doc/postgresql
 AC_SUBST([pgdocdir])
 
 # Deal with previous versions

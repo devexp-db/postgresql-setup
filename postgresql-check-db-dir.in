@@ -15,17 +15,17 @@ then
     exit 1
 fi
 
-# PGVERSION is the full package version, e.g., 9.1.2
-# Note: the specfile inserts the correct value during package build
-PGVERSION=xxxx
-# PGMAJORVERSION is major version, e.g., 9.1 (this should match PG_VERSION)
-PGMAJORVERSION=`echo "$PGVERSION" | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/'`
-# PREVMAJORVERSION is the previous major version, e.g., 8.4, for upgrades
-# Note: the specfile inserts the correct value during package build
-PREVMAJORVERSION=xxxx
-# PGDOCDIR is the directory containing the package's documentation
-# Note: the specfile inserts the correct value during package build
-PGDOCDIR=xxxx
+# Full PostgreSQL version, e.g. 9.0.2
+PGVERSION=@PGVERSION@
+
+# Major version of PostgreSQL, e.g. 9.0
+PGMAJORVERSION=@PGMAJORVERSION@
+
+# Previous major version, e.g., 8.4, for upgrades
+PREVMAJORVERSION=@PREVMAJORVERSION@
+
+# Directory containing the postgresql package's documentation
+PGDOCDIR=@pgdocdir@
 
 # Check for the PGDATA structure
 if [ -f "$PGDATA/PG_VERSION" ] && [ -d "$PGDATA/base" ]

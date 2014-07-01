@@ -1,0 +1,2 @@
+* Testsuite
+    - check that none of @PATTERN@ is un-expanded in generated files
