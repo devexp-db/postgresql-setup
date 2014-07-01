@@ -12,29 +12,30 @@ systemdunits_DATA = postgresql$(DISTSUFF).service
 
 nodist_pgdoc_DATA = README.rpm-dist
 
-config_status = $(top_srcdir)/config.status
+c_s_gen = $(AM_V_GEN)cmd="$(top_srcdir)/config.status --file=$@:$<" ; \
+	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi
+
+c_s_script_gen = $(c_s_gen) && chmod +x $@
 
 postgresql$(DISTSUFF)-ctl: postgresql-ctl.in
-	$(AM_V_GEN)cmd="$(config_status) --file=$@:$<" ; \
-	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi && chmod +x $@
+	$(c_s_script_gen)
 
 postgresql$(DISTSUFF)-setup: postgresql-setup.in
-	$(AM_V_GEN)cmd="$(config_status) --file=$@:$<" ; \
-	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi && chmod +x $@
+	$(c_s_script_gen)
 
 conf/postgresql$(DISTSUFF): conf/postgresql.in
-	$(AM_V_GEN)cmd="$(config_status) --file=$@:$<" ; \
-	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi
+	$(c_s_gen)
 
 postgresql$(DISTSUFF).service: postgresql.service.in
-	$(AM_V_GEN)cmd="$(config_status) --file=$@:$<" ; \
-	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi
+	$(c_s_gen)
 
 README.rpm-dist: README.rpm-dist.in
-	$(AM_V_GEN)cmd="$(config_status) --file=$@:$<" ; \
-	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi
+	$(c_s_gen)
+
+EXTRA_DIST = *.in conf/*.in
 
 CLEANFILES = $(bin_SCRIPTS) \
 	     $(libexec_SCRIPTS) \
 	     $(nodist_pgdoc_DATA) \
+	     $(pkgsysconf_DATA) \
 	     $(nodist_systemdunits_DATA)

@@ -15,3 +15,4 @@ postgresql*-setup.1
 *.tar.gz
 conf/postgresql*
 postgresql*.service
+README.rpm-dist
