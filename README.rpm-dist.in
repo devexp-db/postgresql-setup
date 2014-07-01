@@ -1,6 +1,6 @@
 README.rpm-dist
 -----------------------------------------------------------------------------
-Version 9.3, for the PostgreSQL 9.3 RPM set.
+Version @PGMAJORVERSION@, for the PostgreSQL @PGMAJORVERSION@ RPM set.
 Devrim Gündüz <devrim@gunduz.org>
 -----------------------------------------------------------------------------
 
@@ -83,7 +83,7 @@ and run the dump file through psql to restore your data.
 
 In some major releases, the RPMs also support in-place upgrade from the
 immediately previous major release.  Currently, you can upgrade in-place
-from 9.2.x to 9.3.x.  This is much faster than a dump and reload.
+from @PREVMAJORVERSION@.x to @PGMAJORVERSION@.x.  This is much faster than a dump and reload.
 To do an in-place upgrade:
 * shut down the old postmaster ("systemctl stop postgresql.service")
 * optionally make a backup of /var/lib/pgsql/data/ (recommended!)

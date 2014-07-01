@@ -10,6 +10,8 @@ pkgsysconf_DATA = conf/postgresql$(DISTSUFF)
 systemdunitsdir = $(prefix)/lib/systemd/system
 systemdunits_DATA = postgresql$(DISTSUFF).service
 
+nodist_pgdoc_DATA = README.rpm-dist
+
 config_status = $(top_srcdir)/config.status
 
 postgresql$(DISTSUFF)-ctl: postgresql-ctl.in
@@ -28,4 +30,11 @@ postgresql$(DISTSUFF).service: postgresql.service.in
 	$(AM_V_GEN)cmd="$(config_status) --file=$@:$<" ; \
 	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi
 
-CLEANFILES = $(bin_SCRIPTS) $(libexec_SCRIPTS)
+README.rpm-dist: README.rpm-dist.in
+	$(AM_V_GEN)cmd="$(config_status) --file=$@:$<" ; \
+	if $(AM_V_P); then $$cmd; else $$cmd &>/dev/null; fi
+
+CLEANFILES = $(bin_SCRIPTS) \
+	     $(libexec_SCRIPTS) \
+	     $(nodist_pgdoc_DATA) \
+	     $(nodist_systemdunits_DATA)

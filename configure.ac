@@ -128,6 +128,10 @@ if test -z "$PGDATADIR" -a "$distro_family" = redhat; then
     PGDATADIR=/var/lib/pgsql/data
 fi
 
+# TODO
+pgdocdir=/usr/share/postgresql/doc
+AC_SUBST([pgdocdir])
+
 # Deal with previous versions
 subst_required_var([PGVERSION],         [full PG version])
 subst_required_var([PGMAJORVERSION],    [major PG version])
