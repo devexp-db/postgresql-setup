@@ -8,7 +8,8 @@ configure
 install-sh
 missing
 *.log
-postgresql-setup
 INSTALL
-postgresql-setup.1
+postgresql*-setup
+postgresql*-ctl
+postgresql*-setup.1
 *.tar.gz

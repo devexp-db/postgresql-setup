@@ -81,7 +81,7 @@ debug()   { test "$option_debug" = "1" && echo >&2 $"DEBUG: $@";  }
 
 print_version()
 {
-    echo "@PACKAGE@ @VERSION@"
+    echo "postgresql@DISTSUFF@-setup @VERSION@"
     echo $"Built against PostgreSQL version @PGMAJORVERSION@ and configured"
     echo $"to upgrade from PostgreSQL version @PREVMAJORVERSION@."
 }

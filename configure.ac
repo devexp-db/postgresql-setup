@@ -1,7 +1,14 @@
 AC_INIT([postgresql-setup], [0.9], [praiskup@redhat.com])
+AC_CONFIG_AUX_DIR(auxdir)
+config_aux_dir=auxdir
+AC_SUBST([config_aux_dir])
+
 AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_FILES([Makefile doc/Makefile])
-AC_CONFIG_FILES([postgresql-setup], [chmod +x postgresql-setup])
+AM_SILENT_RULES([yes])
+
+AC_ARG_VAR([DISTSUFF], [Append string suffix to all binaries])
+AC_SUBST([DISTSUFF])
 
 # For SELinux purposes use rather runuser
 AC_PATH_PROG([SU], [runuser])

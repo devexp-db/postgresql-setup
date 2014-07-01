@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This script is compat-wrapper for PGPORT specifying directly in
+# postgresql.service.  There is not possible to do conditional step in service
+# file based on (non)existence of PGPORT variable.
+
+PG_CTL=/usr/bin/pg_ctl
+
+$PG_CTL "$@" ${PGPORT+-o "-p $PGPORT"}
