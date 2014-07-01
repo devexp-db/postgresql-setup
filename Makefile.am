@@ -20,6 +20,7 @@ edit = $(SED) \
 	-e 's|@DISTSUFF[@]|$(DISTSUFF)|g' \
 	-e 's|@INITDB_LOG[@]|$(INITDB_LOG)|g' \
 	-e 's|@libexecdir[@]|$(libexecdir)|g' \
+	-e 's|@PG_CTL_BIN[@]|$(PG_CTL_BIN)|g' \
 	-e 's|@PGDATADIR[@]|$(PGDATADIR)|g' \
 	-e 's|@pgdocdir[@]|$(pgdocdir)|g' \
 	-e 's|@PGENGINE[@]|$(PGENGINE)|g' \

@@ -42,10 +42,27 @@ m4_define([subst_required_var], [
         AC_MSG_ERROR([the \$$1 variable is not set])
 ])
 
-# Check for main PostgreSQL binary
-# --------------------------------
 
-AC_ARG_VAR([POSTGRES_BIN], [full path to postgres binary])
+# Check for main PostgreSQL binaries
+# ----------------------------------
+
+AC_ARG_VAR([POSTGRES_BIN], [Full path to postgres binary.  Note that based on
+            package ownership of this file the package names (like
+            postgresql-server, postgresql, ..) are detected.])
+AC_PATH_PROG([POSTGRES_BIN], [postgres])
+
+
+# Check for main PostgreSQL packages
+# ----------------------------------
+
+case "$distro_family" in
+redhat)
+    rpm_pkgname_server=$(rpm -qf $POSTGRES_BIN --qf '%{NAME}')
+    rpm_pkgname=${rpm_pkgname_server%%-*}
+    ;;
+esac
+
+
 AC_PATH_PROG([POSTGRES_BIN], [postgres])
 
 
@@ -74,6 +91,16 @@ if test -z "$PGENGINE"; then
         AC_MSG_ERROR([no postgres binary, can not detect PGENGINE])
     PGENGINE=`AS_DIRNAME($POSTGRES_BIN)`
 fi
+
+# Detect pg_ctl binary
+# --------------------
+if test -z "$PG_CTL_BIN"; then
+    PG_CTL_BIN=$PGENGINE/pg_ctl
+fi
+test ! -e "$PG_CTL_BIN" &&
+    AC_MSG_ERROR([pg_ctl binary not found])
+AC_SUBST([PG_CTL_BIN])
+
 
 # pg_upgrade binary
 # -----------------
