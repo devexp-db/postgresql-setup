@@ -94,11 +94,8 @@ fi
 
 # Detect pg_ctl binary
 # --------------------
-if test -z "$PG_CTL_BIN"; then
+test -z "$PG_CTL_BIN" &&
     PG_CTL_BIN=$PGENGINE/pg_ctl
-fi
-test ! -e "$PG_CTL_BIN" &&
-    AC_MSG_ERROR([pg_ctl binary not found])
 AC_SUBST([PG_CTL_BIN])
 
 
@@ -141,7 +138,8 @@ fi
 
 case "$distro_family" in
 redhat)
-    README_DIST=`rpm -ql postgresql | grep README | grep dist`
+    test -z "$README_DIST" &&
+        README_DIST=`rpm -ql postgresql | grep README | grep dist`
     ;;
 esac
 
