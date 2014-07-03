@@ -34,6 +34,9 @@ SYSCONFIG_DIR=@PKGCONFIG_DIR@
 
 SU=@SU@
 
+# The where PostgreSQL server listens by default
+PGPORT_DEF=5432
+
 USAGE_STRING=$"\
 Usage: $0 MODE [OPTION...] [--unit UNIT_NAME]
 
@@ -119,15 +122,19 @@ perform_initdb()
     chmod go-rwx "$pgdata/pg_log"
     [ -x /sbin/restorecon ] && /sbin/restorecon "$pgdata/pg_log"
 
-    local pgconf="$pgdata/postgresql.conf"
-    sed -i "s|^[[:space:]#]*port[[:space:]]=[^#]*|port = $pgport |g" \
-            "$pgconf" \
-        && grep "^port = " "$pgconf" >/dev/null
+    # This if-fork is just to not unnecessarily overwrite what upstream
+    # generates by initdb (upstream implicitly uses PGPORT_DEF).
+    if test "$pgport" != "$PGPORT_DEF"; then
+        local pgconf="$pgdata/postgresql.conf"
+        sed -i "s|^[[:space:]#]*port[[:space:]]=[^#]*|port = $pgport |g" \
+                "$pgconf" \
+            && grep "^port = " "$pgconf" >/dev/null
 
-    test $? -ne 0 && {
-        error "can not change port in $pgdata/postgresql.conf"
-        return 1
-    }
+        if test $? -ne 0; then
+            error "can not change port in $pgdata/postgresql.conf"
+            return 1
+        fi
+    fi
 
     if [ -f "$pgdata/PG_VERSION" ]; then
         return 0
@@ -473,16 +480,22 @@ test -n "$conf_pgport" && pgport="$conf_pgport"
 test -n "$sysconfig_pgport" && pgport="$sysconfig_pgport"
 test -n "$unit_pgport" && pgport="$unit_pgport"
 
-if test $option_mode = initdb -a "$pgport" = default; then
-    test $option_service == postgresql \
-        && pgport=5432 \
-        || die $"for initdb $option_service, the --port must be specified"
+# We expect that for upgrade - the previous stack was in working state (thus
+# running on the default port).
+test "$option_mode" = upgrade -a "$pgport" = default \
+    && pgport=$PGPORT_DEF
+
+# This is mostly for 'initdb'.  We assume that the default port is $PGPORT_DEF
+# if not set explicitly (only for default service name 'postgresql').
+if test "$pgport" = default -a $option_service == postgresql; then
+    info $"Using the default port '$PGPORT_DEF'."
+    pgport=$PGPORT_DEF
 fi
 
 test "$pgport" = default \
     && die $"\
-port is not set by postgresql.conf, '$SYSCONFIG_DIR/$option_service' \
-nor by --port"
+Port is not set by postgresql.conf, '$SYSCONFIG_DIR/$option_service' \
+nor by --port."
 
 # These variables are read by underlying utilites, rather export them.
 export PGDATA=$pgdata

@@ -1,2 +1,4 @@
 * Testsuite
     - check that none of @PATTERN@ is un-expanded in generated files
+* --upgrade
+    - 'echo -n' breks the error messages from 'restorecon'
