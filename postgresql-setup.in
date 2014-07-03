@@ -24,11 +24,8 @@ PREVPGENGINE=@PREVPGENGINE@
 # Distribution README file
 README_DIST=@README_DIST@
 
-# Log file for initdb
-PGLOG=@INITDB_LOG@
-
-# Log file for pg_upgrade
-PGUPLOG=@UPGRADE_LOG@
+# Home directory of postgres user
+POSTGRES_HOMEDIR=@POSTGRES_HOMEDIR@
 
 SYSCONFIG_DIR=@PKGCONFIG_DIR@
 
@@ -103,18 +100,18 @@ perform_initdb()
     [ -x /sbin/restorecon ] && /sbin/restorecon "$pgdata"
 
     # Create the initdb log file if needed
-    if [ ! -e "$PGLOG" -a ! -h "$PGLOG" ]; then
-        touch "$PGLOG" || return 1
-        chown postgres:postgres "$PGLOG"
-        chmod go-rwx "$PGLOG"
-        [ -x /sbin/restorecon ] && /sbin/restorecon "$PGLOG"
+    if [ ! -e "$initdb_log" -a ! -h "$initdb_log" ]; then
+        touch "$initdb_log" || return 1
+        chown postgres:postgres "$initdb_log"
+        chmod go-rwx "$initdb_log"
+        [ -x /sbin/restorecon ] && /sbin/restorecon "$initdb_log"
     fi
 
     # Initialize the database
     initdbcmd="$PGENGINE/initdb --pgdata='$pgdata' --auth='ident'"
     initdbcmd+=" $PGSETUP_INITDB_OPTIONS"
 
-    $SU -l postgres -c "$initdbcmd" >> "$PGLOG" 2>&1 < /dev/null
+    $SU -l postgres -c "$initdbcmd" >> "$initdb_log" 2>&1 < /dev/null
 
     # Create directory for postmaster log files
     mkdir "$pgdata/pg_log"
@@ -152,9 +149,9 @@ initdb()
     else
         info $"Initializing database in $pgdata."
         if perform_initdb; then
-            info $"Initialized."
+            info $"Initialized, logs are in ${initdb_log}."
         else
-            error $"Initializing database failed, see $PGLOG"
+            error $"Initializing database failed, see $initdb_log"
             script_result=1
         fi
     fi
@@ -179,11 +176,11 @@ upgrade()
     fi
 
     # Set up log file for pg_upgrade
-    rm -f "$PGUPLOG"
-    touch "$PGUPLOG" || exit 1
-    chown postgres:postgres "$PGUPLOG"
-    chmod go-rwx "$PGUPLOG"
-    [ -x /sbin/restorecon ] && /sbin/restorecon "$PGUPLOG"
+    rm -f "$upgrade_log"
+    touch "$upgrade_log" || exit 1
+    chown postgres:postgres "$upgrade_log"
+    chmod go-rwx "$upgrade_log"
+    [ -x /sbin/restorecon ] && /sbin/restorecon "$upgrade_log"
 
     # Move old DB to pgdataold
     pgdataold="${pgdata}-old"
@@ -218,7 +215,7 @@ upgrade()
                         '--old-port=$PGPORT' '--new-port=$PGPORT' \
                         --user=postgres \
                         $PGSETUP_PGUPGRADE_OPTIONS" \
-                                >> "$PGUPLOG" 2>&1 < /dev/null
+                                >> "$upgrade_log" 2>&1 < /dev/null
         if [ $? -ne 0 ]; then
             # pg_upgrade failed
             script_result=1
@@ -246,7 +243,7 @@ upgrade()
         echo $"failed"
     fi
     echo
-    echo $"See $PGUPLOG for details."
+    echo $"See $upgrade_log for details."
 }
 
 
@@ -457,6 +454,9 @@ test "$option_mode" = none \
 
 [[ "$option_port" =~ ^[0-9]*$ ]] \
     || die $"port set to '$option_port', must be integer number"
+
+initdb_log="$POSTGRES_HOMEDIR/initdb_${option_service}.log"
+upgrade_log="$POSTGRES_HOMEDIR/upgrade_${option_service}.log"
 
 test -n "$option_port" && pgport=$option_port
 

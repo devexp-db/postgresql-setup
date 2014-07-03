@@ -18,7 +18,6 @@ nodist_pgdoc_DATA = README.rpm-dist
 # need fully expanded strings there.
 edit = $(SED) \
 	-e 's|@DISTSUFF[@]|$(DISTSUFF)|g' \
-	-e 's|@INITDB_LOG[@]|$(INITDB_LOG)|g' \
 	-e 's|@libexecdir[@]|$(libexecdir)|g' \
 	-e 's|@PG_CTL_BIN[@]|$(PG_CTL_BIN)|g' \
 	-e 's|@PGDATADIR[@]|$(PGDATADIR)|g' \
@@ -27,11 +26,11 @@ edit = $(SED) \
 	-e 's|@PGMAJORVERSION[@]|$(PGMAJORVERSION)|g' \
 	-e 's|@PGVERSION[@]|$(PGVERSION)|g' \
 	-e 's|@PKGCONFIG_DIR[@]|$(PKGCONFIG_DIR)|g' \
+	-e 's|@POSTGRES_HOMEDIR[@]|$(POSTGRES_HOMEDIR)|g' \
 	-e 's|@PREVMAJORVERSION[@]|$(PREVMAJORVERSION)|g' \
 	-e 's|@PREVPGENGINE[@]|$(PREVPGENGINE)|g' \
 	-e 's|@README_DIST[@]|$(README_DIST)|g' \
 	-e 's|@SU[@]|$(SU)|g' \
-	-e 's|@UPGRADE_LOG[@]|$(UPGRADE_LOG)|g' \
 	-e 's|@VERSION[@]|$(VERSION)|g' \
 	$< > $@
 

@@ -143,14 +143,12 @@ redhat)
     ;;
 esac
 
-test -z "$INITDB_LOG" &&
-    INITDB_LOG=/var/lib/pgsql/initdb.log
-
-test -z "$UPGRADE_LOG" &&
-    UPGRADE_LOG=/var/lib/pgsql/pgupgrade.log
-
 if test -z "$PKGCONFIG_DIR" -a "$distro_family" = redhat; then
     PKGCONFIG_DIR=/etc/postgresql
+fi
+
+if test -z "$POSTGRES_HOMEDIR" -a "$distro_family" = redhat; then
+    POSTGRES_HOMEDIR=/var/lib/pgsql
 fi
 
 if test -z "$PGDATADIR" -a "$distro_family" = redhat; then
@@ -168,9 +166,8 @@ subst_required_var([PGENGINE],          [directory where PG server resides])
 subst_required_var([PREVMAJORVERSION],  [PG major version to upgrade _from_])
 subst_required_var([PREVPGENGINE],      [directory where old PG server resides])
 subst_required_var([README_DIST],       [README file for distribution])
-subst_required_var([INITDB_LOG],        [log file for initdb])
-subst_required_var([UPGRADE_LOG],       [log file for pg_upgrade])
 subst_required_var([PKGCONFIG_DIR],     [where configuration should be stored])
+subst_required_var([POSTGRES_HOMEDIR],  [full path to postgres home dir])
 subst_required_var([PGDATADIR],         [full path to postgres data dir])
 
 AC_OUTPUT
