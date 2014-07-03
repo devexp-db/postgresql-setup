@@ -19,12 +19,12 @@ Contents:
 
 INTRODUCTION
 -----------------------------------------------------------------------------
-This document exists to explain the layout of the RPMs for PostgreSQL, to 
+This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
 This document is written to be applicable to version 9.3 of PostgreSQL,
-which is the current version of the RPMs as of this writing. More to the 
+which is the current version of the RPMs as of this writing. More to the
 point, versions prior to 9.3 are not documented here.
 
 This document is intended for use only with the RPMs supplied in Red Hat
@@ -38,14 +38,14 @@ For a fresh installation, you will need to initialize the cluster first. Run:
 
 	postgresql-setup initdb
 
-as root, and it will prepare a new database cluster for you. Then you will 
+as root, and it will prepare a new database cluster for you. Then you will
 need to start PostgreSQL. Again as root, run:
 
 	systemctl start postgresql.service
 
-This command will start a postmaster that willl listen on localhost and Unix 
-socket 5432 only.  Edit /var/lib/pgsql/data/postgresql.conf and pg_hba.conf 
-if you want to allow remote access -- see the section on Grand Unified 
+This command will start a postmaster that willl listen on localhost and Unix
+socket 5432 only.  Edit /var/lib/pgsql/data/postgresql.conf and pg_hba.conf
+if you want to allow remote access -- see the section on Grand Unified
 Configuration.
 
 You will probably also want to do
@@ -54,10 +54,10 @@ You will probably also want to do
 
 so that the postmaster is automatically started during future reboots.
 
-The file /var/lib/pgsql/.bash_profile is packaged to help with the 
+The file /var/lib/pgsql/.bash_profile is packaged to help with the
 setting of environment variables. You may edit this file, and it won't be
-overwritten during an upgrade.  However, enhancements and bugfixes may 
-be added to this file, so be sure to check .bash_profile.rpmnew after 
+overwritten during an upgrade.  However, enhancements and bugfixes may
+be added to this file, so be sure to check .bash_profile.rpmnew after
 upgrading.
 
 The user 'postgres' is created during installation of the server subpackage.
@@ -143,7 +143,7 @@ Different distributions have different ideas of some of these file locations.
 In particular, the documentation directory can be /usr/doc, /usr/doc/packages,
 /usr/share/doc, /usr/share/doc/packages, or some other similar path.
 
-However, the Red Hat / CentOS / Fedora RPM's install the files like 
+However, the Red Hat / CentOS / Fedora RPM's install the files like
 this:
 
 Executables:		/usr/bin
@@ -258,14 +258,14 @@ See "man systemctl" for other possible subcommands.
 
 GRAND UNIFIED CONFIGURATION (GUC) FILE
 -------------------------------------------------------------------------------
-The PostgreSQL server has many tunable parameters -- the file 
+The PostgreSQL server has many tunable parameters -- the file
 /var/lib/pgsql/data/postgresql.conf is the master configuration file for the
-whole system.  
+whole system.
 
 The RPM ships with a mostly-default file -- you will need to tune the
 parameters for your installation.  In particular, you might want to allow
 nonlocal TCP/IP socket connections -- in order to allow these, you will need
-to edit the postgresql.conf file.  The line in question contains the string 
+to edit the postgresql.conf file.  The line in question contains the string
 'listen_addresses' -- you need to both uncomment the line and set the value
 to '*' to get the postmaster to accept nonlocal connections.  You'll also need
 to adjust pg_hba.conf appropriately.
@@ -279,7 +279,7 @@ day of the week.  You can adjust this by changing postgresql.conf settings.
 
 REBUILDING FROM SOURCE RPM
 -------------------------------------------------------------------------------
-If your distribution is not supported by the binary RPMs from PostgreSQL.org, 
+If your distribution is not supported by the binary RPMs from PostgreSQL.org,
 you will need to rebuild from the source RPM.
 
 If you have not previously rebuilt any RPMs, set up the required environment:
@@ -298,7 +298,7 @@ If rpmbuild complains of lack of certain packages, install them and try
 again.  In some cases, you can disable features to avoid needing some
 development packages, as detailed next.
 
-This release of the RPMset includes the ability to conditionally build 
+This release of the RPMset includes the ability to conditionally build
 sets of packages.  The parameters, their defaults, and the meanings are:
 
 beta		0	#build with cassert and do not strip the binaries
@@ -346,7 +346,7 @@ split out, depending upon function and dependencies.
 
 MORE INFORMATION
 -------------------------------------------------------------------------------
-You can get more information at http://www.postgresql.org and 
+You can get more information at http://www.postgresql.org and
 http://yum.postgresql.org
 
 Please help make this packaging better -- let us know if you find problems, or
