@@ -67,7 +67,7 @@ CLEANFILES = $(bin_SCRIPTS) \
 	     $(pkgsysconf_DATA) \
 	     $(nodist_systemdunits_DATA)
 
-install-exec-hook:
+install-data-hook:
 	rm -rf $(DESTDIR)$(systemdunitsdir)/postgresql$(DISTSUFF)@.service
 	ln $(DESTDIR)$(systemdunitsdir)/postgresql$(DISTSUFF).service \
 	   $(DESTDIR)$(systemdunitsdir)/postgresql$(DISTSUFF)@.service
