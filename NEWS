@@ -7,6 +7,8 @@ New in 0.9.1 version
 * Each service produces its own upgrade/initdb log files under postgres'
   home directory.
 
+* The README.rpm-dist file now follows the changes in 0.9 and 0.9.1.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 0.9 version

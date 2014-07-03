@@ -18,6 +18,7 @@ nodist_pgdoc_DATA = README.rpm-dist
 # need fully expanded strings there.
 edit = $(SED) \
 	-e 's|@DISTSUFF[@]|$(DISTSUFF)|g' \
+	-e 's|@libdir[@]|$(libdir)|g' \
 	-e 's|@libexecdir[@]|$(libexecdir)|g' \
 	-e 's|@PG_CTL_BIN[@]|$(PG_CTL_BIN)|g' \
 	-e 's|@PGDATADIR[@]|$(PGDATADIR)|g' \

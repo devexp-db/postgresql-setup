@@ -89,17 +89,17 @@ To do an in-place upgrade:
 * optionally make a backup of /var/lib/pgsql/data/ (recommended!)
 * install the new version's RPMs (install all the ones you had before,
   plus postgresql-upgrade)
-* as root, run "postgresql-setup upgrade"
-* update the configuration files /var/lib/pgsql/data/*.conf with any
+* as root, run "postgresql-setup --upgrade"
+* update the configuration files @PGDATADIR@/*.conf with any
   customizations you had before (your old configuration files are in
-  /var/lib/pgsql/data-old/)
+  @POSTGRES_HOMEDIR@/data-old/)
 * as root, run "systemctl start postgresql.service"
-* the postgresql-upgrade RPM can be removed after the update is complete,
-  as can /var/lib/pgsql/data-old/
+* the postgresql-upgrade package can be removed after the update is complete,
+  as can @POSTGRES_HOMEDIR@/data-old/
 
 NOTE: The in-place upgrade process is new and relatively poorly tested,
 so if your data is critical it's a really good idea to make a tarball
-backup of /var/lib/pgsql/data/ before running the upgrade.  This will
+backup of @PGDATADIR@ before running the upgrade.  This will
 let you get back to where you were in case of disaster.
 
 POSTGRESQL RPM PACKAGES AND RATIONALE.
@@ -147,7 +147,7 @@ However, the Red Hat / CentOS / Fedora RPM's install the files like
 this:
 
 Executables:		/usr/bin
-Libraries:		/usr/lib (or /usr/lib64 on 64-bit machines)
+Libraries:		@libdir@
 Documentation:		/usr/share/doc/postgresql/html
 PDF documentation:	/usr/share/doc/postgresql-docs
 Contrib documentation:	/usr/share/doc/postgresql-contrib
@@ -155,11 +155,10 @@ Source:			not installed
 Data:			/var/lib/pgsql/data
 Backup area:		/var/lib/pgsql/backups
 Templates:		/usr/share/pgsql
-Procedural Languages:	/usr/lib/pgsql or /usr/lib64/pgsql
+Procedural Languages:	@libdir@/pgsql
 Development Headers:	/usr/include/pgsql
 Other shared data:	/usr/share/pgsql
-Regression tests:	/usr/lib/pgsql/test/regress  (in the -test package)
-			or /usr/lib64/pgsql/test/regress
+Regression tests:	@libdir@/pgsql/test/regress  (in the -test package)
 
 While it may seem gratuitous to place these files in different locations, the
 FHS requires it -- distributions should not ever touch /usr/local.  It may
@@ -173,42 +172,43 @@ mailing list.
 
 MULTIPLE POSTMASTERS
 -------------------------------------------------------------------------------
-The postgresql-server RPM contains a systemd "unit" file, postgresql.service,
-that is used to start the PostgreSQL postmaster.  If you need to run multiple
-postmasters on one machine, you can create additional unit files derived
-from this one.
+The postgresql-server package contains a systemd "unit" files postgresql.service
+and postgresql@.service.  These first file is used solely to start the default
+PostgreSQL server.  The second one is designed to allow run multiple
+servers on single machine.
 
-As an example, let us create a secondary postmaster called, creatively enough,
-'secondary'.  Here are the steps:
-1.)	Create a file named /etc/systemd/system/secondary.service.
-	(Note that user-created unit files must go into /etc not /lib!)
-	Put these lines in it:
-		.include /lib/systemd/system/postgresql.service
-		[Service]
-		Environment=PGPORT=nnnn
-		Environment=PGDATA=/path/to/data/directory
-	Replace "nnnn" and "/path/to/data/directory" with appropriate
-	settings that don't conflict with any other postmaster.
-2.)	As root, do "/bin/systemctl daemon-reload" to ensure systemd has
-	noticed your updates to the service file.
-3.)	Create the target PGDATA directory, making sure that its parent
+As an example, let us create a secondary PostgreSQL service called, creatively
+enough, 'postgresql@secondary'.  Here are the steps:
+
+1)	Create a file named @PKGCONFIG_DIR@/postgresql@secondary
+	and this line in it:
+		PGDATA=/path/to/data/directory
+	Replace the "/path/to/data/directory" with appropriate settings that
+	don't conflict with any other PostgreSQL setup.
+2)	Create the target PGDATA directory, making sure that its parent
 	directories have appropriate ownership and permissions.
-4.)	Initdb the target PGDATA with 'postgresql-setup initdb secondary'.
-5.)	Edit postgresql.conf in the target PGDATA to change settings as needed.
-6.)	Start the new postmaster with 'systemctl start secondary.service'.
-	You will probably also want to do 'systemctl enable secondary.service'
-	so that the new postmaster is automatically started in future reboots.
+3)	Initdb the target PGDATA with
+	'postgresql-setup --initdb --unit postgresql@secondary --port NNNN'.
+	Substitute the NNNN with port number of your decision (make sure that
+	this port is not used by any other service).
+4)	Edit postgresql.conf in the target PGDATA to change settings as needed.
+5)	Start the new service with this command:
+		'systemctl start postgresql@secondary.service'
+	You will probably also want to run the command
+		'systemctl enable postgresql@secondary.service'
+	so that the new service is automatically started in future reboots.
 
-When doing a major-version upgrade of a secondary postmaster, add the
-service name to the postgresql-setup command, for example 'postgresql-setup
-upgrade secondary'.  This will let postgresql-setup find the correct data
-directory from the service file.
+When doing a major-version upgrade of a secondary service, add the service name
+to the postgresql-setup command, for example:
+	'postgresql-setup --upgrade --unit postgresql@secondary'
+This will let postgresql-setup find the correct data directory from the proper
+configuration file.
 
 If you are running SELinux in enforcing mode (which is highly recommended,
 particularly for network-exposed services like PostgreSQL) you will need to
-adjust SELinux policy to allow the postmaster to use non-default PGPORT or
-PGDATA settings.  To allow use of a non-default port, say 5433, do this
-as root:
+adjust SELinux policy to allow the secondary server to use non-default PGPORT
+or PGDATA settings.  To allow use of a non-default port, say 5433, do this as
+root:
 	semanage port -a -t postgresql_port_t -p tcp 5433
 To allow use of a non-default data directory, say /special/pgdata, do:
 	semanage fcontext -a -t postgresql_db_t "/special/pgdata(/.*)?"
@@ -225,18 +225,16 @@ results that give you assurances that the installation is complete, and that
 your database machine is up to the task.
 
 To run the regression tests under the RPM installation, make sure that the
-postmaster has been started (if not, su to root and do "systemctl start
-postgresql.service"), su to postgres, cd to /usr/lib/pgsql/test/regress
-(or /usr/lib64/pgsql/test/regress on a 64-bit machine),
-and execute "make check".
+PostgreSQL server has been started (if not, su to root and do "systemctl start
+postgresql.service"), su to postgres, cd to @libdir@/pgsql/test/regress and
+execute "make check".
 This command will start the regression tests and will both show the
 results to the screen and store the results in the file regress.out.
 
 If any tests fail, see the file regression.diffs in that directory for details,
 and read the "Regression Tests" section of the PostgreSQL documentation to
 find out whether the differences are actually significant.  If you need help
-interpreting the results, contact the pgsql-general list at 
-postgresql.org.
+interpreting the results, contact the pgsql-general list at postgresql.org.
 
 After testing, run "make clean" to remove the files generated by the test
 script.  Then you can remove the postgresql-test RPM, if you wish.
