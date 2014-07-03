@@ -1,14 +1,23 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 0.9.1 version
+
+* The postgresql-setup script does not require --port option when upgrading.
+
+* Each service produces its own upgrade/initdb log files under postgres'
+  home directory.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 0.9 version
 
-* this is inital version actually, changes are against F21 version:
+* This is inital version actually, changes are against F21 version:
   http://pkgs.fedoraproject.org/cgit/postgresql.git/tree/?id=49f074f1918a61
 
-* prepared for /etc/sysconfig/postgresql configuration, taking into account
+* Prepared for /etc/sysconfig/postgresql configuration, taking into account
   that we should make the s/postgresql.service/postgresql@.service/
   (instantiable) change.
 
-* allow user to specify PGPORT also by 'port' option in postgresql.conf
+* Allow user to specify PGPORT also by 'port' option in postgresql.conf
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
