@@ -169,9 +169,7 @@ upgrade()
         exit 1
     fi
     if [ ! -x "$PGENGINE/pg_upgrade" ]; then
-        echo
-        echo $"Please install the postgresql-upgrade RPM."
-        echo
+        error $"Please install the postgresql-upgrade package."
         exit 5
     fi
 
@@ -201,7 +199,7 @@ upgrade()
         echo "local all postgres ident" > "$pgdataold/pg_hba.conf"
     fi
 
-    echo -n $"Upgrading database: "
+    info $"Upgrading database."
 
     # Create empty new-format database
     if perform_initdb; then
@@ -231,19 +229,17 @@ upgrade()
     fi
 
     if [ $script_result -eq 0 ]; then
-        echo $"OK"
-        echo
-        echo $"The configuration files were replaced by default configuration."
-        echo $"The previous configuration and data are stored in folder"
-        echo $pgdataold.
+        info $"Upgraded OK."
+        warn $"The configuration files were replaced by default configuration."
+        warn $"The previous configuration and data are stored in folder"
+        warn $pgdataold.
     else
         # Clean up after failure
         rm -rf "$pgdata"
         mv "$pgdataold" "$pgdata"
-        echo $"failed"
+        error $"failed"
     fi
-    echo
-    echo $"See $upgrade_log for details."
+    info $"See $upgrade_log for details."
 }
 
 
