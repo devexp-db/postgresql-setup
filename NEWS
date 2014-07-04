@@ -1,5 +1,13 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 0.9.2 version
+
+* The postgresql-check-db-dir is now more strict to admin's configuration
+  and tries to avoid future incompatibilities by warning about the
+  /etc/postgresql/$servicename file non-existence.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 0.9.1 version
 
 * The postgresql-setup script does not require --port option when upgrading.

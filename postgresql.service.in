@@ -27,7 +27,7 @@ OOMScoreAdjust=-1000
 Environment=PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj
 Environment=PG_OOM_ADJUST_VALUE=0
 
-ExecStartPre=@libexecdir@/postgresql-check-db-dir ${PGDATA}
+ExecStartPre=@libexecdir@/postgresql-check-db-dir %N
 
 # Temporarily use postgresql-ctl wrapper around pg_ctl until there will
 # exist clients which set PGPORT in service file.

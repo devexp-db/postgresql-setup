@@ -7,12 +7,30 @@
 # bit slow to mount.  But we can at least emit a message advising newbies
 # what to do.
 
-PGDATA="$1"
-
-if [ -z "$PGDATA" ]
-then
-    echo "Usage: $0 database-path"
+if test -z "$1"; then
+    echo "Maintainer error: $0 must be run with one argument"
     exit 1
+fi
+
+service_name="$1"
+
+if [ -z "$PGDATA" ]; then
+    echo $"You try to start '$service_name' service"
+    echo $"but the required \$PGDATA environment variable is not set."
+    echo $"You should use the @PKGCONFIG_DIR@/$service_name"
+    echo $"configuration file to set \$PGDATA.  For more info see"
+    echo $"the @README_DIST@ file."
+
+    exit 1
+fi
+
+# Warn the user that the configuration should be adjusted.
+conf_file="@PKGCONFIG_DIR@/$service_name"
+if test ! -r "$conf_file"; then
+    echo >&2 $"WARNING: Note that file '$conf_file'"
+    echo >&2 $"does not exist.  Your configuration will be supported for some"
+    echo >&2 $"time but you are encouraged to create this file according to"
+    echo >&2 $"@README_DIST@ documentation."
 fi
 
 # Full PostgreSQL version, e.g. 9.0.2
