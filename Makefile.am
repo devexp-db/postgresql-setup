@@ -8,15 +8,17 @@ libexec_SCRIPTS = postgresql$(DISTSUFF)-ctl \
 pkgsysconfdir = $(PKGCONFIG_DIR)
 pkgsysconf_DATA = conf/postgresql$(DISTSUFF)
 
+userunitsdir = /etc/systemd/system
+
 systemdunitsdir = $(prefix)/lib/systemd/system
-nodist_systemdunits_DATA = postgresql$(DISTSUFF).service
+nodist_systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
 
 nodist_pgdoc_DATA = README.rpm-dist
 
 # Encouraged by autoconf documentation itself.  When we use config.status
 # directly, e.g. libexecdir may result into '${exec_prefix}/libexec' -- but we
 # need fully expanded strings there.
-edit = $(SED) \
+SED_RULES = \
 	-e 's|@DISTSUFF[@]|$(DISTSUFF)|g' \
 	-e 's|@libdir[@]|$(libdir)|g' \
 	-e 's|@libexecdir[@]|$(libexecdir)|g' \
@@ -32,8 +34,13 @@ edit = $(SED) \
 	-e 's|@PREVPGENGINE[@]|$(PREVPGENGINE)|g' \
 	-e 's|@README_DIST[@]|$(README_DIST)|g' \
 	-e 's|@SU[@]|$(SU)|g' \
+	-e 's|@systemdunitsdir[@]|$(systemdunitsdir)|' \
 	-e 's|@VERSION[@]|$(VERSION)|g' \
-	$< > $@
+	-e 's|@__FILE__[@]|$@|g'
+
+SED_CALL = $(SED) $(SED_RULES)
+
+edit = $(SED_CALL) $< > $@
 
 c_s = $(top_srcdir)/config.status
 
@@ -53,8 +60,19 @@ postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
 conf/postgresql$(DISTSUFF): conf/postgresql.in $(c_s)
 	$(c_s_gen)
 
+# In ideal world, postgresql@.service would be hardlink to postgresql.service.
+# That would require, however, the rhbz#1141824 resolved so we could install
+# system-default drop-in file.  Make a "almost" duplicate files now.
+
+postgresql$(DISTSUFF)@.service: postgresql.service.in $(c_s)
+	$(AM_V_GEN)$(SED_CALL) \
+	    -e '/@PGDATA_ENVIRONMENT[@]/d' \
+	    $< > $@
+
 postgresql$(DISTSUFF).service: postgresql.service.in $(c_s)
-	$(c_s_gen)
+	$(AM_V_GEN)$(SED_CALL) \
+	    -e 's|@PGDATA_ENVIRONMENT[@]|Environment=PGDATA=$(PGDATADIR)|' \
+	    $< > $@
 
 README.rpm-dist: README.rpm-dist.in $(c_s)
 	$(c_s_gen)
@@ -68,6 +86,4 @@ CLEANFILES = $(bin_SCRIPTS) \
 	     $(nodist_systemdunits_DATA)
 
 install-data-hook:
-	rm -rf $(DESTDIR)$(systemdunitsdir)/postgresql$(DISTSUFF)@.service
-	ln $(DESTDIR)$(systemdunitsdir)/postgresql$(DISTSUFF).service \
-	   $(DESTDIR)$(systemdunitsdir)/postgresql$(DISTSUFF)@.service
+	test `id -u` -eq 0 && systemctl daemon-reload
