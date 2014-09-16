@@ -1,6 +1,6 @@
 pkgname = postgresql$(DISTSUFF)
 
-SUBDIRS = . doc
+SUBDIRS = . doc tests
 
 bin_SCRIPTS = postgresql$(DISTSUFF)-setup
 
@@ -14,52 +14,16 @@ nodist_systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.
 
 nodist_pgdoc_DATA = README.rpm-dist
 
-# Encouraged by autoconf documentation itself.  When we use config.status
-# directly, e.g. libexecdir may result into '${exec_prefix}/libexec' -- but we
-# need fully expanded strings there.
-SED_RULES = \
-	-e 's|@__FILE__[@]|$@|g' \
-	-e 's|@bindir[@]|$(bindir)|g' \
-	-e 's|@DISTSUFF[@]|$(DISTSUFF)|g' \
-	-e 's|@docdir[@]|$(docdir)|g' \
-	-e 's|@libdir[@]|$(libdir)|g' \
-	-e 's|@libexecdir[@]|$(libexecdir)|g' \
-	-e 's|@PG_CTL_BIN[@]|$(PG_CTL_BIN)|g' \
-	-e 's|@PGDATADIR[@]|$(PGDATADIR)|g' \
-	-e 's|@pgcontribdocdir[@]|$(pgcontribdocdir)|g' \
-	-e 's|@pgdocdir[@]|$(pgdocdir)|g' \
-	-e 's|@PGENGINE[@]|$(PGENGINE)|g' \
-	-e 's|@pkgname[@]|$(pkgname)|g' \
-	-e 's|@PGMAJORVERSION[@]|$(PGMAJORVERSION)|g' \
-	-e 's|@PGVERSION[@]|$(PGVERSION)|g' \
-	-e 's|@PKGCONFIG_DIR[@]|$(PKGCONFIG_DIR)|g' \
-	-e 's|@POSTGRES_HOMEDIR[@]|$(POSTGRES_HOMEDIR)|g' \
-	-e 's|@PREVMAJORVERSION[@]|$(PREVMAJORVERSION)|g' \
-	-e 's|@PREVPGENGINE[@]|$(PREVPGENGINE)|g' \
-	-e 's|@README_DIST[@]|$(README_DIST)|g' \
-	-e 's|@SU[@]|$(SU)|g' \
-	-e 's|@systemdunitsdir[@]|$(systemdunitsdir)|' \
-	-e 's|@userunitsdir[@]|$(userunitsdir)|' \
-	-e 's|@VERSION[@]|$(VERSION)|g'
-
-SED_CALL = $(SED) $(SED_RULES)
-
-edit = $(SED_CALL) $< > $@
-
-c_s = $(top_srcdir)/config.status
-
-c_s_gen = $(AM_V_GEN)$(edit)
-
-c_s_script_gen = $(c_s_gen) && chmod +x $@
+noinst_DATA = $(TEST_GEN_FILES_LIST)
 
 postgresql$(DISTSUFF)-ctl: postgresql-ctl.in $(c_s)
-	$(c_s_script_gen)
+	$(INSTANTIATE_SCRIPT)
 
 postgresql$(DISTSUFF)-setup: postgresql-setup.in $(c_s)
-	$(c_s_script_gen)
+	$(INSTANTIATE_SCRIPT)
 
 postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
-	$(c_s_script_gen)
+	$(INSTANTIATE_SCRIPT)
 
 # In ideal world, postgresql@.service would be hardlink to postgresql.service.
 # That would require, however, the rhbz#1141824 resolved so we could install
@@ -76,15 +40,23 @@ postgresql$(DISTSUFF).service: postgresql.service.in $(c_s)
 	    $< > $@
 
 README.rpm-dist: README.rpm-dist.in $(c_s)
-	$(c_s_gen)
+	$(INSTANTIATE)
 
 EXTRA_DIST = *.in
 
-CLEANFILES = $(bin_SCRIPTS) \
-	     $(libexec_SCRIPTS) \
-	     $(nodist_pgdoc_DATA) \
-	     $(pkgsysconf_DATA) \
-	     $(nodist_systemdunits_DATA)
+GENERATED_FILES = $(bin_SCRIPTS) \
+		  $(libexec_SCRIPTS) \
+		  $(nodist_pgdoc_DATA) \
+		  $(pkgsysconf_DATA) \
+		  $(nodist_systemdunits_DATA)
+
+CLEANFILES = $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
+
+$(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
+	$(AM_V_GEN)rm -rf $(TEST_GEN_FILES_LIST) && \
+	for i in $(GENERATED_FILES); do \
+	    echo $$i >> $@ ; \
+	done
 
 install-data-hook:
 	test `id -u` -eq 0 && systemctl daemon-reload

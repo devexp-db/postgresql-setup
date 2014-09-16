@@ -10,6 +10,57 @@ AM_SILENT_RULES([yes])
 AC_ARG_VAR([DISTSUFF], [Append string suffix to all binaries])
 AC_SUBST([DISTSUFF])
 
+# Initialize the test suite.
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_FILES([tests/Makefile])
+AM_MISSING_PROG([AUTOM4TE], [autom4te])
+AC_SUBST([TEST_GEN_FILES_LIST], [$\(top_srcdir\)/.generated_files])
+
+
+# Instatiating generated files by sed instead of config.status.
+# This is encouraged by autoconf documentation itself because if we used
+# config.status directly, e.g. libexecdir may result into
+# '${exec_prefix}/libexec' -- but we need fully expanded strings.
+m4_define([sed_subst_var_pattern], [	-e 's|@$1[[@]]|\$($1)|g' \\])
+SED_RULES="\\
+sed_subst_var_pattern(bindir)
+sed_subst_var_pattern(DISTSUFF)
+sed_subst_var_pattern(docdir)
+sed_subst_var_pattern(libdir)
+sed_subst_var_pattern(libexecdir)
+sed_subst_var_pattern(PG_CTL_BIN)
+sed_subst_var_pattern(top_srcdir)
+sed_subst_var_pattern(pgcontribdocdir)
+sed_subst_var_pattern(PGDATADIR)
+sed_subst_var_pattern(pgdocdir)
+sed_subst_var_pattern(PGENGINE)
+sed_subst_var_pattern(PGVERSION)
+sed_subst_var_pattern(PGMAJORVERSION)
+sed_subst_var_pattern(PKGCONFIG_DIR)
+sed_subst_var_pattern(pkgname)
+sed_subst_var_pattern(POSTGRES_HOMEDIR)
+sed_subst_var_pattern(PREVMAJORVERSION)
+sed_subst_var_pattern(PREVPGENGINE)
+sed_subst_var_pattern(README_DIST)
+sed_subst_var_pattern(SU)
+sed_subst_var_pattern(systemdunitsdir)
+sed_subst_var_pattern(userunitsdir)
+sed_subst_var_pattern(TEST_GEN_FILES_LIST)
+sed_subst_var_pattern(VERSION)
+	-e 's|@__FILE__[[@]]|\$@|g'"
+
+SED_CALL="\$(SED) \$(SED_RULES)"
+m4_pattern_allow(AM_V_GEN)
+INSTANTIATE="\$(AM_V_GEN)\$(SED_CALL) \$< > \$@"
+INSTANTIATE_SCRIPT="\$(INSTANTIATE) && chmod +x \$@"
+c_s='$(top_srcdir)/config.status'
+
+AC_SUBST([SED_RULES])
+AC_SUBST([SED_CALL])
+AC_SUBST([INSTANTIATE])
+AC_SUBST([INSTANTIATE_SCRIPT])
+AC_SUBST([c_s])
+
 AC_PATH_PROG([SED], [sed])
 test -z "$ac_cv_path_SED" &&
     AC_MSG_ERROR([Sed is needed but not found.])
