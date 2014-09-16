@@ -4,7 +4,13 @@ New in 0.9.2 version
 
 * The postgresql-check-db-dir is now more strict to admin's configuration
   and tries to avoid future incompatibilities by warning about the
-  /etc/postgresql/$servicename file non-existence.  Idea by Honza Horák.
+  /etc/systemd/system/postgresql@instance.service.d/ non-existence.
+  Idea by Honza Horák.
+
+* The /etc/postgresql/* path is not used for configuration as it does not
+  conform systemd's intentions, see the thread:
+  http://www.spinics.net/lists/fedora-devel/msg200450.html .  We encourage
+  users to configure via postgresql.service.d/ drop-in directory.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
