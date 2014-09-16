@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script verifies that the postgresql data directory has been correctly
 # initialized.  We do not want to automatically initdb it, because that has
@@ -17,20 +17,23 @@ service_name="$1"
 if [ -z "$PGDATA" ]; then
     echo $"You try to start '$service_name' service"
     echo $"but the required \$PGDATA environment variable is not set."
-    echo $"You should use the @PKGCONFIG_DIR@/$service_name"
+    echo $"You should use the @userunitsdir@/$service_name.d/ANYTHING.conf"
     echo $"configuration file to set \$PGDATA.  For more info see"
     echo $"the @README_DIST@ file."
 
     exit 1
 fi
 
-# Warn the user that the configuration should be adjusted.
-conf_file="@PKGCONFIG_DIR@/$service_name"
-if test ! -r "$conf_file"; then
-    echo >&2 $"WARNING: Note that file '$conf_file'"
-    echo >&2 $"does not exist.  Your configuration will be supported for some"
-    echo >&2 $"time but you are encouraged to create this file according to"
-    echo >&2 $"@README_DIST@ documentation."
+# Warn the user that the configuration should be adjusted via drop-in, in case
+# the $PGDATA variable is set different way (and non-default service name is
+# used).
+conf_dir="@userunitsdir@/$service_name.d"
+if [[ "$service_name" == *@* ]] &&  test ! -d "$conf_dir"; then
+    echo >&2 $"WARNING: Note that the '$conf_dir'"
+    echo >&2 $"directory does not exist while you are using non-default service"
+    echo >&2 $"name '$service_name'.  You are encouraged to use the"
+    echo >&2 $"$conf_dir directory for systemd configuration according"
+    echo >&2 $"to @README_DIST@ documentation."
 fi
 
 # Full PostgreSQL version, e.g. 9.0.2

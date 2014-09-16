@@ -42,6 +42,7 @@ SED_RULES = \
 	-e 's|@README_DIST[@]|$(README_DIST)|g' \
 	-e 's|@SU[@]|$(SU)|g' \
 	-e 's|@systemdunitsdir[@]|$(systemdunitsdir)|' \
+	-e 's|@userunitsdir[@]|$(userunitsdir)|' \
 	-e 's|@VERSION[@]|$(VERSION)|g'
 
 SED_CALL = $(SED) $(SED_RULES)
