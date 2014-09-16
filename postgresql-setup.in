@@ -39,8 +39,8 @@ Usage: $0 MODE [OPTION...] [--unit UNIT_NAME]
 
 Script is aimed to help sysadmin with basic database cluster administration.
 
-The UNIT_NAME is used for selection of proper sysconfig or unit configuration
-file; For more info and howto/when use this script please look at the docu file
+The UNIT_NAME is used for selection of proper unit configuration file; For more
+info and howto/when use this script please look at the docu file
 $README_DIST.  The 'postgresql'
 string is used when no UNIT_NAME is explicitly passed.
 
@@ -243,36 +243,7 @@ upgrade()
 }
 
 
-handle_sysconfig()
-{
-    local mode="$1"
-    local service="$2"
-    local sysconfig_file="$SYSCONFIG_DIR/$service"
-
-    test -r "$sysconfig_file" || {
-        warn "system config file '$sysconfig_file' not found or unreadable"
-        return 1
-    }
-
-    unset PGPORT PGDATA
-    . "$sysconfig_file"
-    sysconfig_pgdata="$PGDATA"
-    sysconfig_pgport="$PGPORT"
-    unset PGPORT PGDATA
-
-    test -n "$sysconfig_pgdata" && debug "sysconfig pgdata: '$sysconfig_pgdata'"
-    test -n "$sysconfig_pgport" && debug "sysconfig pgport: $sysconfig_pgport"
-}
-
-
-# This is mostly for backward compatibility with version postgresql-setup from
-# postgresql package <= 9.3.4-7 as this type of configuration is not adviced
-# anymore.  But user still may override the /etc/sysconfig/* settings with
-# Environment= statement in service file.   Note that this parsing technique
-# fails for PGDATA pathnames containing spaces, but there's not much we can do
-# about it given systemctl's output format.
-
-handle_service_file()
+handle_service_env()
 {
     local mode="$1"
     local service="$2"
@@ -293,6 +264,43 @@ handle_service_file()
                 ;;
         esac
     done
+}
+
+
+handle_service_envfiles()
+{
+    local mode="$1"
+    local service="$2"
+
+    local envfiles="$(systemctl show -p EnvironmentFiles "${service}.service")"\
+        || return
+
+    test -z "$envfiles" && return
+
+    envfiles=$(echo $envfiles | \
+        sed -e 's/^EnvironmentFile=//' \
+            -e 's| ([^)]*)$||'
+    )
+
+
+    # Read the file names line-by-line (spaces may be inside)
+    while read line; do
+        debug "trying to read '$line' env file"
+
+        if test ! -r "$line"; then
+            error   "Can not read EnvironmentFile '$line' specified"
+            error_q "in ${service}.service"
+        fi
+
+        # Note that the env file parser in systemd does not perform exactly the
+        # same job.
+        unset PGPORT PGDATA
+        . "$line"
+        envfile_pgdata="$PGDATA"
+        envfile_pgport="$PGPORT"
+        unset PGPORT PGDATA
+
+    done <<<"$envfiles"
 }
 
 
@@ -365,20 +373,21 @@ option_service=postgresql
 option_port=
 option_debug=0
 
-# Content of /etc/sysconfig/$option_service fills those:
-sysconfig_pgdata=
-sysconfig_pgport=
+# Content of EnvironmentFile= files fills those:
+envfile_pgdata=
+envfile_pgport=
 
 # Configuration from (/etc/systemd/system/$option_service.service) fills those
-# variables (this is here for compat, users should user rather sysconfig).
+# variables.
 unit_pgdata=
 unit_pgport=
 
 # Configuration from postgresql.conf:
 conf_pgport=
 
-# Key variables.  Try to fill them postgresql.conf, sysconfig or unit file
-# configuration (the later mentioned has more priority).
+# Key variables.  Try to fill them by postgresql.conf, Environment= statement in
+# service file or EnvironmentFile= content (the later mentioned has more
+# priority).
 pgdata=default
 pgport=default
 
@@ -460,11 +469,14 @@ debug "mode used: $option_mode"
 debug "service name: $option_service"
 debug "port: $pgport"
 
-handle_sysconfig    "$option_mode" "$option_service"
-handle_service_file "$option_mode" "$option_service"
+# Well, until the bug #1139148 is not resolved somehow, we need to stay ugly
+# and parse Environment= and EnvironmentFile= statements.
+handle_service_env "$option_mode" "$option_service"
+handle_service_envfiles "$option_mode" "$option_service"
 
-test -n "$sysconfig_pgdata" && pgdata="$sysconfig_pgdata"
+# EnvironmentFile has bigger priority then Environment
 test -n "$unit_pgdata" && pgdata="$unit_pgdata"
+test -n "$envfile_pgdata" && pgdata="$envfile_pgdata"
 
 test "$pgdata" = default && die "no datadir specified"
 [[ "$pgdata" =~ ^/.* ]] \
@@ -473,8 +485,8 @@ test "$pgdata" = default && die "no datadir specified"
 handle_pgconf "$option_mode" "$pgdata" || die "can not parse postgresql.conf"
 
 test -n "$conf_pgport" && pgport="$conf_pgport"
-test -n "$sysconfig_pgport" && pgport="$sysconfig_pgport"
 test -n "$unit_pgport" && pgport="$unit_pgport"
+test -n "$envfile_pgport" && pgport="$envfile_pgport"
 
 # We expect that for upgrade - the previous stack was in working state (thus
 # running on the default port).
@@ -496,6 +508,9 @@ nor by --port."
 # These variables are read by underlying utilites, rather export them.
 export PGDATA=$pgdata
 export PGPORT=$pgport
+
+debug "final pgdata: $pgdata"
+debug "final pgport: $pgport"
 
 script_result=0
 

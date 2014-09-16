@@ -1,7 +1,8 @@
 # It's not recommended to modify this file in-place, because it will be
-# overwritten during package upgrades.  If you want to customize, the
-# best way is to edit configuration file /etc/postgresql/$SERVICE_NAME
-# (where by default, SERVICE_NAME is postgresql).
+# overwritten during package upgrades.  It is recommended to use systemd
+# "dropin" feature;  i.e. create file with suffix .conf under
+# @userunitsdir@/UNITNAME.service.d directory overriding the
+# unit's defaults.  Look at systemd.unit(5) manual page for more info.
 
 [Unit]
 Description=PostgreSQL database server
@@ -12,8 +13,6 @@ Type=forking
 
 User=postgres
 Group=postgres
-
-EnvironmentFile=-@PKGCONFIG_DIR@/%N
 
 # Where to send early-startup messages from the server (before the logging
 # options of postgresql.conf take effect)
@@ -26,6 +25,8 @@ OOMScoreAdjust=-1000
 # (note that these settings are ignored by Postgres releases before 9.5)
 Environment=PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj
 Environment=PG_OOM_ADJUST_VALUE=0
+
+Environment=PGDATA=@PGDATADIR@
 
 ExecStartPre=@libexecdir@/postgresql-check-db-dir %N
 
