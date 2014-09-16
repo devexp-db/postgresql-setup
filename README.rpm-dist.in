@@ -23,78 +23,78 @@ This document exists to explain the layout of the RPMs for PostgreSQL, to
 describe various RPM specifics, and to document special features found
 in the RPMset.
 
-This document is written to be applicable to version 9.3 of PostgreSQL,
-which is the current version of the RPMs as of this writing. More to the
-point, versions prior to 9.3 are not documented here.
+This document is written to be applicable to version @PGMAJORVERSION@ of PostgreSQL,
+which is the current version of the RPMs as of this writing.  More to the
+point, versions prior to @PGMAJORVERSION@ are not documented here.
 
 This document is intended for use only with the RPMs supplied in Red Hat
 Enterprise Linux, CentOS and Fedora.  Note that there are also "PGDG"
 RPMs available directly from the upstream PostgreSQL project.  Those are
 slightly different.
 
-QUICKSTART (note that this requires postgresql-server installed)
+QUICKSTART (note that this requires @pkgname@-server installed)
 -----------------------------------------------------------------------------
 For a fresh installation, you will need to initialize the cluster first. Run:
 
-	postgresql-setup initdb
+	@pkgname@-setup --initdb
 
 as root, and it will prepare a new database cluster for you. Then you will
 need to start PostgreSQL. Again as root, run:
 
-	systemctl start postgresql.service
+	systemctl start @pkgname@.service
 
-This command will start a postmaster that willl listen on localhost and Unix
-socket 5432 only.  Edit /var/lib/pgsql/data/postgresql.conf and pg_hba.conf
+This command will start a postmaster that will listen on localhost and Unix
+socket 5432 only.  Edit @PGDATADIR@/postgresql.conf and pg_hba.conf
 if you want to allow remote access -- see the section on Grand Unified
 Configuration.
 
 You will probably also want to do
 
-	systemctl enable postgresql.service
+	systemctl enable @pkgname@.service
 
 so that the postmaster is automatically started during future reboots.
 
 The file /var/lib/pgsql/.bash_profile is packaged to help with the
-setting of environment variables. You may edit this file, and it won't be
+setting of environment variables.  You may edit this file, and it won't be
 overwritten during an upgrade.  However, enhancements and bugfixes may
 be added to this file, so be sure to check .bash_profile.rpmnew after
 upgrading.
 
 The user 'postgres' is created during installation of the server subpackage.
-This user by default is UID and GID 26. The user has the default shell set to
-bash, and the home directory set to /var/lib/pgsql.  This user also has no
+This user by default is UID and GID 26.  The user has the default shell set to
+bash, and the home directory set to @POSTGRES_HOMEDIR@.  This user also has no
 default password, so the only way to become this user is to su to it from root.
 If you want to be able to su to it from a non-root account or log in directly
 as 'postgres' you will need to set a password using passwd.
 
 UPGRADING AN INSTALLATION
 -----------------------------------------------------------------------------
-For a minor-version upgrade (such as 9.3.1 to 9.3.2), just install the
-new RPMs; there's usually nothing more to it than that.  Upgrading
-across a major release of PostgreSQL (for example, from 9.2.x to 9.3.x)
-requires more effort.
+For a minor-version upgrade (such as 9.3.1 to 9.3.4; last number changes), just
+install the new RPMs; there's usually nothing more to it than that.  Upgrading
+across a major release of PostgreSQL (for example, from 9.2.x to 9.3.x) requires
+more effort.
 
 If you are upgrading across more than one major release of PostgreSQL
 (for example, from 8.3.x to 9.0.x), you will need to follow the "traditional"
 dump and reload process to bring your data into the new version.  That is:
 *before* upgrading, run pg_dumpall to extract all your data into a SQL file.
-Shut down the old postmaster, upgrade to the new version RPMs, initdb,
+Shut down the old postmaster, upgrade to the new version RPMs, perform initdb,
 and run the dump file through psql to restore your data.
 
 In some major releases, the RPMs also support in-place upgrade from the
 immediately previous major release.  Currently, you can upgrade in-place
 from @PREVMAJORVERSION@.x to @PGMAJORVERSION@.x.  This is much faster than a dump and reload.
 To do an in-place upgrade:
-* shut down the old postmaster ("systemctl stop postgresql.service")
-* optionally make a backup of /var/lib/pgsql/data/ (recommended!)
+* shut down the old postmaster ("systemctl stop @pkgname@.service")
+* optionally make a backup of @PGDATADIR@ (recommended!)
 * install the new version's RPMs (install all the ones you had before,
-  plus postgresql-upgrade)
-* as root, run "postgresql-setup --upgrade"
+  plus @pkgname@-upgrade)
+* as root, run "@pkgname@-setup --upgrade"
 * update the configuration files @PGDATADIR@/*.conf with any
   customizations you had before (your old configuration files are in
   @POSTGRES_HOMEDIR@/data-old/)
-* as root, run "systemctl start postgresql.service"
-* the postgresql-upgrade package can be removed after the update is complete,
+* as root, run "systemctl start @pkgname@.service"
+* the @pkgname@-upgrade package can be removed after the update is complete,
   as can @POSTGRES_HOMEDIR@/data-old/
 
 NOTE: The in-place upgrade process is new and relatively poorly tested,
@@ -109,25 +109,25 @@ choose' what pieces are needed, and what dependencies are required.
 
 The RPMset is packaged in the following subpackages:
 
-postgresql:		Key client programs and basic documentation
-postgresql-libs:	Client shared libraries
-postgresql-server:	Server executables and data files
-postgresql-devel:	Development libraries and include files
-postgresql-test:	The regression tests and associated files
-postgresql-upgrade:	Support files for upgrading from previous major version
-postgresql-docs:	Full documentation in HTML and PDF, the tutorial files
-postgresql-contrib:	Add-on loadable modules and programs
-postgresql-plperl:	PL/Perl procedural language
-postgresql-plpython:	PL/Python procedural language (for Python 2)
-postgresql-plpython3:	PL/Python procedural language (for Python 3)
-postgresql-pltcl:	PL/Tcl procedural language
+@pkgname@:		Key client programs and basic documentation
+@pkgname@-libs:	Client shared libraries
+@pkgname@-server:	Server executables and data files
+@pkgname@-devel:	Development libraries and include files
+@pkgname@-test:	The regression tests and associated files
+@pkgname@-upgrade:	Support files for upgrading from previous major version
+@pkgname@-docs:	Full documentation in HTML and PDF, the tutorial files
+@pkgname@-contrib:	Add-on loadable modules and programs
+@pkgname@-plperl:	PL/Perl procedural language
+@pkgname@-plpython:	PL/Python procedural language (for Python 2)
+@pkgname@-plpython3:	PL/Python procedural language (for Python 3)
+@pkgname@-pltcl:	PL/Tcl procedural language
 
-You have to install postgresql and postgresql-libs to do anything.
-postgresql-server is needed unless you only plan to use the clients to work
-with a remote PostgreSQL server. The others are optional.
+You have to install @pkgname@ and @pkgname@-libs to do anything.
+@pkgname@-server is needed unless you only plan to use the clients to work with
+a remote PostgreSQL server. The others are optional.
 
-Note that there are no postgresql-perl, postgresql-jdbc, postgresql-odbc,
-postgresql-python, postgresql-tcl, or postgresql-tk subpackages any longer.
+Note that there are no @pkgname@-perl, @pkgname@-jdbc, @pkgname@-odbc,
+@pkgname@-python, @pkgname@-tcl, or @pkgname@-tk subpackages any longer.
 Those programs have been split off into separate source distributions.
 They are still available, but in some cases not under those RPM names.
 
@@ -143,10 +143,10 @@ Different distributions have different ideas of some of these file locations.
 In particular, the documentation directory can be /usr/doc, /usr/doc/packages,
 /usr/share/doc, /usr/share/doc/packages, or some other similar path.
 
-However, the Red Hat / CentOS / Fedora RPM's install the files like
-this:
+However, this installation (which usually matches the Red Hat / CentOS / Fedora
+RPM's) install the files like this:
 
-Executables:		/usr/bin
+Executables:		@bindir@
 Libraries:		@libdir@
 Documentation:		/usr/share/doc/postgresql/html
 PDF documentation:	/usr/share/doc/postgresql-docs
@@ -172,8 +172,8 @@ mailing list.
 
 MULTIPLE POSTMASTERS
 -------------------------------------------------------------------------------
-The postgresql-server package contains a systemd "unit" files postgresql.service
-and postgresql@.service.  These first file is used solely to start the default
+The postgresql-server package contains a systemd "unit" files @pkgname@.service
+and @pkgname@@.service.  These first file is used solely to start the default
 PostgreSQL server.  The second one is designed to allow run multiple
 servers on single machine.
 
@@ -188,20 +188,20 @@ enough, 'postgresql@secondary'.  Here are the steps:
 2)	Create the target PGDATA directory, making sure that its parent
 	directories have appropriate ownership and permissions.
 3)	Initdb the target PGDATA with
-	'postgresql-setup --initdb --unit postgresql@secondary --port NNNN'.
+	'@pkgname@-setup --initdb --unit @pkgname@@secondary --port NNNN'.
 	Substitute the NNNN with port number of your decision (make sure that
 	this port is not used by any other service).
 4)	Edit postgresql.conf in the target PGDATA to change settings as needed.
 5)	Start the new service with this command:
-		'systemctl start postgresql@secondary.service'
+		'systemctl start @pkgname@@secondary.service'
 	You will probably also want to run the command
-		'systemctl enable postgresql@secondary.service'
+		'systemctl enable @pkgname@@secondary.service'
 	so that the new service is automatically started in future reboots.
 
 When doing a major-version upgrade of a secondary service, add the service name
-to the postgresql-setup command, for example:
-	'postgresql-setup --upgrade --unit postgresql@secondary'
-This will let postgresql-setup find the correct data directory from the proper
+to the @pkgname@-setup command, for example:
+	'@pkgname@-setup --upgrade --unit @pkgname@@secondary'
+This will let @pkgname@-setup find the correct data directory from the proper
 configuration file.
 
 If you are running SELinux in enforcing mode (which is highly recommended,
@@ -219,14 +219,14 @@ see "man semanage".
 
 REGRESSION TESTING
 -------------------------------------------------------------------------------
-If you install the postgresql-test RPM then you can run the PostgreSQL
+If you install the @pkgname@-test RPM then you can run the PostgreSQL
 regression tests.  These tests stress your database installation and produce
 results that give you assurances that the installation is complete, and that
 your database machine is up to the task.
 
 To run the regression tests under the RPM installation, make sure that the
 PostgreSQL server has been started (if not, su to root and do "systemctl start
-postgresql.service"), su to postgres, cd to @libdir@/pgsql/test/regress and
+@pkgname@.service"), su to postgres, cd to @libdir@/pgsql/test/regress and
 execute "make check".
 This command will start the regression tests and will both show the
 results to the screen and store the results in the file regress.out.
@@ -237,29 +237,29 @@ find out whether the differences are actually significant.  If you need help
 interpreting the results, contact the pgsql-general list at postgresql.org.
 
 After testing, run "make clean" to remove the files generated by the test
-script.  Then you can remove the postgresql-test RPM, if you wish.
+script.  Then you can remove the @pkgname@-test RPM, if you wish.
 
 STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
 -------------------------------------------------------------------------------
 Fedora / Red Hat / CentOS use the systemd package to manage server startup.
 A systemd unit file for PostgreSQL is provided in the server package, as
-/lib/systemd/system/postgresql.service.  To start the postmaster manually,
+@systemdunitsdir@/@pkgname@.service.  To start the postmaster manually,
 as root run
-	systemctl start postgresql.service
+	systemctl start @pkgname@.service
 To shut the postmaster down,
-	systemctl stop postgresql.service
+	systemctl stop @pkgname@.service
 These two commands only change the postmaster's current status.  If you
 want the postmaster to be started automatically during future system startups,
 run
-	systemctl enable postgresql.service
+	systemctl enable @pkgname@.service
 To undo that again,
-	systemctl disable postgresql.service
+	systemctl disable @pkgname@.service
 See "man systemctl" for other possible subcommands.
 
 GRAND UNIFIED CONFIGURATION (GUC) FILE
 -------------------------------------------------------------------------------
 The PostgreSQL server has many tunable parameters -- the file
-/var/lib/pgsql/data/postgresql.conf is the master configuration file for the
+@PGDATADIR@/postgresql.conf is the master configuration file for the
 whole system.
 
 The RPM ships with a mostly-default file -- you will need to tune the
@@ -273,7 +273,7 @@ to adjust pg_hba.conf appropriately.
 LOGGING SET UP
 -------------------------------------------------------------------------------
 By default, the postmaster's stderr log is directed into files placed in a
-pg_log subdirectory of the data directory (ie, /var/lib/pgsql/data/pg_log).
+pg_log subdirectory of the data directory (ie, @PGDATADIR@/pg_log).
 The out-of-the-box configuration rotates among seven files, one for each
 day of the week.  You can adjust this by changing postgresql.conf settings.
 
@@ -339,10 +339,10 @@ CONTRIB FILES
 -------------------------------------------------------------------------------
 The contents of the contrib tree are packaged into the -contrib subpackage
 and are processed with make and make install.  There is documentation in
-/usr/share/doc/postgresql-contrib for these modules.  Most of the
-modules are in /usr/lib/pgsql (or /usr/lib64/pgsql) for loadable
-modules, and binaries are in /usr/bin.  In the future these files may be
-split out, depending upon function and dependencies.
+@pgcontribdocdir@ for these modules.  Most of the
+modules are in @libdir@/pgsql for loadable modules, and binaries are in
+@bindir@.  In the future these files may be split out, depending upon function
+and dependencies.
 
 MORE INFORMATION
 -------------------------------------------------------------------------------

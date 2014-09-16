@@ -1,4 +1,11 @@
 * Testsuite
     - check that none of @PATTERN@ is un-expanded in generated files
+
 * --upgrade
-    - 'echo -n' breks the error messages from 'restorecon'
+    - 'echo -n' breaks the error messages from 'restorecon'
+
+* bash-completion script
+
+* make the README.rpm-dist manual page as it allows user showing the content
+  in formatting based on its own preference.  It allows also easier templating
+  (too-long lines, etc).

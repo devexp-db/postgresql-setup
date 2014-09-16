@@ -1,3 +1,5 @@
+pkgname = postgresql$(DISTSUFF)
+
 SUBDIRS = . doc
 
 bin_SCRIPTS = postgresql$(DISTSUFF)-setup
@@ -19,13 +21,18 @@ nodist_pgdoc_DATA = README.rpm-dist
 # directly, e.g. libexecdir may result into '${exec_prefix}/libexec' -- but we
 # need fully expanded strings there.
 SED_RULES = \
+	-e 's|@__FILE__[@]|$@|g' \
+	-e 's|@bindir[@]|$(bindir)|g' \
 	-e 's|@DISTSUFF[@]|$(DISTSUFF)|g' \
+	-e 's|@docdir[@]|$(docdir)|g' \
 	-e 's|@libdir[@]|$(libdir)|g' \
 	-e 's|@libexecdir[@]|$(libexecdir)|g' \
 	-e 's|@PG_CTL_BIN[@]|$(PG_CTL_BIN)|g' \
 	-e 's|@PGDATADIR[@]|$(PGDATADIR)|g' \
+	-e 's|@pgcontribdocdir[@]|$(pgcontribdocdir)|g' \
 	-e 's|@pgdocdir[@]|$(pgdocdir)|g' \
 	-e 's|@PGENGINE[@]|$(PGENGINE)|g' \
+	-e 's|@pkgname[@]|$(pkgname)|g' \
 	-e 's|@PGMAJORVERSION[@]|$(PGMAJORVERSION)|g' \
 	-e 's|@PGVERSION[@]|$(PGVERSION)|g' \
 	-e 's|@PKGCONFIG_DIR[@]|$(PKGCONFIG_DIR)|g' \
@@ -35,8 +42,7 @@ SED_RULES = \
 	-e 's|@README_DIST[@]|$(README_DIST)|g' \
 	-e 's|@SU[@]|$(SU)|g' \
 	-e 's|@systemdunitsdir[@]|$(systemdunitsdir)|' \
-	-e 's|@VERSION[@]|$(VERSION)|g' \
-	-e 's|@__FILE__[@]|$@|g'
+	-e 's|@VERSION[@]|$(VERSION)|g'
 
 SED_CALL = $(SED) $(SED_RULES)
 
