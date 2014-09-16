@@ -7,9 +7,6 @@ bin_SCRIPTS = postgresql$(DISTSUFF)-setup
 libexec_SCRIPTS = postgresql$(DISTSUFF)-ctl \
 		  postgresql$(DISTSUFF)-check-db-dir
 
-pkgsysconfdir = $(PKGCONFIG_DIR)
-pkgsysconf_DATA = conf/postgresql$(DISTSUFF)
-
 userunitsdir = /etc/systemd/system
 
 systemdunitsdir = $(prefix)/lib/systemd/system
@@ -64,9 +61,6 @@ postgresql$(DISTSUFF)-setup: postgresql-setup.in $(c_s)
 postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
 	$(c_s_script_gen)
 
-conf/postgresql$(DISTSUFF): conf/postgresql.in $(c_s)
-	$(c_s_gen)
-
 # In ideal world, postgresql@.service would be hardlink to postgresql.service.
 # That would require, however, the rhbz#1141824 resolved so we could install
 # system-default drop-in file.  Make a "almost" duplicate files now.
@@ -84,7 +78,7 @@ postgresql$(DISTSUFF).service: postgresql.service.in $(c_s)
 README.rpm-dist: README.rpm-dist.in $(c_s)
 	$(c_s_gen)
 
-EXTRA_DIST = *.in conf/*.in
+EXTRA_DIST = *.in
 
 CLEANFILES = $(bin_SCRIPTS) \
 	     $(libexec_SCRIPTS) \

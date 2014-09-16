@@ -1,7 +1,0 @@
-# Note: changing PGDATA will typically require adjusting SELinux configuration
-# as well; see @README_DIST@.
-#
-# It is not encouraged to configure PGPORT here.  Use the
-# @PGDATADIR@/postgresql.conf configuration file.
-
-PGDATA=@PGDATADIR@
