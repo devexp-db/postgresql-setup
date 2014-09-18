@@ -27,8 +27,6 @@ README_DIST=@README_DIST@
 # Home directory of postgres user
 POSTGRES_HOMEDIR=@POSTGRES_HOMEDIR@
 
-SYSCONFIG_DIR=@PKGCONFIG_DIR@
-
 SU=@SU@
 
 # The where PostgreSQL server listens by default
@@ -54,6 +52,8 @@ to $PGMAJORVERSION).
 
 Options:
   --unit        unit ID of PostgreSQL to run against
+  --port        port where the server will listen for connections
+
   --help        show this help
   --version     show version of this package
   --debug       show basic debugging information
@@ -147,9 +147,13 @@ initdb()
         error $"Data directory $pgdata is not empty!"
         script_result=1
     else
-        info $"Initializing database in $pgdata."
+        port_info=
+        test "$pgport" != "$PGPORT_DEF" \
+            && port_info=$", listening on port '$pgport'"
+
+        info $"Initializing database in '$pgdata'$port_info"
         if perform_initdb; then
-            info $"Initialized, logs are in ${initdb_log}."
+            info $"Initialized, logs are in ${initdb_log}"
         else
             error $"Initializing database failed, see $initdb_log"
             script_result=1
@@ -496,14 +500,13 @@ test "$option_mode" = upgrade -a "$pgport" = default \
 # This is mostly for 'initdb'.  We assume that the default port is $PGPORT_DEF
 # if not set explicitly (only for default service name 'postgresql').
 if test "$pgport" = default -a $option_service == postgresql; then
-    info $"Using the default port '$PGPORT_DEF'."
+    debug $"Using the default port '$PGPORT_DEF'"
     pgport=$PGPORT_DEF
 fi
 
 test "$pgport" = default \
     && die $"\
-Port is not set by postgresql.conf, '$SYSCONFIG_DIR/$option_service' \
-nor by --port."
+Port is not set by postgresql.conf nor by --port."
 
 # These variables are read by underlying utilites, rather export them.
 export PGDATA=$pgdata

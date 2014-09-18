@@ -12,6 +12,10 @@ New in 0.9.2 version
   http://www.spinics.net/lists/fedora-devel/msg200450.html .  We encourage
   users to configure via postgresql.service.d/ drop-in directory.
 
+* postgresql-setup is now able to (the very ugly way, though) to read
+  environment variable setup from systemd's environment files specified
+  via EnvironmentFile= statement (reminded by private rhbz#1135611).
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 0.9.1 version
