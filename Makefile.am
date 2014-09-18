@@ -60,3 +60,22 @@ $(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
 
 install-data-hook:
 	test `id -u` -eq 0 && systemctl daemon-reload
+
+GL_GEN_BIN = gitlog-to-changelog
+GL_GEN = $(SHELL) $(top_srcdir)/$(config_aux_dir)/missing --run \
+	 $(GL_GEN_BIN) --format='%s%n%n%b%n' --since 2013-01-01 > ChangeLog ; \
+	 rc=$$? ; \
+	 if test $$rc -eq 127; then \
+	   if test x"$$IGNORE_CHANGELOG" != xyes; then \
+	     echo >&2 "ERROR: Get the $(GL_GEN_BIN) or ignore ChangeLog by IGNORE_CHANGELOG=yes" ; \
+	     exit 1 ; \
+	   fi ; \
+	 else \
+	   test $$rc -eq 0 ; \
+	 fi
+
+.PHONY: ChangeLog
+ChangeLog:
+	$(AM_V_GEN)$(GL_GEN)
+
+dist-hook: ChangeLog

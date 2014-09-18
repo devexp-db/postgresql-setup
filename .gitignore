@@ -5,6 +5,7 @@ aclocal.m4
 atconfig
 atlocal
 autom4te.cache/
+ChangeLog
 config.log
 config.status
 configure
