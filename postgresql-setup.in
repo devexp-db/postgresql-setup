@@ -515,6 +515,15 @@ export PGPORT=$pgport
 debug "final pgdata: $pgdata"
 debug "final pgport: $pgport"
 
+nr_option=NeedDaemonReload
+nr_out="`systemctl show -p $nr_option $option_service.service 2>/dev/null`"
+if [[ "$nr_out" != "$nr_option=no" ]]; then
+    error   $"Note that systemd configuration for '$option_service' changed."
+    error_q $"You need to perform 'systemctl daemon-reload' otherwise the"
+    error_q $"results of this script can be inadequate."
+    exit 1
+fi
+
 script_result=0
 
 # See how we were called.

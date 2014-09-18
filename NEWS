@@ -16,6 +16,10 @@ New in 0.9.2 version
   environment variable setup from systemd's environment files specified
   via EnvironmentFile= statement (reminded by private rhbz#1135611).
 
+* postgresql-setup now detects whether systemd configuration changed
+  while the `systemctl daemon-reload` was not done yet.  Without
+  daemon-reload, running postgresql-setup could lead to unexpected results.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 0.9.1 version
