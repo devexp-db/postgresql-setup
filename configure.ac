@@ -130,8 +130,12 @@ if test -z "$PREVMAJORVERSION"; then
             | sed 's/.*postgresql-\([[0-9\.]]\+\).*/\1/')
         ;;
     esac
+    AC_MSG_RESULT($PREVMAJORVERSION)
 fi
-AC_MSG_RESULT($PREVMAJORVERSION)
+
+if test -z "$PREV_POSTGRES_BIN"; then
+    AC_MSG_ERROR([can not detect \$PREV_POSTGRES_BIN])
+fi
 
 # Detect PREVPGENGINE
 if test -z "$PREVPGENGINE"; then
@@ -174,3 +178,12 @@ PGSETUP_SUBST_REQ([POSTGRES_HOMEDIR],  [full path to postgres home dir])
 PGSETUP_SUBST_REQ([PGDATADIR],         [full path to postgres data dir])
 
 AC_OUTPUT
+
+AC_MSG_NOTICE([Configured the folowing way:
+
+    PostgreSQL version: $PGVERSION
+    PGDATADIR:          $PGDATADIR
+    Upgrade from:       $PREVMAJORVERSION
+    PREV_POSTGRES_BIN:  $PREV_POSTGRES_BIN
+    README_DIST:        $README_DIST
+])
