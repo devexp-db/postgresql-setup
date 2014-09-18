@@ -21,7 +21,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	} >'$(srcdir)/package.m4'
 
 TESTSUITE = $(srcdir)/testsuite
-CHECK_DEPS = atconfig atlocal $(TESTSUITE) $(TEST_GEN_FILES_LIST)
+CHECK_DEPS = atconfig atlocal $(TESTSUITE) $(srcdir)/../$(TEST_GEN_FILES_LIST)
 
 atlocal: atlocal.in $(c_s)
 	$(INSTANTIATE)
@@ -42,3 +42,4 @@ $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 	$(AM_V_GEN)$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at && \
 	mv $@.tmp $@
 
+DISTCLEANFILES = atconfig atlocal

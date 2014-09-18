@@ -42,7 +42,7 @@ postgresql$(DISTSUFF).service: postgresql.service.in $(c_s)
 README.rpm-dist: README.rpm-dist.in $(c_s)
 	$(INSTANTIATE)
 
-EXTRA_DIST = *.in
+EXTRA_DIST = $(srcdir)/*.in
 
 GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(libexec_SCRIPTS) \
@@ -59,7 +59,7 @@ $(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
 	done
 
 install-data-hook:
-	test `id -u` -eq 0 && systemctl daemon-reload
+	test `id -u` -ne 0 || systemctl daemon-reload
 
 GL_GEN_BIN = gitlog-to-changelog
 GL_GEN = $(SHELL) $(top_srcdir)/$(config_aux_dir)/missing --run \
@@ -79,3 +79,5 @@ ChangeLog:
 	$(AM_V_GEN)$(GL_GEN)
 
 dist-hook: ChangeLog
+
+DISTCLEANFILES = ChangeLog

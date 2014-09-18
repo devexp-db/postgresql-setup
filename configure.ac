@@ -15,7 +15,7 @@ AC_SUBST([DISTSUFF])
 AC_CONFIG_TESTDIR(tests)
 AC_CONFIG_FILES([tests/Makefile])
 AM_MISSING_PROG([AUTOM4TE], [autom4te])
-AC_SUBST([TEST_GEN_FILES_LIST], [$\(top_srcdir\)/.generated_files])
+AC_SUBST([TEST_GEN_FILES_LIST], [.generated_files])
 
 
 # Instatiating generated files by sed instead of config.status.
