@@ -20,6 +20,11 @@ New in 0.9.2 version
   while the `systemctl daemon-reload` was not done yet.  Without
   daemon-reload, running postgresql-setup could lead to unexpected results.
 
+* When the --new-systemd-unit (together with --unit & --port & --datadir) is
+  given, postgresql-setup is now able to generate very simple drop-in
+  configuration file - so instantiating another PostgreSQL server may be
+  done by single command.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 0.9.1 version

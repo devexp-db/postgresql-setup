@@ -53,6 +53,9 @@ to $PGMAJORVERSION).
 Options:
   --unit        unit ID of PostgreSQL to run against
   --port        port where the server will listen for connections
+  --datadir     specify absolute path to DB data directory
+  --systemd-config  auto-generate system'd configuration for not yet configured
+                units, this requires --datadir option set
 
   --help        show this help
   --version     show version of this package
@@ -75,7 +78,9 @@ die()     { echo >&2 $"FATAL: $@" ; exit 1 ; }
 error()   { echo >&2 $"ERROR: $@" ; }
 error_q() { echo >&2 $"       $@" ; }
 warn()    { echo >&2 $"WARNING: $@" ; }
+warn_q()  { echo >&2 $"         $@" ; }
 info()    { echo >&2 $" * $@" ; }
+info_q()  { echo >&2 $"   $@" ; }
 debug()   { test "$option_debug" = "1" && echo >&2 $"DEBUG: $@";  }
 
 
@@ -247,6 +252,30 @@ upgrade()
 }
 
 
+generate_systemd_dropin()
+{
+    local service="$1"
+    local dropindir="@userunitsdir@/$service.service.d"
+    local dropin="$dropindir/30-postgresql-setup.conf"
+
+    test -e "$dropindir" \
+        && die "The systemd drop-in directory '$dropindir' exists already"
+
+    mkdir -p "$dropindir" \
+        || die "Can not create '$dropindir'"
+
+    cat <<EOF > "$dropin" || die "Can not write to '$dropin'"
+[Service]
+Environment=PGDATA=$pgdata
+EOF
+
+    reload_systemd="systemctl daemon-reload"
+    $reload_systemd || die $"Can not perform '$reload_systemd'"
+
+    info $"The '$option_service' configured in '$dropindir' directory"
+}
+
+
 handle_service_env()
 {
     local mode="$1"
@@ -375,6 +404,7 @@ esac
 option_mode=none
 option_service=postgresql
 option_port=
+option_pgdata=
 option_debug=0
 
 # Content of EnvironmentFile= files fills those:
@@ -395,11 +425,13 @@ conf_pgport=
 pgdata=default
 pgport=default
 
+## PARSE SCRIPT ARGUMENTS ##
 
 short_opts=""
 long_opts="\
 initdb,upgrade,\
-unit:,service:,port:,\
+new-systemd-unit,\
+unit:,service:,port:,datadir:,\
 debug,\
 version,help,usage"
 
@@ -426,6 +458,16 @@ while true; do
 
         --port)
             option_port=$2
+            shift 2
+            ;;
+
+        --new-systemd-unit)
+            option_systemd_config=yes
+            shift
+            ;;
+
+        --datadir)
+            option_pgdata=$2
             shift 2
             ;;
 
@@ -461,36 +503,67 @@ test $parse_fail -ne 0 && die "can't parse arguments"
 test "$option_mode" = none \
     && die "no mode specified, use --initdb or --upgrade, or --help"
 
-[[ "$option_port" =~ ^[0-9]*$ ]] \
-    || die $"port set to '$option_port', must be integer number"
+## GATHER THE SETUP FIRST ##
 
 initdb_log="$POSTGRES_HOMEDIR/initdb_${option_service}.log"
 upgrade_log="$POSTGRES_HOMEDIR/upgrade_${option_service}.log"
 
-test -n "$option_port" && pgport=$option_port
-
 debug "mode used: $option_mode"
 debug "service name: $option_service"
-debug "port: $pgport"
 
 # Well, until the bug #1139148 is not resolved somehow, we need to stay ugly
 # and parse Environment= and EnvironmentFile= statements.
 handle_service_env "$option_mode" "$option_service"
 handle_service_envfiles "$option_mode" "$option_service"
 
-# EnvironmentFile has bigger priority then Environment
+## DEAL WITH PGDATA ##
+
+# EnvironmentFile has bigger priority then Environment in systemd
 test -n "$unit_pgdata" && pgdata="$unit_pgdata"
 test -n "$envfile_pgdata" && pgdata="$envfile_pgdata"
 
-test "$pgdata" = default && die "no datadir specified"
+# Check that nothing breaks --new-systemd-unit
+if test "$option_systemd_config" = yes; then
+    if test "$option_service" = postgresql; then
+        die $"Default unit 'postgresql.service' should not need --new-systemd-unit"
+    elif test "$pgdata" != default; then
+        die $"Option --new-systemd-unit failed, is '$option_service.service'"\
+            $"already configured?"
+    elif test -z "$option_pgdata"; then
+        die $"Option --new-systemd-unit requires --datadir"
+    fi
+
+    # pgdata == default && option_pgdata is set
+    pgdata="$option_pgdata"
+
+elif test -n "$option_pgdata"; then
+    warn   $"--datadir option is ignored, either use --new-systemd-unit"
+    warn_q $"option, or configure the systemd unit manually."
+fi
+
+test "$pgdata" = default \
+    && die $"no db datadir (PGDATA) configured for '$option_service.service'"
+
 [[ "$pgdata" =~ ^/.* ]] \
     || die $"the PostgreSQL datadir not absolute path: '$pgdata', try --debug"
 
+test "$option_systemd_config" = yes \
+    && generate_systemd_dropin "$option_service"
+
+## GATHER DATA FROM INITIALIZED DATADIR ##
+
+# for upgrade only
 handle_pgconf "$option_mode" "$pgdata" || die "can not parse postgresql.conf"
 
+## DEAL WITH PGPORT ##
+
+test -n "$option_port" && pgport=$option_port
 test -n "$conf_pgport" && pgport="$conf_pgport"
 test -n "$unit_pgport" && pgport="$unit_pgport"
 test -n "$envfile_pgport" && pgport="$envfile_pgport"
+
+test -n "$option_port" -a "$option_port" != "$pgport" \
+    && warn $"--pgport ignored, by configuration pgport='$pgport'"
 
 # We expect that for upgrade - the previous stack was in working state (thus
 # running on the default port).
@@ -508,12 +581,10 @@ test "$pgport" = default \
     && die $"\
 Port is not set by postgresql.conf nor by --port."
 
-# These variables are read by underlying utilites, rather export them.
-export PGDATA=$pgdata
-export PGPORT=$pgport
+[[ "$option_port" =~ ^[0-9]*$ ]] \
+    || die $"port set to '$option_port', must be integer number"
 
-debug "final pgdata: $pgdata"
-debug "final pgport: $pgport"
+## LAST CHECK THE SETUP ##
 
 nr_option=NeedDaemonReload
 nr_out="`systemctl show -p $nr_option $option_service.service 2>/dev/null`"
@@ -523,6 +594,13 @@ if [[ "$nr_out" != "$nr_option=no" ]]; then
     error_q $"results of this script can be inadequate."
     exit 1
 fi
+
+# These variables are read by underlying utilites, rather export them.
+export PGDATA=$pgdata
+export PGPORT=$pgport
+
+debug "final pgdata: $pgdata"
+debug "final pgport: $pgport"
 
 script_result=0
 
