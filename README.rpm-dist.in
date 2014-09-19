@@ -173,26 +173,30 @@ mailing list.
 MULTIPLE POSTMASTERS
 -------------------------------------------------------------------------------
 The postgresql-server package contains a systemd "unit" files @pkgname@.service
-and @pkgname@@.service.  These first file is used solely to start the default
-PostgreSQL server.  The second one is designed to allow run multiple
-servers on single machine.
+and @pkgname@@.service.  The first file is used solely to start the default
+PostgreSQL server.  The second one is designed to allow instantiating
+additional PostgreSQL servers on same machine.
 
 As an example, let us create a secondary PostgreSQL service called, creatively
 enough, 'postgresql@secondary'.  Here are the steps:
 
-1)	Create a file named @PKGCONFIG_DIR@/postgresql@secondary
-	and this line in it:
-		PGDATA=/path/to/data/directory
-	Replace the "/path/to/data/directory" with appropriate settings that
-	don't conflict with any other PostgreSQL setup.
-2)	Create the target PGDATA directory, making sure that its parent
-	directories have appropriate ownership and permissions.
-3)	Initdb the target PGDATA with
-	'@pkgname@-setup --initdb --unit @pkgname@@secondary --port NNNN'.
-	Substitute the NNNN with port number of your decision (make sure that
-	this port is not used by any other service).
-4)	Edit postgresql.conf in the target PGDATA to change settings as needed.
-5)	Start the new service with this command:
+1)	Run the following command to create the necessary configuration and
+	to initialize the new database cluster:
+		@pkgname@-setup --initdb \
+		    --unit postgresql@secondary \
+		    --new-systemd-unit \
+		    --datadir /path/to/data/directory \
+		    --port NNNN
+	Replace the "/path/to/data/directory" path and NNNN port with
+	appropriate settings that don't conflict with any other PostgreSQL
+	setup.  Make sure that the parent directory of specified path has
+	appropriate ownership and permissions.  Note the SELinux issues
+	mentioned below.
+
+2)	Edit postgresql.conf in the target 'datadir' directory to change
+	settings as needed.
+
+3)	Start the new service with this command:
 		'systemctl start @pkgname@@secondary.service'
 	You will probably also want to run the command
 		'systemctl enable @pkgname@@secondary.service'
