@@ -17,7 +17,7 @@ service_name="$1"
 if [ -z "$PGDATA" ]; then
     echo $"You try to start '$service_name' service"
     echo $"but the required \$PGDATA environment variable is not set."
-    echo $"You should use the @userunitsdir@/$service_name.d/ANYTHING.conf"
+    echo $"You should use the @userunitsdir@/$service_name.service.d/ANYTHING.conf"
     echo $"configuration file to set \$PGDATA.  For more info see"
     echo $"the @README_DIST@ file."
 
@@ -58,7 +58,7 @@ then
     elif [ x`cat "$PGDATA/PG_VERSION"` = x"$PREVMAJORVERSION" ]
     then
         echo $"An old version of the database format was found."
-        echo $"Use \"postgresql-setup upgrade\" to upgrade to version $PGMAJORVERSION."
+        echo $"Use \"postgresql-setup --upgrade\" to upgrade to version $PGMAJORVERSION."
         echo $"See $PGDOCDIR/README.rpm-dist for more information."
         exit 1
     else
@@ -70,7 +70,7 @@ then
 else
     # No existing PGDATA! Warn the user to initdb it.
     echo $"\"$PGDATA\" is missing or empty."
-    echo $"Use \"postgresql-setup initdb\" to initialize the database cluster."
+    echo $"Use \"postgresql-setup --initdb\" to initialize the database cluster."
     echo $"See $PGDOCDIR/README.rpm-dist for more information."
     exit 1
 fi

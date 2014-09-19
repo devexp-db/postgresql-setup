@@ -1,11 +1,22 @@
-* Testsuite
-    - check that none of @PATTERN@ is un-expanded in generated files
+* testsuite
+    - check bash "static" analysis
 
-* --upgrade
-    - 'echo -n' breaks the error messages from 'restorecon'
+* root-testsuite (future)
+    - check that --port is required for @ units
+    - check that the --port option in '--{initdb,upgrade} --port XXX' is ignored
+      (and user warned) when port is already specified somewhere else (systemd
+      or postgresql.conf)
+
+* warn about privileged port usage
 
 * bash-completion script
+
+* coloring?
 
 * make the README.rpm-dist manual page as it allows user showing the content
   in formatting based on its own preference.  It allows also easier templating
   (too-long lines, etc).
+
+* build system
+    - generate the binary scripts outside '$(srcdir)' as maintainer tends to
+      edit generated file instead its '*.in' parent
