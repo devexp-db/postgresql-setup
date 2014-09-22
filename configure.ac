@@ -133,12 +133,12 @@ if test -z "$PREVMAJORVERSION"; then
     AC_MSG_RESULT($PREVMAJORVERSION)
 fi
 
-if test -z "$PREV_POSTGRES_BIN"; then
-    AC_MSG_ERROR([can not detect \$PREV_POSTGRES_BIN])
-fi
-
 # Detect PREVPGENGINE
 if test -z "$PREVPGENGINE"; then
+    if test -z "$PREV_POSTGRES_BIN"; then
+        AC_MSG_ERROR([can not detect \$PREV_POSTGRES_BIN])
+    fi
+
     PREVPGENGINE=`AS_DIRNAME($PREV_POSTGRES_BIN)`
 fi
 
