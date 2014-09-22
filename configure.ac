@@ -1,4 +1,4 @@
-AC_INIT([postgresql-setup], [0.9.2], [praiskup@redhat.com])
+AC_INIT([postgresql-setup], [1.0.0], [praiskup@redhat.com])
 AC_CONFIG_AUX_DIR(auxdir)
 config_aux_dir=auxdir
 AC_SUBST([config_aux_dir])
