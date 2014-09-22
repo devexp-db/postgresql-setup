@@ -1,17 +1,36 @@
 AT_INIT
 AT_COLOR_TESTS
 
-AT_SETUP([Check files are generated correctly])
-AT_CHECK([file_list=$abs_top_builddir/$TEST_GEN_FILES_LIST
-test -f "$file_list" || { echo "no such file '$file_list'" ; exit 1 ; }
+m4_define([gen_file_list], [$abs_top_builddir/$TEST_GEN_FILES_LIST])
+
+AT_SETUP([Files instantiated correctly])
+AT_CHECK([
+test -f "gen_file_list" || { echo "no such file 'gen_file_list'" ; exit 1 ; }
 
 pattern='@[[a-zA-Z0-9_]]*@'
 
 while read file; do
     file=$abs_top_builddir/$file
     grep $pattern $file && echo "file $file is incomplete" && exit 1
-done < $file_list
+done < gen_file_list
 
 exit 0
+])
+AT_CLEANUP
+
+AT_SETUP([Basic bash syntax check])
+AT_CHECK([file_list=$abs_top_builddir/$TEST_GEN_FILES_LIST
+while read file; do
+    file=$abs_top_builddir/$file
+    line="`head -1 $file`"
+    case "$line" in
+        "#!/bin/bash")
+            bash -n $file || exit 1
+            ;;
+        "#!/bin/sh")
+            sh -n $file || exit 1
+            ;;
+    esac
+done < gen_file_list
 ])
 AT_CLEANUP
