@@ -33,7 +33,7 @@ SU=@SU@
 PGPORT_DEF=5432
 
 USAGE_STRING=$"\
-Usage: $0 MODE_OPTION [--unit=[UNIT_NAME]] [OPTION...]
+Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]
 
 Script is aimed to help sysadmin with basic database cluster administration.
 Usually, \"postgresql-setup --initdb\" and \"postgresql-setup --upgrade\" is
