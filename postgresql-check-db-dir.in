@@ -27,7 +27,7 @@ fi
 # Warn the user that the configuration should be adjusted via drop-in, in case
 # the $PGDATA variable is set different way (and non-default service name is
 # used).
-conf_dir="@userunitsdir@/$service_name.d"
+conf_dir="@userunitsdir@/$service_name.service.d"
 if [[ "$service_name" == *@* ]] &&  test ! -d "$conf_dir"; then
     echo >&2 $"WARNING: Note that the '$conf_dir'"
     echo >&2 $"directory does not exist while you are using non-default service"
