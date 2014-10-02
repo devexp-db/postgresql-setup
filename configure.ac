@@ -17,6 +17,16 @@ AC_CONFIG_FILES([tests/Makefile])
 AM_MISSING_PROG([AUTOM4TE], [autom4te])
 AC_SUBST([TEST_GEN_FILES_LIST], [.generated_files])
 
+# TODO: detect systemd/sysvinit.  Also, we should probably be able to install
+# both configuration at once when needed.
+AC_ARG_WITH([sysvinit],
+    AS_HELP_STRING([--with-sysvinit],
+                   [prepares sys v init script]),
+    [WANT_SYSVINIT=1],
+    [WANT_SYSVINIT=0]
+)
+
+AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
 
 # Instatiating generated files by sed instead of config.status.
 # This is encouraged by autoconf documentation itself because if we used

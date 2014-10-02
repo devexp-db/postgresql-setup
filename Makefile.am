@@ -9,8 +9,13 @@ libexec_SCRIPTS = postgresql$(DISTSUFF)-ctl \
 
 userunitsdir = /etc/systemd/system
 
+if WANT_SYSVINIT
+initscriptsdir = $(prefix)/etc/init.d
+nodist_initscripts_DATA = postgresql$(DISTSUFF).init
+else
 systemdunitsdir = $(prefix)/lib/systemd/system
 nodist_systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
+endif
 
 nodist_doc_DATA = $(README_DIST_BASENAME)
 
@@ -24,6 +29,9 @@ postgresql$(DISTSUFF)-setup: postgresql-setup.in $(c_s)
 
 postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
 	$(INSTANTIATE_SCRIPT)
+
+postgresql$(DISTSUFF).init: postgresql.init.in $(c_s)
+	$(INSTANTIATE)
 
 # In ideal world, postgresql@.service would be hardlink to postgresql.service.
 # That would require, however, the rhbz#1141824 resolved so we could install
@@ -48,7 +56,8 @@ GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(libexec_SCRIPTS) \
 		  $(nodist_doc_DATA) \
 		  $(pkgsysconf_DATA) \
-		  $(nodist_systemdunits_DATA)
+		  $(nodist_systemdunits_DATA) \
+		  $(nodist_initscripts_DATA)
 
 CLEANFILES = $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
 

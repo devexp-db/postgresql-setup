@@ -1,6 +1,13 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-New in 1.0.0 version
+New in 2.0 version
+
+* With configre --with-sysvinit we are able to install sysvinit
+  configuration instead of systemd.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New in 1.0 version
 
 * The postgresql-check-db-dir is now more strict to admin's configuration
   and tries to avoid future incompatibilities by warning about the
