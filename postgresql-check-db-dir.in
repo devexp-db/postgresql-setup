@@ -45,8 +45,8 @@ PGMAJORVERSION=@PGMAJORVERSION@
 # Previous major version, e.g., 8.4, for upgrades
 PREVMAJORVERSION=@PREVMAJORVERSION@
 
-# Directory containing the postgresql package's documentation
-PGDOCDIR=@pgdocdir@
+# Distribution README file
+README_DIST=@README_DIST@
 
 # Check for the PGDATA structure
 if [ -f "$PGDATA/PG_VERSION" ] && [ -d "$PGDATA/base" ]
@@ -59,19 +59,19 @@ then
     then
         echo $"An old version of the database format was found."
         echo $"Use \"postgresql-setup --upgrade\" to upgrade to version $PGMAJORVERSION."
-        echo $"See $PGDOCDIR/README.rpm-dist for more information."
+        echo $"See $README_DIST for more information."
         exit 1
     else
         echo $"An old version of the database format was found."
         echo $"You need to dump and reload before using PostgreSQL $PGMAJORVERSION."
-        echo $"See $PGDOCDIR/README.rpm-dist for more information."
+        echo $"See $README_DIST for more information."
         exit 1
     fi
 else
     # No existing PGDATA! Warn the user to initdb it.
     echo $"\"$PGDATA\" is missing or empty."
     echo $"Use \"postgresql-setup --initdb\" to initialize the database cluster."
-    echo $"See $PGDOCDIR/README.rpm-dist for more information."
+    echo $"See $README_DIST for more information."
     exit 1
 fi
 

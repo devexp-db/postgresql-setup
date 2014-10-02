@@ -12,7 +12,7 @@ userunitsdir = /etc/systemd/system
 systemdunitsdir = $(prefix)/lib/systemd/system
 nodist_systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
 
-nodist_pgdoc_DATA = README.rpm-dist
+nodist_doc_DATA = $(README_DIST_BASENAME)
 
 noinst_DATA = $(TEST_GEN_FILES_LIST)
 
@@ -39,14 +39,14 @@ postgresql$(DISTSUFF).service: postgresql.service.in $(c_s)
 	    -e 's|@PGDATA_ENVIRONMENT[@]|Environment=PGDATA=$(PGDATADIR)|' \
 	    $< > $@
 
-README.rpm-dist: README.rpm-dist.in $(c_s)
+$(README_DIST_BASENAME): $(README_DIST_BASENAME).in $(c_s)
 	$(INSTANTIATE)
 
 EXTRA_DIST = $(srcdir)/*.in
 
 GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(libexec_SCRIPTS) \
-		  $(nodist_pgdoc_DATA) \
+		  $(nodist_doc_DATA) \
 		  $(pkgsysconf_DATA) \
 		  $(nodist_systemdunits_DATA)
 

@@ -142,14 +142,6 @@ if test -z "$PREVPGENGINE"; then
     PREVPGENGINE=`AS_DIRNAME($PREV_POSTGRES_BIN)`
 fi
 
-# Detect where distribution-like README is
-case "$pgsetup_cv_os_family" in
-redhat)
-    test -z "$README_DIST" &&
-        README_DIST=`rpm -ql postgresql | grep README | grep dist`
-    ;;
-esac
-
 if test -z "$PKGCONFIG_DIR" -a "$pgsetup_cv_os_family" = redhat; then
     PKGCONFIG_DIR=/etc/postgresql
 fi
@@ -164,15 +156,20 @@ fi
 
 pgdocdir="\${datarootdir}/doc/\${pkgname}"
 pgcontribdocdir="\${datarootdir}/doc/\${pkgname}-contrib"
+
+README_DIST_BASENAME=README.rpm-dist
+README_DIST="\${docdir}/$README_DIST_BASENAME"
+
 AC_SUBST([pgdocdir])
 AC_SUBST([pgcontribdocdir])
+AC_SUBST([README_DIST])
+AC_SUBST([README_DIST_BASENAME])
 
 PGSETUP_SUBST_REQ([PGVERSION],         [full PG version])
 PGSETUP_SUBST_REQ([PGMAJORVERSION],    [major PG version])
 PGSETUP_SUBST_REQ([PGENGINE],          [directory where PG server resides])
 PGSETUP_SUBST_REQ([PREVMAJORVERSION],  [PG major version to upgrade _from_])
 PGSETUP_SUBST_REQ([PREVPGENGINE],      [directory where old PG server resides])
-PGSETUP_SUBST_REQ([README_DIST],       [README file for distribution])
 PGSETUP_SUBST_REQ([PKGCONFIG_DIR],     [where configuration should be stored])
 PGSETUP_SUBST_REQ([POSTGRES_HOMEDIR],  [full path to postgres home dir])
 PGSETUP_SUBST_REQ([PGDATADIR],         [full path to postgres data dir])
@@ -185,5 +182,4 @@ AC_MSG_NOTICE([Configured the folowing way:
     PGDATADIR:          $PGDATADIR
     Upgrade from:       $PREVMAJORVERSION
     PREV_POSTGRES_BIN:  $PREV_POSTGRES_BIN
-    README_DIST:        $README_DIST
 ])
