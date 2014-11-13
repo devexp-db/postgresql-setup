@@ -11,7 +11,7 @@ userunitsdir = /etc/systemd/system
 
 if WANT_SYSVINIT
 initscriptsdir = $(sysconfdir)/init.d
-nodist_initscripts_DATA = postgresql$(DISTSUFF).init
+nodist_initscripts_DATA = postgresql$(DISTSUFF)
 else
 systemdunitsdir = $(prefix)/lib/systemd/system
 nodist_systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
@@ -30,7 +30,7 @@ postgresql$(DISTSUFF)-setup: postgresql-setup.in $(c_s)
 postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
 	$(INSTANTIATE_SCRIPT)
 
-postgresql$(DISTSUFF).init: postgresql.init.in $(c_s)
+postgresql$(DISTSUFF): postgresql.init.in $(c_s)
 	$(INSTANTIATE)
 
 # In ideal world, postgresql@.service would be hardlink to postgresql.service.
