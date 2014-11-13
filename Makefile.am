@@ -10,7 +10,7 @@ libexec_SCRIPTS = postgresql$(DISTSUFF)-ctl \
 userunitsdir = /etc/systemd/system
 
 if WANT_SYSVINIT
-initscriptsdir = $(prefix)/etc/init.d
+initscriptsdir = $(sysconfdir)/init.d
 nodist_initscripts_DATA = postgresql$(DISTSUFF).init
 else
 systemdunitsdir = $(prefix)/lib/systemd/system
