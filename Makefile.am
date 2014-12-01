@@ -15,6 +15,9 @@ nodist_initscripts_DATA = postgresql$(DISTSUFF)
 else
 systemdunitsdir = $(prefix)/lib/systemd/system
 nodist_systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
+
+systemdlegacyscriptsdir = $(prefix)/libexec/initscripts/legacy-actions/postgresql$(DISTSUFF)
+nodist_systemdlegacyscripts_DATA = initdb upgrade
 endif
 
 nodist_doc_DATA = $(README_DIST_BASENAME)
@@ -32,6 +35,13 @@ postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
 
 postgresql$(DISTSUFF): postgresql.init.in $(c_s)
 	$(INSTANTIATE)
+
+initdb: initdb.in $(c_s)
+	$(INSTANTIATE_SCRIPT)
+upgrade: upgrade.in $(c_s)
+	$(INSTANTIATE_SCRIPT)
+
+
 
 # In ideal world, postgresql@.service would be hardlink to postgresql.service.
 # That would require, however, the rhbz#1141824 resolved so we could install
@@ -57,7 +67,8 @@ GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(nodist_doc_DATA) \
 		  $(pkgsysconf_DATA) \
 		  $(nodist_systemdunits_DATA) \
-		  $(nodist_initscripts_DATA)
+		  $(nodist_initscripts_DATA) \
+		  $(nodist_systemdlegacyscripts_DATA)
 
 CLEANFILES = $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
 

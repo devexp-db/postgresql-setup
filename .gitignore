@@ -25,3 +25,5 @@ postgresql*.init
 README.rpm-dist
 testsuite
 testsuite.dir/
+initdb
+upgrade
