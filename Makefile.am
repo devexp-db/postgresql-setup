@@ -11,16 +11,16 @@ userunitsdir = /etc/systemd/system
 
 if WANT_SYSVINIT
 initscriptsdir = $(sysconfdir)/rc.d/init.d
-nodist_initscripts_DATA = postgresql$(DISTSUFF)
+initscripts_DATA = postgresql$(DISTSUFF)
 else
 systemdunitsdir = $(prefix)/lib/systemd/system
-nodist_systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
+systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
 
 systemdlegacyscriptsdir = $(prefix)/libexec/initscripts/legacy-actions/postgresql$(DISTSUFF)
-nodist_systemdlegacyscripts_DATA = initdb upgrade
+systemdlegacyscripts_DATA = initdb upgrade
 endif
 
-nodist_doc_DATA = $(README_DIST_BASENAME)
+doc_DATA = $(README_DIST_BASENAME)
 
 noinst_DATA = $(TEST_GEN_FILES_LIST)
 
@@ -64,11 +64,11 @@ EXTRA_DIST = $(srcdir)/*.in
 
 GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(libexec_SCRIPTS) \
-		  $(nodist_doc_DATA) \
+		  $(doc_DATA) \
 		  $(pkgsysconf_DATA) \
-		  $(nodist_systemdunits_DATA) \
-		  $(nodist_initscripts_DATA) \
-		  $(nodist_systemdlegacyscripts_DATA)
+		  $(systemdunits_DATA) \
+		  $(initscripts_DATA) \
+		  $(systemdlegacyscripts_DATA)
 
 CLEANFILES = $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
 
