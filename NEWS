@@ -5,6 +5,9 @@ New in 2.0 version
 * With configre --with-sysvinit we are able to install sysvinit
   configuration instead of systemd.
 
+* For systemd systems, the "legacy" scripts for 'service postgresql initdb'
+  and 'service postgresql upgrade' are installed.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 1.0 version
