@@ -1,4 +1,5 @@
-AC_INIT([postgresql-setup], [2.0], [praiskup@redhat.com])
+# Use the MAJ.MIN[~SUFF].  Note that X.X > X.X~SUFF!
+AC_INIT([postgresql-setup], [3.0~dev], [praiskup@redhat.com])
 AC_CONFIG_AUX_DIR(auxdir)
 config_aux_dir=auxdir
 AC_SUBST([config_aux_dir])
@@ -45,8 +46,9 @@ sed_subst_var_pattern(pgcontribdocdir)
 sed_subst_var_pattern(PGDATADIR)
 sed_subst_var_pattern(pgdocdir)
 sed_subst_var_pattern(PGENGINE)
-sed_subst_var_pattern(PGVERSION)
 sed_subst_var_pattern(PGMAJORVERSION)
+sed_subst_var_pattern(PG_UPGRADE_BIN_USER_OPT)
+sed_subst_var_pattern(PGVERSION)
 sed_subst_var_pattern(PKGCONFIG_DIR)
 sed_subst_var_pattern(pkgname)
 sed_subst_var_pattern(POSTGRES_HOMEDIR)
@@ -103,6 +105,11 @@ if test -z "$PGVERSION" -a -z "$PGMAJORVERSION"; then
 
     PGMAJORVERSION=${PGVERSION%%.[[0-9]]}
 fi
+
+AX_COMPARE_VERSION([9.4], [lt], [$PGVERSION],
+  [PG_UPGRADE_BIN_USER_OPT="--username"],
+  [PG_UPGRADE_BIN_USER_OPT="--user"])
+AC_SUBST([PG_UPGRADE_BIN_USER_OPT])
 
 # detect PGENGINE location (where the binaries are), if needed
 if test -z "$PGENGINE"; then

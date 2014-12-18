@@ -228,7 +228,7 @@ upgrade()
                         '--new-datadir=$pgdata' \
                         --link \
                         '--old-port=$PGPORT' '--new-port=$PGPORT' \
-                        --user=postgres \
+                        @PG_UPGRADE_BIN_USER_OPT@=postgres \
                         $PGSETUP_PGUPGRADE_OPTIONS" \
                                 >> "$upgrade_log" 2>&1 < /dev/null
         if [ $? -ne 0 ]; then
