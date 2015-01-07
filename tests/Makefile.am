@@ -21,7 +21,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	} >'$(srcdir)/package.m4'
 
 TESTSUITE = $(srcdir)/testsuite
-CHECK_DEPS = atconfig atlocal $(TESTSUITE) $(srcdir)/../$(TEST_GEN_FILES_LIST)
+CHECK_DEPS = atconfig atlocal $(TESTSUITE) $(top_builddir)/$(TEST_GEN_FILES_LIST)
 
 atlocal: atlocal.in $(c_s)
 	$(INSTANTIATE)

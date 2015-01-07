@@ -66,7 +66,7 @@ SED_CALL="\$(SED) \$(SED_RULES)"
 m4_pattern_allow(AM_V_GEN)
 INSTANTIATE="\$(AM_V_GEN)\$(SED_CALL) \$< > \$@"
 INSTANTIATE_SCRIPT="\$(INSTANTIATE) && chmod +x \$@"
-c_s='$(top_srcdir)/config.status'
+c_s='$(top_builddir)/config.status'
 
 AC_SUBST([SED_RULES])
 AC_SUBST([SED_CALL])
