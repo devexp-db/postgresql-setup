@@ -85,7 +85,7 @@ install-data-hook:
 GL_GEN_BIN = gitlog-to-changelog
 GL_GEN = if test -d .git; then \
 	   $(SHELL) $(top_srcdir)/$(config_aux_dir)/missing --run \
-	   $(GL_GEN_BIN) --format='%s%n%n%b%n' --since 2013-01-01 > ChangeLog ; \
+	   $(GL_GEN_BIN) --format='%s%n%n%b%n' --since 2014-06-30 > ChangeLog ; \
 	   rc=$$? ; \
 	   if test $$rc -eq 127; then \
 	     if test x"$$IGNORE_CHANGELOG" != xyes; then \
