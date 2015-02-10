@@ -27,9 +27,8 @@ README_DIST=@README_DIST@
 # Home directory of postgres user
 POSTGRES_HOMEDIR=@POSTGRES_HOMEDIR@
 
-SU=@SU@
-
-SU_L_POSTGRES="$SU -s /bin/sh -l postgres"
+# Convenient tool-aliases
+SU_POSTGRES="@SU_POSTGRES@"
 
 # The where PostgreSQL server listens by default
 PGPORT_DEF=5432
@@ -126,7 +125,7 @@ perform_initdb()
     initdbcmd="$PGENGINE/initdb --pgdata='$pgdata' --auth='ident'"
     initdbcmd+=" $PGSETUP_INITDB_OPTIONS"
 
-    $SU_L_POSTGRES -c "$initdbcmd" >> "$initdb_log" 2>&1 < /dev/null
+    $SU_POSTGRES -c "$initdbcmd" >> "$initdb_log" 2>&1 < /dev/null
 
     # Create directory for postmaster log files
     mkdir "$pgdata/pg_log"
@@ -223,7 +222,7 @@ upgrade()
     # Create empty new-format database
     if perform_initdb; then
         # Do the upgrade
-        $SU_L_POSTGRES -c "$PGENGINE/pg_upgrade \
+        $SU_POSTGRES -c "$PGENGINE/pg_upgrade \
                         '--old-bindir=$PREVPGENGINE' \
                         '--new-bindir=$PGENGINE' \
                         '--old-datadir=$pgdataold' \

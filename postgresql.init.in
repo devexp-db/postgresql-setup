@@ -46,14 +46,7 @@ then
 	NAME=${NAME:3}
 fi
 
-# For SELinux we need to use 'runuser' not 'su'
-if [ -x /sbin/runuser ]
-then
-    SU=runuser
-else
-    SU=su
-fi
-
+SU_POSTGRES="@SU_POSTGRES@"
 
 # Set defaults for configuration variables
 PGENGINE=/usr/bin
@@ -120,7 +113,7 @@ start(){
 
 	echo -n "$PSQL_START"
 	test x"$PG_OOM_ADJ" != x && echo "$PG_OOM_ADJ" > /proc/self/oom_adj
-	$SU -l postgres -c "$PGENGINE/postmaster -p '$PGPORT' -D '$PGDATA' ${PGOPTS} &" >> "$PGLOG" 2>&1 < /dev/null
+	$SU_POSTGRES -c "$PGENGINE/postmaster -p '$PGPORT' -D '$PGDATA' ${PGOPTS} &" >> "$PGLOG" 2>&1 < /dev/null
 	sleep 2
 	pid=`head -n 1 "$PGDATA/postmaster.pid" 2>/dev/null`
 	if [ "x$pid" != x ]
@@ -140,7 +133,7 @@ stop(){
 	echo -n $"Stopping ${NAME} service: "
 	if [ -e "$lockfile" ]
 	then
-	    $SU -l postgres -c "$PGENGINE/pg_ctl stop -D '$PGDATA' -s -m fast" > /dev/null 2>&1 < /dev/null
+	    $SU_POSTGRES -c "$PGENGINE/pg_ctl stop -D '$PGDATA' -s -m fast" > /dev/null 2>&1 < /dev/null
 	    ret=$? 
 	    if [ $ret -eq 0 ]
 	    then
@@ -168,7 +161,7 @@ condrestart(){
 }
 
 reload(){
-    $SU -l postgres -c "$PGENGINE/pg_ctl reload -D '$PGDATA' -s" > /dev/null 2>&1 < /dev/null
+    $SU_POSTGRES -c "$PGENGINE/pg_ctl reload -D '$PGDATA' -s" > /dev/null 2>&1 < /dev/null
 }
 
 # code shared between initdb and upgrade actions
@@ -192,7 +185,7 @@ perform_initdb(){
 	fi
 
 	# Initialize the database
-	$SU -l postgres -c "$PGENGINE/initdb --pgdata='$PGDATA' --auth='ident'" >> "$PGLOG" 2>&1 < /dev/null
+	$SU_POSTGRES -c "$PGENGINE/initdb --pgdata='$PGDATA' --auth='ident'" >> "$PGLOG" 2>&1 < /dev/null
 
 	# Create directory for postmaster log
 	mkdir "$PGDATA/pg_log"
@@ -267,7 +260,7 @@ upgrade(){
     if perform_initdb
     then
 	# Do the upgrade
-	$SU -l postgres -c "$PGENGINE/pg_upgrade \
+	$SU_POSTGRES -c "$PGENGINE/pg_upgrade \
 		'--old-bindir=$PREVPGENGINE' \
 		'--new-bindir=$PGENGINE' \
 		'--old-datadir=$PGDATAOLD' \

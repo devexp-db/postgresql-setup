@@ -55,7 +55,7 @@ sed_subst_var_pattern(POSTGRES_HOMEDIR)
 sed_subst_var_pattern(PREVMAJORVERSION)
 sed_subst_var_pattern(PREVPGENGINE)
 sed_subst_var_pattern(README_DIST)
-sed_subst_var_pattern(SU)
+sed_subst_var_pattern(SU_POSTGRES)
 sed_subst_var_pattern(systemdunitsdir)
 sed_subst_var_pattern(userunitsdir)
 sed_subst_var_pattern(TEST_GEN_FILES_LIST)
@@ -82,6 +82,8 @@ test -z "$ac_cv_path_SED" &&
 AC_PATH_PROGS([SU], [runuser su])
 test -z "$ac_cv_path_SU" &&
     AC_MSG_ERROR([Neither 'runuser' nor 'su' program found])
+SU_POSTGRES="$SU -s /bin/sh -l postgres"
+AC_SUBST([SU_POSTGRES])
 
 PGSETUP_PACKAGING_INIT
 
