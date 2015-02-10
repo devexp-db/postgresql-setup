@@ -31,7 +31,9 @@ PREVMAJORVERSION=@PREVMAJORVERSION@
 PREVPGENGINE=@PREVPGENGINE@
 # PGDOCDIR is the directory containing the package's documentation
 # Note: the specfile inserts the correct value during package build
-PGDOCDIR=@PGDOCDIR@
+
+# Distribution README file
+README_DIST=@README_DIST@
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -93,13 +95,13 @@ start(){
 			echo
 			echo $"An old version of the database format was found."
 			echo $"Use \"service postgresql upgrade\" to upgrade to version $PGMAJORVERSION."
-			echo $"See $PGDOCDIR/README.rpm-dist for more information."
+			echo $"See $README_DIST for more information."
 			exit 1
 		else
 			echo
 			echo $"An old version of the database format was found."
 			echo $"You need to dump and reload before using PostgreSQL $PGMAJORVERSION."
-			echo $"See $PGDOCDIR/README.rpm-dist for more information."
+			echo $"See $README_DIST for more information."
 			exit 1
 		fi
 	else

@@ -9,6 +9,7 @@ libexec_SCRIPTS = postgresql$(DISTSUFF)-ctl \
 
 userunitsdir = /etc/systemd/system
 
+# TODO: Ideally, 'make distcheck' should check every file we generate.
 if WANT_SYSVINIT
 initscriptsdir = $(sysconfdir)/rc.d/init.d
 initscripts_DATA = postgresql$(DISTSUFF)
