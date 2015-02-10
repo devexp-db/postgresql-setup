@@ -5,6 +5,8 @@ New in 3.0 version
 * Use 'pg_upgrade --username' instead of 'pg_upgrade --user' for
   PostgreSQL >= 9.4.
 
+* postgresql-setup now works if postgres user is /bin/nologin
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 2.0 version
