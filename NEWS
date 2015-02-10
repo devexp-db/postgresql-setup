@@ -7,6 +7,9 @@ New in 3.0 version
 
 * postgresql-setup now works if postgres user is /bin/nologin
 
+* Legacy scripts are now generated from single template file, also are
+  simplified a bit.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 2.0 version

@@ -18,7 +18,7 @@ systemdunitsdir = $(prefix)/lib/systemd/system
 systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
 
 systemdlegacyscriptsdir = $(prefix)/libexec/initscripts/legacy-actions/postgresql$(DISTSUFF)
-systemdlegacyscripts_DATA = initdb upgrade
+systemdlegacyscripts_SCRIPTS = initdb upgrade
 endif
 
 doc_DATA = $(README_DIST_BASENAME)
@@ -37,12 +37,8 @@ postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
 postgresql$(DISTSUFF): postgresql.init.in $(c_s)
 	$(INSTANTIATE)
 
-initdb: initdb.in $(c_s)
+initdb upgrade: legacy-sysv-script.in $(c_s)
 	$(INSTANTIATE_SCRIPT)
-upgrade: upgrade.in $(c_s)
-	$(INSTANTIATE_SCRIPT)
-
-
 
 # In ideal world, postgresql@.service would be hardlink to postgresql.service.
 # That would require, however, the rhbz#1141824 resolved so we could install
@@ -69,7 +65,7 @@ GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(pkgsysconf_DATA) \
 		  $(systemdunits_DATA) \
 		  $(initscripts_DATA) \
-		  $(systemdlegacyscripts_DATA)
+		  $(systemdlegacyscripts_SCRIPTS)
 
 CLEANFILES = $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
 
