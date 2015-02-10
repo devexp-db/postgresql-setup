@@ -6,9 +6,6 @@ test -z "$PATH" && export PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 
 test x"$PGSETUP_DEBUG" != x && set -x && PS4='${LINENO}: '
 
-# Full PostgreSQL version, e.g. 9.0.2
-PGVERSION=@PGVERSION@
-
 # Major version of PostgreSQL, e.g. 9.0
 PGMAJORVERSION=@PGMAJORVERSION@
 
@@ -96,8 +93,8 @@ debug()   { test "$option_debug" = "1" && echo >&2 $"DEBUG: $@";  }
 print_version()
 {
     echo "postgresql@DISTSUFF@-setup @VERSION@"
-    echo $"Built against PostgreSQL version @PGMAJORVERSION@ and configured"
-    echo $"to upgrade from PostgreSQL version @PREVMAJORVERSION@."
+    echo $"Built against PostgreSQL version @PGVERSION@ and configured"
+    echo $"to upgrade from PostgreSQL version @PREVMAJORVERSION@.X."
 }
 
 
@@ -169,7 +166,7 @@ initdb()
         if perform_initdb; then
             info $"Initialized, logs are in ${initdb_log}"
         else
-            error $"Initializing database failed, see $initdb_log"
+            error $"Initializing database failed, possibly see $initdb_log"
             script_result=1
         fi
     fi
@@ -404,7 +401,7 @@ case "$1" in initdb|upgrade)
     fi
 
     set -- $additional_opts "$action" --unit "$service" "$@"
-    warn "arguments transformed to: ${0##*/} $@"
+    warn "arguments transformed to: ${0##*/} $*"
 esac
 # </Compat>
 
