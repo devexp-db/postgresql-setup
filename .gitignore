@@ -19,7 +19,7 @@ package.m4
 postgresql*-check-db-dir
 postgresql*-ctl
 postgresql*.service
-postgresql*-setup
+/postgresql*-setup
 postgresql*-setup.1
 README.rpm-dist
 testsuite

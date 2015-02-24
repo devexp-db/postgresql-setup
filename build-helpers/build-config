@@ -1,0 +1,11 @@
+#! /bin/sh
+
+# For easier parsing in postgresql-setup, we want to have each upgrade scenario
+# configured on separate line.
+
+eval set -- "$1"
+while test -n "$1"
+do
+    echo $(cat "$1" | grep -v ^# )
+    shift
+done

@@ -1,5 +1,9 @@
 pkgname = postgresql$(DISTSUFF)
 
+EXTRA_DIST =
+
+include $(srcdir)/build-helpers/Makefile.inc
+
 SUBDIRS = . doc tests
 
 bin_SCRIPTS = postgresql$(DISTSUFF)-setup
@@ -57,7 +61,9 @@ postgresql$(DISTSUFF).service: postgresql.service.in $(c_s)
 $(README_DIST_BASENAME): $(README_DIST_BASENAME).in $(c_s)
 	$(INSTANTIATE)
 
-EXTRA_DIST = $(srcdir)/*.in
+EXTRA_DIST += \
+	$(srcdir)/*.in \
+	upgrade_config.template
 
 GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(libexec_SCRIPTS) \
@@ -68,6 +74,8 @@ GENERATED_FILES = $(bin_SCRIPTS) \
 		  $(systemdlegacyscripts_SCRIPTS)
 
 CLEANFILES = $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
+
+include $(srcdir)/share/postgresql-setup/Makefile.inc
 
 $(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
 	$(AM_V_GEN)rm -rf $(TEST_GEN_FILES_LIST) && \

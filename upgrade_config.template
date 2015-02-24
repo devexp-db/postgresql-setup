@@ -1,0 +1,16 @@
+# Consider those are to shell strings, so wrap those by quotes when needed
+
+# ID
+postgresql
+
+# Version of the previous stack
+major           9.2
+
+# Location of default data
+data_default    "/var/lib/pgsql/data"
+
+# Location of binaries
+engine          /usr/bin
+
+# Just to feed ./postgresql-setup --upgrade-ids help output
+description     "In-place upgrade from Fedora 19 (PostgreSQL 9.2)"

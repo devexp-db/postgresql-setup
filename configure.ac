@@ -27,6 +27,15 @@ AC_ARG_WITH([sysvinit],
     [WANT_SYSVINIT=0]
 )
 
+AC_ARG_WITH([upgrade-config],
+    AS_HELP_STRING([--with-upgrade-config=/file/path,/path2],
+                   [List of files to be used as an upgrade configuration]),
+    [UPGRADE_CONFIG_LIST="$withval"],
+    [UPGRADE_CONFIG_LIST="upgrade_config.template"]
+)
+
+AC_SUBST([UPGRADE_CONFIG_LIST])
+
 AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
 
 # Instatiating generated files by sed instead of config.status.
@@ -54,23 +63,28 @@ sed_subst_var_pattern(pkgname)
 sed_subst_var_pattern(POSTGRES_HOMEDIR)
 sed_subst_var_pattern(PREVMAJORVERSION)
 sed_subst_var_pattern(PREVPGENGINE)
+sed_subst_var_pattern(rawpkgdatadir)
 sed_subst_var_pattern(README_DIST)
 sed_subst_var_pattern(SU_POSTGRES)
 sed_subst_var_pattern(systemdunitsdir)
 sed_subst_var_pattern(userunitsdir)
 sed_subst_var_pattern(TEST_GEN_FILES_LIST)
 sed_subst_var_pattern(VERSION)
+sed_subst_var_pattern(UPGRADE_CONFIG_LIST)
 	-e 's|@__FILE__[[@]]|\$@|g'"
 
 SED_CALL="\$(SED) \$(SED_RULES)"
 m4_pattern_allow(AM_V_GEN)
-INSTANTIATE="\$(AM_V_GEN)\$(SED_CALL) \$< > \$@"
+
+INSTANTIATE_CONV="\$(AM_V_GEN)rm -rf \$@; \$(MKDIR_P) \$(@D)"
+INSTANTIATE="\$(INSTANTIATE_CONV) && \$(SED_CALL) \$< > \$@ && chmod -w \$@"
 INSTANTIATE_SCRIPT="\$(INSTANTIATE) && chmod +x \$@"
 c_s='$(top_builddir)/config.status'
 
 AC_SUBST([SED_RULES])
 AC_SUBST([SED_CALL])
 AC_SUBST([INSTANTIATE])
+AC_SUBST([INSTANTIATE_CONV])
 AC_SUBST([INSTANTIATE_SCRIPT])
 AC_SUBST([c_s])
 

@@ -1,0 +1,10 @@
+#! /bin/bash
+
+source <(cat config.status | grep ^ac_cs_config)
+
+./configure --prefix=/usr --with-upgrade-config=upgrade_config.template \
+    && make clean \
+    && make \
+    && sudo make install
+
+eval "./configure $ac_cs_config"
