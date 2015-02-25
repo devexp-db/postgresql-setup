@@ -13,9 +13,7 @@ HELP2MAN = $(SHELL) $(top_srcdir)/$(config_aux_dir)/missing --run help2man
 # TODO: separate it to its own m4 module (for easier distribution)
 
 HELP2MAN_RUN = \
-	file=$< ; \
-	file=$${file%%.in} ; \
-	$(HELP2MAN) --output=$@ $$file -N ; \
+	$(HELP2MAN) --output=$@ $$input -N ; \
 	rs=$$? ; \
 	if test $$rs -eq 127; then \
 	    test -f $@ ; \
@@ -23,7 +21,10 @@ HELP2MAN_RUN = \
 	    test $$rs -eq 0 ; \
 	fi
 
-dist_man_MANS = $(srcdir)/postgresql$(DISTSUFF)-setup.1
+setup_man = $(srcdir)/$(NAME_BINARYBASE)-setup.1
 
-$(srcdir)/postgresql$(DISTSUFF)-setup.1: $(top_srcdir)/postgresql-setup.in
-	$(AM_V_GEN)$(HELP2MAN_RUN)
+dist_man_MANS = $(setup_man)
+
+$(setup_man): $(top_srcdir)/postgresql-setup.in
+	$(AM_V_GEN)export input=$(top_srcdir)/$(NAME_BINARYBASE)-setup ; \
+	    $(HELP2MAN_RUN)

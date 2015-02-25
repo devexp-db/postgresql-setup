@@ -33,3 +33,11 @@ m4_define([PGSETUP_SUBST_REQ], [
         AC_MSG_ERROR([the \$$1 variable is not set])
 ])
 
+# PGSETUP_SUBST_OPT(VARIABLE, DEFAULT, DESCRIPTION)
+# -------------------------------------------------
+m4_define([PGSETUP_SUBST_OPT], [
+    AC_ARG_VAR([$1], [$3])
+    test -z "$[]$1" &&
+        $1=$2
+    add_sed_subst_var($1)
+])

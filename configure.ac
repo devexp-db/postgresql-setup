@@ -9,9 +9,6 @@ AC_CONFIG_FILES([Makefile doc/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AM_SILENT_RULES([yes])
 
-AC_ARG_VAR([DISTSUFF], [Append string suffix to all binaries and package names])
-AC_SUBST([DISTSUFF])
-
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)
 AC_CONFIG_FILES([tests/Makefile])
@@ -45,7 +42,6 @@ AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
 m4_define([sed_subst_var_pattern], [	-e 's|@$1[[@]]|\$($1)|g' \\])
 SED_RULES="\\
 sed_subst_var_pattern(bindir)
-sed_subst_var_pattern(DISTSUFF)
 sed_subst_var_pattern(docdir)
 sed_subst_var_pattern(libdir)
 sed_subst_var_pattern(libexecdir)
@@ -70,8 +66,12 @@ sed_subst_var_pattern(systemdunitsdir)
 sed_subst_var_pattern(userunitsdir)
 sed_subst_var_pattern(TEST_GEN_FILES_LIST)
 sed_subst_var_pattern(VERSION)
-sed_subst_var_pattern(UPGRADE_CONFIG_LIST)
-	-e 's|@__FILE__[[@]]|\$@|g'"
+sed_subst_var_pattern(UPGRADE_CONFIG_LIST)"
+
+m4_define([add_sed_subst_var], [
+SED_RULES="$SED_RULES
+sed_subst_var_pattern($1)"
+])
 
 SED_CALL="\$(SED) \$(SED_RULES)"
 m4_pattern_allow(AM_V_GEN)
@@ -81,7 +81,6 @@ INSTANTIATE="\$(INSTANTIATE_CONV) && \$(SED_CALL) \$< > \$@ && chmod -w \$@"
 INSTANTIATE_SCRIPT="\$(INSTANTIATE) && chmod +x \$@"
 c_s='$(top_builddir)/config.status'
 
-AC_SUBST([SED_RULES])
 AC_SUBST([SED_CALL])
 AC_SUBST([INSTANTIATE])
 AC_SUBST([INSTANTIATE_CONV])
@@ -207,6 +206,40 @@ PGSETUP_SUBST_REQ([PKGCONFIG_DIR],     [where configuration should be stored])
 PGSETUP_SUBST_REQ([POSTGRES_HOMEDIR],  [full path to postgres home dir])
 PGSETUP_SUBST_REQ([PGDATADIR],         [full path to postgres data dir])
 
+PGSETUP_SUBST_OPT([NAME_SRV_PFX], [],
+                  [service name prefix, like (PFX)postgresql.service])
+PGSETUP_SUBST_OPT([NAME_SRV_SFX], [],
+                  [service name suffix, like postgresql(SFX).service ])
+PGSETUP_SUBST_OPT([NAME_BIN_SFX], [],
+                  [binary name prefix, like (PFX)postgresql-setup])
+PGSETUP_SUBST_OPT([NAME_BIN_SFX], [],
+                  [binary name suffix, like postgresql(SFX)-setup])
+PGSETUP_SUBST_OPT([NAME_PKG_PFX], [],
+                  [package name prefix, like (PFX)postgresql.rpm])
+PGSETUP_SUBST_OPT([NAME_PKG_SFX], [],
+                  [package name suffix, like postgresql(SFX).rpm])
+
+NAME_BINARYBASE="$NAME_BIN_PFX""postgresql$NAME_BIN_SFX"
+NAME_PACKAGE="$NAME_PKG_PFX""postgresql$NAME_PKG_SFX"
+NAME_SERVICE="$NAME_SRV_PFX""postgresql$NAME_SRV_SFX"
+
+AC_SUBST([NAME_BINARYBASE])
+AC_SUBST([NAME_PACKAGE])
+AC_SUBST([NAME_SERVICE])
+
+AC_SUBST([NAME_BINARYBASE])
+AC_SUBST([NAME_PACKAGE])
+AC_SUBST([NAME_SERVICE])
+
+add_sed_subst_var(NAME_SERVICE)
+add_sed_subst_var(NAME_PACKAGE)
+add_sed_subst_var(NAME_BINARYBASE)
+
+# As late as possible.
+SED_RULES="$SED_RULES
+	-e 's|@__FILE__[[@]]|\$@|g'"
+AC_SUBST([SED_RULES])
+
 AC_OUTPUT
 
 AC_MSG_NOTICE([Configured the folowing way:
@@ -215,4 +248,7 @@ AC_MSG_NOTICE([Configured the folowing way:
     PGDATADIR:          $PGDATADIR
     Upgrade from:       $PREVMAJORVERSION
     PREV_POSTGRES_BIN:  $PREV_POSTGRES_BIN
+    PostgreSQL service: $NAME_SERVICE
+    PostgreSQL package: $NAME_PACKAGE
+    PostgreSQL bin_pfx: $NAME_BINARYBASE
 ])

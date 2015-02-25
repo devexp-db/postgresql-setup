@@ -1,4 +1,21 @@
-pkgname = postgresql$(DISTSUFF)
+pkgname		= $(NAME_PACKAGE)
+
+setup		= $(NAME_BINARYBASE)-setup
+setup_in	= postgresql-setup.in
+
+ctl		= $(NAME_BINARYBASE)-ctl
+ctl_in		= postgresql-ctl.in
+
+checkdb		= $(NAME_BINARYBASE)-check-db-dir
+checkdb_in	= postgresql-check-db-dir.in
+
+service		= $(NAME_SERVICE).service
+service_in	= postgresql.service.in
+serviceat	= $(NAME_SERVICE)@.service
+serviceat_in	= postgresql.service.in
+
+initscript	= $(NAME_SERVICE)
+initscript_in	= postgresql.init.in
 
 EXTRA_DIST =
 
@@ -6,22 +23,19 @@ include $(srcdir)/build-helpers/Makefile.inc
 
 SUBDIRS = . doc tests
 
-bin_SCRIPTS = postgresql$(DISTSUFF)-setup
-
-libexec_SCRIPTS = postgresql$(DISTSUFF)-ctl \
-		  postgresql$(DISTSUFF)-check-db-dir
+bin_SCRIPTS = $(setup)
+libexec_SCRIPTS = $(ctl) $(checkdb)
 
 userunitsdir = /etc/systemd/system
 
 # TODO: Ideally, 'make distcheck' should check every file we generate.
 if WANT_SYSVINIT
 initscriptsdir = $(sysconfdir)/rc.d/init.d
-initscripts_DATA = postgresql$(DISTSUFF)
+initscripts_DATA = $(initscript)
 else
 systemdunitsdir = $(prefix)/lib/systemd/system
-systemdunits_DATA = postgresql$(DISTSUFF).service postgresql$(DISTSUFF)@.service
-
-systemdlegacyscriptsdir = $(prefix)/libexec/initscripts/legacy-actions/postgresql$(DISTSUFF)
+systemdunits_DATA = $(service) $(serviceat)
+systemdlegacyscriptsdir = $(libexecdir)/initscripts/legacy-actions/$(NAME_SERVICE)
 systemdlegacyscripts_SCRIPTS = initdb upgrade
 endif
 
@@ -29,16 +43,16 @@ doc_DATA = $(README_DIST_BASENAME)
 
 noinst_DATA = $(TEST_GEN_FILES_LIST)
 
-postgresql$(DISTSUFF)-ctl: postgresql-ctl.in $(c_s)
+$(ctl): $(ctl_in) $(c_s)
 	$(INSTANTIATE_SCRIPT)
 
-postgresql$(DISTSUFF)-setup: postgresql-setup.in $(c_s)
+$(setup): $(setup_in) $(c_s)
 	$(INSTANTIATE_SCRIPT)
 
-postgresql$(DISTSUFF)-check-db-dir: postgresql-check-db-dir.in $(c_s)
+$(checkdb): $(check) $(checkdb_in) $(c_s)
 	$(INSTANTIATE_SCRIPT)
 
-postgresql$(DISTSUFF): postgresql.init.in $(c_s)
+$(initscript): $(initscript_in) $(c_s)
 	$(INSTANTIATE)
 
 initdb upgrade: legacy-sysv-script.in $(c_s)
@@ -48,12 +62,12 @@ initdb upgrade: legacy-sysv-script.in $(c_s)
 # That would require, however, the rhbz#1141824 resolved so we could install
 # system-default drop-in file.  Make a "almost" duplicate files now.
 
-postgresql$(DISTSUFF)@.service: postgresql.service.in $(c_s)
+$(serviceat): $(serviceat_in) $(c_s)
 	$(AM_V_GEN)$(SED_CALL) \
 	    -e '/@PGDATA_ENVIRONMENT[@]/d' \
 	    $< > $@
 
-postgresql$(DISTSUFF).service: postgresql.service.in $(c_s)
+$(service): $(service_in) $(c_s)
 	$(AM_V_GEN)$(SED_CALL) \
 	    -e 's|@PGDATA_ENVIRONMENT[@]|Environment=PGDATA=$(PGDATADIR)|' \
 	    $< > $@

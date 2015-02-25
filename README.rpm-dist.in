@@ -32,16 +32,16 @@ Enterprise Linux, CentOS and Fedora.  Note that there are also "PGDG"
 RPMs available directly from the upstream PostgreSQL project.  Those are
 slightly different.
 
-QUICKSTART (note that this requires @pkgname@-server installed)
+QUICKSTART (note that this requires @NAME_PACKAGE@-server installed)
 -----------------------------------------------------------------------------
 For a fresh installation, you will need to initialize the cluster first. Run:
 
-	@pkgname@-setup --initdb
+	@NAME_BINARYBASE@-setup --initdb
 
 as root, and it will prepare a new database cluster for you. Then you will
 need to start PostgreSQL. Again as root, run:
 
-	systemctl start @pkgname@.service
+	systemctl start @NAME_SERVICE@.service
 
 This command will start a postmaster that will listen on localhost and Unix
 socket 5432 only.  Edit @PGDATADIR@/postgresql.conf and pg_hba.conf
@@ -50,7 +50,7 @@ Configuration.
 
 You will probably also want to do
 
-	systemctl enable @pkgname@.service
+	systemctl enable @NAME_SERVICE@.service
 
 so that the postmaster is automatically started during future reboots.
 
@@ -85,16 +85,16 @@ In some major releases, the RPMs also support in-place upgrade from the
 immediately previous major release.  Currently, you can upgrade in-place
 from @PREVMAJORVERSION@.x to @PGMAJORVERSION@.x.  This is much faster than a dump and reload.
 To do an in-place upgrade:
-* shut down the old postmaster ("systemctl stop @pkgname@.service")
+* shut down the old postmaster ("systemctl stop @NAME_SERVICE@.service")
 * optionally make a backup of @PGDATADIR@ (recommended!)
 * install the new version's RPMs (install all the ones you had before,
-  plus @pkgname@-upgrade)
-* as root, run "@pkgname@-setup --upgrade"
+  plus @NAME_PACKAGE@-upgrade)
+* as root, run "@NAME_BINARYBASE@-setup --upgrade"
 * update the configuration files @PGDATADIR@/*.conf with any
   customizations you had before (your old configuration files are in
   @POSTGRES_HOMEDIR@/data-old/)
-* as root, run "systemctl start @pkgname@.service"
-* the @pkgname@-upgrade package can be removed after the update is complete,
+* as root, run "systemctl start @NAME_SERVICE@.service"
+* the @NAME_PACKAGE@-upgrade package can be removed after the update is complete,
   as can @POSTGRES_HOMEDIR@/data-old/
 
 NOTE: The in-place upgrade process is new and relatively poorly tested,
@@ -109,25 +109,25 @@ choose' what pieces are needed, and what dependencies are required.
 
 The RPMset is packaged in the following subpackages:
 
-@pkgname@:		Key client programs and basic documentation
-@pkgname@-libs:	Client shared libraries
-@pkgname@-server:	Server executables and data files
-@pkgname@-devel:	Development libraries and include files
-@pkgname@-test:	The regression tests and associated files
-@pkgname@-upgrade:	Support files for upgrading from previous major version
-@pkgname@-docs:	Full documentation in HTML and PDF, the tutorial files
-@pkgname@-contrib:	Add-on loadable modules and programs
-@pkgname@-plperl:	PL/Perl procedural language
-@pkgname@-plpython:	PL/Python procedural language (for Python 2)
-@pkgname@-plpython3:	PL/Python procedural language (for Python 3)
-@pkgname@-pltcl:	PL/Tcl procedural language
+@NAME_PACKAGE@:		Key client programs and basic documentation
+@NAME_PACKAGE@-libs:	Client shared libraries
+@NAME_PACKAGE@-server:	Server executables and data files
+@NAME_PACKAGE@-devel:	Development libraries and include files
+@NAME_PACKAGE@-test:	The regression tests and associated files
+@NAME_PACKAGE@-upgrade:	Support files for upgrading from previous major version
+@NAME_PACKAGE@-docs:	Full documentation in HTML and PDF, the tutorial files
+@NAME_PACKAGE@-contrib:	Add-on loadable modules and programs
+@NAME_PACKAGE@-plperl:	PL/Perl procedural language
+@NAME_PACKAGE@-plpython:	PL/Python procedural language (for Python 2)
+@NAME_PACKAGE@-plpython3:	PL/Python procedural language (for Python 3)
+@NAME_PACKAGE@-pltcl:	PL/Tcl procedural language
 
-You have to install @pkgname@ and @pkgname@-libs to do anything.
-@pkgname@-server is needed unless you only plan to use the clients to work with
+You have to install @NAME_PACKAGE@ and @NAME_PACKAGE@-libs to do anything.
+@NAME_PACKAGE@-server is needed unless you only plan to use the clients to work with
 a remote PostgreSQL server. The others are optional.
 
-Note that there are no @pkgname@-perl, @pkgname@-jdbc, @pkgname@-odbc,
-@pkgname@-python, @pkgname@-tcl, or @pkgname@-tk subpackages any longer.
+Note that there are no @NAME_PACKAGE@-perl, @NAME_PACKAGE@-jdbc, @NAME_PACKAGE@-odbc,
+@NAME_PACKAGE@-python, @NAME_PACKAGE@-tcl, or @NAME_PACKAGE@-tk subpackages any longer.
 Those programs have been split off into separate source distributions.
 They are still available, but in some cases not under those RPM names.
 
@@ -172,8 +172,8 @@ mailing list.
 
 MULTIPLE POSTMASTERS
 -------------------------------------------------------------------------------
-The postgresql-server package contains a systemd "unit" files @pkgname@.service
-and @pkgname@@.service.  The first file is used solely to start the default
+The postgresql-server package contains a systemd "unit" files @NAME_SERVICE@.service
+and @NAME_SERVICE@@.service.  The first file is used solely to start the default
 PostgreSQL server.  The second one is designed to allow instantiating
 additional PostgreSQL servers on same machine.
 
@@ -182,7 +182,7 @@ enough, 'postgresql@secondary'.  Here are the steps:
 
 1)	Run the following command to create the necessary configuration and
 	to initialize the new database cluster:
-		@pkgname@-setup --initdb \
+		@NAME_BINARYBASE@-setup --initdb \
 		    --unit postgresql@secondary \
 		    --new-systemd-unit \
 		    --datadir /path/to/data/directory \
@@ -197,15 +197,15 @@ enough, 'postgresql@secondary'.  Here are the steps:
 	settings as needed.
 
 3)	Start the new service with this command:
-		'systemctl start @pkgname@@secondary.service'
+		'systemctl start @NAME_SERVICE@@secondary.service'
 	You will probably also want to run the command
-		'systemctl enable @pkgname@@secondary.service'
+		'systemctl enable @NAME_SERVICE@@secondary.service'
 	so that the new service is automatically started in future reboots.
 
 When doing a major-version upgrade of a secondary service, add the service name
-to the @pkgname@-setup command, for example:
-	'@pkgname@-setup --upgrade --unit @pkgname@@secondary'
-This will let @pkgname@-setup find the correct data directory from the proper
+to the @NAME_BINARYBASE@-setup command, for example:
+	'@NAME_BINARYBASE@-setup --upgrade --unit @NAME_SERVICE@@secondary'
+This will let @NAME_BINARYBASE@-setup find the correct data directory from the proper
 configuration file.
 
 If you are running SELinux in enforcing mode (which is highly recommended,
@@ -223,14 +223,14 @@ see "man semanage".
 
 REGRESSION TESTING
 -------------------------------------------------------------------------------
-If you install the @pkgname@-test RPM then you can run the PostgreSQL
+If you install the @NAME_PACKAGE@-test RPM then you can run the PostgreSQL
 regression tests.  These tests stress your database installation and produce
 results that give you assurances that the installation is complete, and that
 your database machine is up to the task.
 
 To run the regression tests under the RPM installation, make sure that the
 PostgreSQL server has been started (if not, su to root and do "systemctl start
-@pkgname@.service"), su to postgres, cd to @libdir@/pgsql/test/regress and
+@NAME_SERVICE@.service"), su to postgres, cd to @libdir@/pgsql/test/regress and
 execute "make check".
 This command will start the regression tests and will both show the
 results to the screen and store the results in the file regress.out.
@@ -241,23 +241,23 @@ find out whether the differences are actually significant.  If you need help
 interpreting the results, contact the pgsql-general list at postgresql.org.
 
 After testing, run "make clean" to remove the files generated by the test
-script.  Then you can remove the @pkgname@-test RPM, if you wish.
+script.  Then you can remove the @NAME_PACKAGE@-test RPM, if you wish.
 
 STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
 -------------------------------------------------------------------------------
 Fedora / Red Hat / CentOS use the systemd package to manage server startup.
 A systemd unit file for PostgreSQL is provided in the server package, as
-@systemdunitsdir@/@pkgname@.service.  To start the postmaster manually,
+@systemdunitsdir@/@NAME_SERVICE@.service.  To start the postmaster manually,
 as root run
-	systemctl start @pkgname@.service
+	systemctl start @NAME_SERVICE@.service
 To shut the postmaster down,
-	systemctl stop @pkgname@.service
+	systemctl stop @NAME_SERVICE@.service
 These two commands only change the postmaster's current status.  If you
 want the postmaster to be started automatically during future system startups,
 run
-	systemctl enable @pkgname@.service
+	systemctl enable @NAME_SERVICE@.service
 To undo that again,
-	systemctl disable @pkgname@.service
+	systemctl disable @NAME_SERVICE@.service
 See "man systemctl" for other possible subcommands.
 
 GRAND UNIFIED CONFIGURATION (GUC) FILE

@@ -21,13 +21,14 @@ SU_POSTGRES="@SU_POSTGRES@"
 # The where PostgreSQL server listens by default
 PGPORT_DEF=5432
 
+# We upgrade by default from system's default PostgreSQL installation
 option_upgradefrom="postgresql"
 
 USAGE_STRING=$"\
 Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]
 
 Script is aimed to help sysadmin with basic database cluster administration.
-Usually, \"postgresql-setup --initdb\" and \"postgresql-setup --upgrade\" is
+Usually, \"@NAME_BINARYBASE@-setup --initdb\" and \"@NAME_BINARYBASE@-setup --upgrade\" is
 enough, however there are other options described below.
 
 For more info and howto/when use this script please look at the documentation
@@ -154,7 +155,7 @@ parse_upgrade_setup()
 
 print_version()
 {
-    echo "postgresql@DISTSUFF@-setup @VERSION@"
+    echo "@NAME_BINARYBASE@-setup @VERSION@"
     echo $"Built against PostgreSQL version @PGVERSION@."
 }
 
@@ -251,7 +252,7 @@ upgrade()
         exit 1
     fi
     if [ ! -x "$PGENGINE/pg_upgrade" ]; then
-        error $"Please install the postgresql-upgrade package."
+        error $"Please install the @NAME_PACKAGE@-upgrade package."
         exit 5
     fi
 
@@ -274,7 +275,7 @@ upgrade()
     fi
 
     # Create configuration file for upgrade process
-    HBA_CONF_BACKUP="$pgdataold/pg_hba.conf.postgresql-setup.`date +%s`"
+    HBA_CONF_BACKUP="$pgdataold/pg_hba.conf.@NAME_BINARYBASE@-setup.`date +%s`"
     HBA_CONF_BACKUP_EXISTS=0
 
     if [ ! -f $HBA_CONF_BACKUP ]; then
@@ -335,7 +336,7 @@ generate_systemd_dropin()
 {
     local service="$1"
     local dropindir="@userunitsdir@/$service.service.d"
-    local dropin="$dropindir/30-postgresql-setup.conf"
+    local dropin="$dropindir/30-@NAME_BINARYBASE@-setup.conf"
 
     test -e "$dropindir" \
         && die "The systemd drop-in directory '$dropindir' exists already"
@@ -498,7 +499,7 @@ case "$1" in initdb|upgrade)
         esac
     done
 
-    service=postgresql
+    service="@NAME_SERVICE@"
     if test -n "$1"; then
         service=$1
         shift
@@ -512,7 +513,7 @@ esac
 
 # postgresql-setup arguments are parsed into those variables
 option_mode=none
-option_service=postgresql
+option_service="@NAME_SERVICE@"
 option_port=
 option_pgdata=
 option_debug=0
@@ -545,7 +546,7 @@ unit:,service:,port:,datadir:,upgrade-from:,\
 debug,\
 version,help,usage"
 
-args=`getopt -o "$short_opts" -l "$long_opts" -n "postgresql-setup" -- "$@"` \
+args=`getopt -o "$short_opts" -l "$long_opts" -n "@NAME_BINARYBASE@-setup" -- "$@"` \
     || die "can't parse arguments"
 eval set -- "$args"
 parse_fail=0
@@ -644,8 +645,8 @@ parse_configuration initdb pgdata UNUSED "$option_service"
 
 # Check that nothing breaks --new-systemd-unit
 if test "$option_systemd_config" = yes; then
-    if test "$option_service" = postgresql; then
-        die $"Default unit 'postgresql.service' should not need --new-systemd-unit"
+    if test "$option_service" = "@NAME_SERVICE@"; then
+        die $"Default unit '@NAME_SERVICE@.service' should not need --new-systemd-unit"
     elif test "$pgdata" != default; then
         die $"Option --new-systemd-unit failed, is '$option_service.service'"\
             $"already configured to '$pgdata'?"
@@ -688,7 +689,7 @@ test "$option_mode" = upgrade -a "$pgport" = default \
 
 # This is mostly for 'initdb'.  We assume that the default port is $PGPORT_DEF
 # if not set explicitly for default service name 'postgresql'.
-if test "$pgport" = default -a "$option_service" = postgresql; then
+if test "$pgport" = default -a "$option_service" = "@NAME_SERVICE@"; then
     debug $"Using the default port '$PGPORT_DEF'"
     pgport=$PGPORT_DEF
 fi

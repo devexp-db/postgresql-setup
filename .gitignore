@@ -1,3 +1,4 @@
+*.service
 *.tar.gz
 *.log
 .generated_files
