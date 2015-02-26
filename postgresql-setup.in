@@ -92,7 +92,6 @@ debug()   { test "$option_debug" = "1" && echo >&2 $"DEBUG: $@";  }
 
 set_var()
 {
-    # TODO compare implementation with other tools.
     eval "$1=\"$2\""
 }
 
@@ -102,47 +101,71 @@ root_prereq()
     test "$(id -u)" -eq 0 || die "$0 requires root access for this action"
 }
 
+read_config_file()
+{
+    local key="" val=""
+
+    test -r "$1" || die "can't read file '$1'"
+
+    for i in $2; do
+        eval "unset __pg_conf_$i"
+    done
+
+    # No easy (and secure) way to read configuration files from bash script,
+    # sorry.
+    while read key val; do
+        [[ $key =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || return 1
+
+        case " $2 " in
+        *" $key "*)
+            ;;
+        *)
+            warn "config file '$1':  unknown key '$key'"
+            continue
+            ;;
+        esac
+
+        # Strip double quotes
+        case "$val" in
+        \"*\")
+            val=${val##\"}
+            val=${val%%\"}
+            ;;
+        esac
+
+        # Make it reasonably safe.  Keep dolar-sign escaped.
+        eval "__pg_conf_$key=\$val"
+
+    done < <(grep -v -e "^$" -e "^#" < "$1")
+}
+
+
 parse_upgrade_setup()
 {
     local action="$1"
     local expected_id="$2"
     local id temp_major temp_engine temp_data_default temp_description
 
-    while read line; do
-        eval set -- "$line --"
+    local upgrade_confdir="@sysconfdir@/@NAME_BINARYBASE@-setup/upgrade"
 
-        id="$1"
-        shift
+    test -d "$upgrade_confdir" || die "can't read confdir $upgrade_confdir"
 
-        while true; do
-            case "$1" in
-            --)
-                break
-                ;;
-            major|engine|data_default|description)
-                set_var "temp_$1" "$2"
-                shift 2
-                ;;
-            *)
-                die "unused upgrade config option '$1'"
-                ;;
-            esac
-        done
+    local my_vars="id comment data_default engine description major"
+    while read conffile
+    do
+        read_config_file "$conffile" "$my_vars"
 
-        case "$action" in
-            help)
-                echo "$id - $temp_description"
-                ;;
-            config)
-                test "$id" = "$expected_id" || continue
-                for i in major engine data_default description; do
-                    set_var "upgradefrom_$i" "\$temp_$i"
-                done
-                debug "used configuration '$id', $upgradefrom_engine"
-                return 0
-                ;;
-        esac
-    done < "@rawpkgdatadir@/upgrade.conf"
+        if test help = "$action"; then
+            echo "$__pg_conf_id - $__pg_conf_description"
+        elif test config = "$action"; then
+            test "$__pg_conf_id" = "$expected_id" || continue
+            debug "reading config $conffile"
+            for i in $my_vars; do
+                set_var "upgradefrom_$i" "\$__pg_conf_$i"
+            done
+            return 0
+        fi
+    done < <(find "$upgrade_confdir" -maxdepth 1 -type f -name '*.conf')
 
     case "$action" in
         help)
@@ -438,7 +461,7 @@ handle_pgconf()
 }
 
 
-parse_configuration()
+service_configuration()
 {
     local data=
     local port=
@@ -448,7 +471,7 @@ parse_configuration()
     local envfile_pgdata=
     local mode="$1" datavar="$2" portvar="$3" service="$4"
 
-    debug "running parse_configuration() for $mode"
+    debug "running service_configuration() for $mode"
 
     # Well, until the bug #1139148 is not resolved somehow, we need to stay ugly
     # and parse Environment= and EnvironmentFile= statements.
@@ -641,7 +664,7 @@ debug "service name: $option_service"
 root_prereq
 
 # load service's pgdata
-parse_configuration initdb pgdata UNUSED "$option_service"
+service_configuration initdb pgdata UNUSED "$option_service"
 
 # Check that nothing breaks --new-systemd-unit
 if test "$option_systemd_config" = yes; then
@@ -677,7 +700,7 @@ test -n "$option_port" && pgport=$option_port
 
 if test upgrade = "$option_mode"; then
     upgradefrom_data="$upgradefrom_data_default"
-    parse_configuration upgrade upgradefrom_data pgport "$option_upgradefrom"
+    service_configuration upgrade upgradefrom_data pgport "$option_upgradefrom"
     test -n "$option_port" -a "$option_port" != "$pgport" \
         && warn "Old pgport $pgport has bigger priority than --pgport value."
 fi

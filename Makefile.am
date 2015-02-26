@@ -18,8 +18,10 @@ initscript	= $(NAME_SERVICE)
 initscript_in	= postgresql.init.in
 
 EXTRA_DIST =
+GENERATED_FILES =
+CLEANFILES =
 
-include $(srcdir)/build-helpers/Makefile.inc
+# include $(srcdir)/build-helpers/Makefile.inc
 
 SUBDIRS = . doc tests
 
@@ -77,19 +79,18 @@ $(README_DIST_BASENAME): $(README_DIST_BASENAME).in $(c_s)
 
 EXTRA_DIST += \
 	$(srcdir)/*.in \
-	upgrade_config.template
+	$(srcdir)/etc/postgresql-setup/upgrade/postgresql.conf
 
-GENERATED_FILES = $(bin_SCRIPTS) \
-		  $(libexec_SCRIPTS) \
-		  $(doc_DATA) \
-		  $(pkgsysconf_DATA) \
-		  $(systemdunits_DATA) \
-		  $(initscripts_DATA) \
-		  $(systemdlegacyscripts_SCRIPTS)
+GENERATED_FILES += \
+	$(bin_SCRIPTS) \
+	$(libexec_SCRIPTS) \
+	$(doc_DATA) \
+	$(pkgsysconf_DATA) \
+	$(systemdunits_DATA) \
+	$(initscripts_DATA) \
+	$(systemdlegacyscripts_SCRIPTS)
 
-CLEANFILES = $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
-
-include $(srcdir)/share/postgresql-setup/Makefile.inc
+CLEANFILES += $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
 
 $(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
 	$(AM_V_GEN)rm -rf $(TEST_GEN_FILES_LIST) && \
@@ -99,6 +100,7 @@ $(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
 
 install-data-hook:
 	test `id -u` -ne 0 || systemctl daemon-reload
+	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/$(NAME_BINARYBASE)-setup/upgrade
 
 GL_GEN_BIN = gitlog-to-changelog
 GL_GEN = if test -d .git; then \

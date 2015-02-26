@@ -24,15 +24,6 @@ AC_ARG_WITH([sysvinit],
     [WANT_SYSVINIT=0]
 )
 
-AC_ARG_WITH([upgrade-config],
-    AS_HELP_STRING([--with-upgrade-config=/file/path,/path2],
-                   [List of files to be used as an upgrade configuration]),
-    [UPGRADE_CONFIG_LIST="$withval"],
-    [UPGRADE_CONFIG_LIST="upgrade_config.template"]
-)
-
-AC_SUBST([UPGRADE_CONFIG_LIST])
-
 AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
 
 # Instatiating generated files by sed instead of config.status.
@@ -62,11 +53,11 @@ sed_subst_var_pattern(PREVPGENGINE)
 sed_subst_var_pattern(rawpkgdatadir)
 sed_subst_var_pattern(README_DIST)
 sed_subst_var_pattern(SU_POSTGRES)
+sed_subst_var_pattern(sysconfdir)
 sed_subst_var_pattern(systemdunitsdir)
 sed_subst_var_pattern(userunitsdir)
 sed_subst_var_pattern(TEST_GEN_FILES_LIST)
-sed_subst_var_pattern(VERSION)
-sed_subst_var_pattern(UPGRADE_CONFIG_LIST)"
+sed_subst_var_pattern(VERSION)"
 
 m4_define([add_sed_subst_var], [
 SED_RULES="$SED_RULES
