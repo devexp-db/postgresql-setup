@@ -148,9 +148,11 @@ parse_upgrade_setup()
 
     local upgrade_confdir="@sysconfdir@/@NAME_BINARYBASE@-setup/upgrade"
 
+    debug "using 'upgrade' confdir $upgrade_confdir"
     test -d "$upgrade_confdir" || die "can't read confdir $upgrade_confdir"
 
-    local my_vars="id comment data_default engine description major"
+    local my_vars="id comment data_default engine description major scls \
+        redhat_sockets_hack"
     while read conffile
     do
         read_config_file "$conffile" "$my_vars"
@@ -162,6 +164,26 @@ parse_upgrade_setup()
             debug "reading config $conffile"
             for i in $my_vars; do
                 set_var "upgradefrom_$i" "\$__pg_conf_$i"
+
+                local cm="config file '$conffile'"
+                # 'scls' and 'redhat_sockets_hack' are used to adjust
+                # environment and could be bash-injected.
+                case "$i" in
+                scls)
+                    test -z "$upgrade_from_scls" \
+                        || [[ $upgrade_from_scls =~ ^[-a-zA-Z0-9_\ ]+$ ]] \
+                        || die "$cm: bad '$i' value '$upgrade_from_scls'"
+                    ;;
+                redhat_sockets_hack)
+                    case "$upgradefrom_redhat_sockets_hack" in
+                    yes|no|'')
+                        ;;
+                    *)
+                        die "$cm: bad '$i' value"
+                        ;;
+                    esac
+                    ;;
+                esac
             done
             return 0
         fi
@@ -313,10 +335,24 @@ upgrade()
 
     info $"Upgrading database."
 
+    scls_upgrade_hacks=
+    test -n "$upgradefrom_scls" && {
+        debug "scls [$upgradefrom_scls] will be enabled"
+        scls_upgrade_hacks="source scl_source enable $upgradefrom_scls ;"
+    }
+
+    test -n "$upgradefrom_redhat_sockets_hack" && {
+        debug "upgrading from redhat server"
+        socket_hacks="export REDHAT_PGUPGRADE_FROM_RHEL=yes ;"
+    }
+
     # Create empty new-format database
     if perform_initdb; then
         # Do the upgrade
-        $SU_POSTGRES -c "$PGENGINE/pg_upgrade \
+        $SU_POSTGRES -c "\
+                        $scls_upgrade_hacks \
+                        $socket_hacks \
+                        $PGENGINE/pg_upgrade \
                         '--old-bindir=$upgradefrom_engine' \
                         '--new-bindir=$PGENGINE' \
                         '--old-datadir=$pgdataold' \

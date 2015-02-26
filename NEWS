@@ -10,6 +10,9 @@ New in 3.0 version
 * Legacy scripts are now generated from single template file, also are
   simplified a bit.
 
+* There are now options (by upgrade configuration file) how to upgrade from an
+  PG stack running in SCL (Software Collections)
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 2.0 version
