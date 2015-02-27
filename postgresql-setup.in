@@ -22,7 +22,7 @@ SU_POSTGRES="@SU_POSTGRES@"
 PGPORT_DEF=5432
 
 # We upgrade by default from system's default PostgreSQL installation
-option_upgradefrom="postgresql"
+option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 
 USAGE_STRING=$"\
 Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]

@@ -209,6 +209,9 @@ PGSETUP_SUBST_OPT([NAME_PKG_PFX], [],
                   [package name prefix, like (PFX)postgresql.rpm])
 PGSETUP_SUBST_OPT([NAME_PKG_SFX], [],
                   [package name suffix, like postgresql(SFX).rpm])
+PGSETUP_SUBST_OPT([NAME_DEFAULT_PREV_SERVICE], [postgresql],
+                  [name of service to upgrade from by default (defaults to
+                   'postgresql'])
 
 NAME_BINARYBASE="$NAME_BIN_PFX""postgresql$NAME_BIN_SFX"
 NAME_PACKAGE="$NAME_PKG_PFX""postgresql$NAME_PKG_SFX"
