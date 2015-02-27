@@ -7,7 +7,7 @@ test -z "$PATH" && export PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 test x"$PGSETUP_DEBUG" != x && set -x && PS4='${LINENO}: '
 
 # Directory containing the postmaster executable
-PGENGINE=@PGENGINE@
+PGENGINE=@bindir@
 
 # Distribution README file
 README_DIST=@README_DIST@
@@ -25,7 +25,7 @@ PGPORT_DEF=5432
 option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 
 # Space separated list of SCLS to be enabled during upgrade
-initdb_scls="@INITDB_SCLS@"
+initdb_scls="@SCLS@"
 
 USAGE_STRING=$"\
 Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]
@@ -403,7 +403,7 @@ upgrade()
 generate_systemd_dropin()
 {
     local service="$1"
-    local dropindir="@userunitsdir@/$service.service.d"
+    local dropindir="@systemduserunitsdir@/$service.service.d"
     local dropin="$dropindir/30-@NAME_BINARYBASE@-setup.conf"
 
     test -e "$dropindir" \

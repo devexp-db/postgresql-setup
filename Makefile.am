@@ -28,17 +28,14 @@ SUBDIRS = . doc tests
 bin_SCRIPTS = $(setup)
 libexec_SCRIPTS = $(ctl) $(checkdb)
 
-userunitsdir = /etc/systemd/system
+legacyscriptsdir = $(systemdlegacyscriptsdir)/$(NAME_SERVICE)
 
 # TODO: Ideally, 'make distcheck' should check every file we generate.
 if WANT_SYSVINIT
-initscriptsdir = $(sysconfdir)/rc.d/init.d
 initscripts_DATA = $(initscript)
 else
-systemdunitsdir = $(prefix)/lib/systemd/system
 systemdunits_DATA = $(service) $(serviceat)
-systemdlegacyscriptsdir = $(libexecdir)/initscripts/legacy-actions/$(NAME_SERVICE)
-systemdlegacyscripts_SCRIPTS = initdb upgrade
+legacyscripts_SCRIPTS = initdb upgrade
 endif
 
 doc_DATA = $(README_DIST_BASENAME)

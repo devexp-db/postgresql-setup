@@ -1,7 +1,7 @@
 # It's not recommended to modify this file in-place, because it will be
 # overwritten during package upgrades.  It is recommended to use systemd
 # "dropin" feature;  i.e. create file with suffix .conf under
-# @userunitsdir@/UNITNAME.service.d directory overriding the
+# @systemduserunitsdir@/UNITNAME.service.d directory overriding the
 # unit's defaults.  Look at systemd.unit(5) manual page for more info.
 
 [Unit]
@@ -32,9 +32,9 @@ ExecStartPre=@libexecdir@/postgresql-check-db-dir %N
 
 # Temporarily use postgresql-ctl wrapper around pg_ctl until there will
 # exist clients which set PGPORT in service file.
-ExecStart=@libexecdir@/postgresql-ctl start -D ${PGDATA} -s -w -t 300
-ExecStop=/usr/bin/pg_ctl stop -D ${PGDATA} -s -m fast
-ExecReload=/usr/bin/pg_ctl reload -D ${PGDATA} -s
+ExecStart=@SCL_SHELL_WRAPPER@@libexecdir@/postgresql-ctl start -D ${PGDATA} -s -w -t 300
+ExecStop=@SCL_SHELL_WRAPPER@@bindir@/pg_ctl stop -D ${PGDATA} -s -m fast
+ExecReload=@SCL_SHELL_WRAPPER@@bindir@/pg_ctl reload -D ${PGDATA} -s
 
 # Give a reasonable amount of time for the server to start up/shut down
 TimeoutSec=300

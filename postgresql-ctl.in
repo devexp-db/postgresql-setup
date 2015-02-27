@@ -4,4 +4,4 @@
 # postgresql.service.  There is not possible to do conditional step in service
 # file based on (non)existence of PGPORT variable.
 
-@PG_CTL_BIN@ "$@" ${PGPORT+-o "-p $PGPORT"}
+@bindir@/pg_ctl "$@" ${PGPORT+-o "-p $PGPORT"}
