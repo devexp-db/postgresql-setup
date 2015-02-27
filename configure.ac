@@ -213,6 +213,10 @@ PGSETUP_SUBST_OPT([NAME_DEFAULT_PREV_SERVICE], [postgresql],
                   [name of service to upgrade from by default (defaults to
                    'postgresql'])
 
+PGSETUP_SUBST_OPT([INITDB_SCLS], [],
+                  [mention software collections which should be
+                   enabled for '--initdb' command])
+
 NAME_BINARYBASE="$NAME_BIN_PFX""postgresql$NAME_BIN_SFX"
 NAME_PACKAGE="$NAME_PKG_PFX""postgresql$NAME_PKG_SFX"
 NAME_SERVICE="$NAME_SRV_PFX""postgresql$NAME_SRV_SFX"
