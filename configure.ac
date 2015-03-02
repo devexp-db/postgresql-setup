@@ -174,8 +174,10 @@ SCL_SHELL_WRAPPER=
 if test -n "$SCLS"
 then
     SCL_SHELL_WRAPPER="$SCL_BINDIR/$SCL_BINARY enable $SCLS -- "
+    SCL_SOURCE="source scl_source enable $SCLS ;"
 fi
 add_sed_subst_var(SCL_SHELL_WRAPPER)
+add_sed_subst_var(SCL_SOURCE)
 
 NAME_BINARYBASE="$NAME_BIN_PFX""postgresql$NAME_BIN_SFX"
 NAME_PACKAGE="$NAME_PKG_PFX""postgresql$NAME_PKG_SFX"

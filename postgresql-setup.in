@@ -26,9 +26,6 @@ PGPORT_DEF=5432
 # We upgrade by default from system's default PostgreSQL installation
 option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 
-# Space separated list of SCLS to be enabled during upgrade
-initdb_scls="@SCLS@"
-
 USAGE_STRING=$"\
 Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]
 
@@ -112,12 +109,8 @@ perform_initdb()
         [ -x /sbin/restorecon ] && /sbin/restorecon "$initdb_log"
     fi
 
-    local scls_initdb_hacks=
-    test -n "$initdb_scls" \
-        && scls_initdb_hacks="source scl_source enable $initdb_scls ; "
-
     # Initialize the database
-    initdbcmd="$scls_initdb_hacks"
+    initdbcmd="@SCL_SOURCE@"
     initdbcmd+=" $PGENGINE/initdb --pgdata='$pgdata' --auth='ident'"
     initdbcmd+=" $PGSETUP_INITDB_OPTIONS"
 
@@ -242,7 +235,7 @@ upgrade()
     if perform_initdb; then
         # Do the upgrade
         $SU_POSTGRES -c "\
-                        $scls_upgrade_hacks \
+                        @SCL_SOURCE@ $scls_upgrade_hacks \
                         $socket_hacks \
                         $PGENGINE/pg_upgrade \
                         '--old-bindir=$upgradefrom_engine' \
