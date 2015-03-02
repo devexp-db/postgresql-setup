@@ -78,6 +78,8 @@ EXTRA_DIST += \
 	$(srcdir)/*.in \
 	$(srcdir)/etc/postgresql-setup/upgrade/postgresql.conf
 
+include $(srcdir)/share/postgresql-setup/Makefile.inc
+
 GENERATED_FILES += \
 	$(bin_SCRIPTS) \
 	$(libexec_SCRIPTS) \
@@ -85,7 +87,7 @@ GENERATED_FILES += \
 	$(pkgsysconf_DATA) \
 	$(systemdunits_DATA) \
 	$(initscripts_DATA) \
-	$(systemdlegacyscripts_SCRIPTS)
+	$(legacyscripts_SCRIPTS)
 
 CLEANFILES += $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
 

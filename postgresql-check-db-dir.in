@@ -42,35 +42,53 @@ PGVERSION=@PGVERSION@
 # Major version of PostgreSQL, e.g. 9.0
 PGMAJORVERSION=@PGMAJORVERSION@
 
-# Previous major version, e.g., 8.4, for upgrades
-PREVMAJORVERSION=@PREVMAJORVERSION@
-
 # Distribution README file
 README_DIST=@README_DIST@
+
+bad_version()
+{
+    local real_version="$1"
+
+    . "@rawpkgdatadir@/library.sh"
+
+    while read id version; do
+        test "$version" = "$real_version" || continue
+
+        local cmd="postgresql-setup --upgrade"
+
+        test "@NAME_DEFAULT_PREV_SERVICE@" = "$id" \
+            || cmd="$cmd --upgrade-from $id"
+
+        echo $"An old version of the database format was found."
+        echo $"Use '$cmd' to upgrade to version '$PGMAJORVERSION'"
+        echo $"See $README_DIST for more information."
+
+        return
+    done < <(parse_upgrade_setup list)
+
+    echo $"An old version '$real_version' of the database format was found."
+    echo $"You need to dump and reload before using PostgreSQL $PGVERSION."
+    echo $"See $README_DIST for more information."
+
+    return
+}
 
 # Check for the PGDATA structure
 if [ -f "$PGDATA/PG_VERSION" ] && [ -d "$PGDATA/base" ]
 then
+    real_version=`cat "$PGDATA/PG_VERSION"`
     # Check version of existing PGDATA
-    if [ x`cat "$PGDATA/PG_VERSION"` = x"$PGMAJORVERSION" ]
+    if [ x"$real_version" = x"$PGMAJORVERSION" ]
     then
         : A-OK
-    elif [ x`cat "$PGDATA/PG_VERSION"` = x"$PREVMAJORVERSION" ]
-    then
-        echo $"An old version of the database format was found."
-        echo $"Use \"postgresql-setup --upgrade\" to upgrade to version $PGMAJORVERSION."
-        echo $"See $README_DIST for more information."
-        exit 1
     else
-        echo $"An old version of the database format was found."
-        echo $"You need to dump and reload before using PostgreSQL $PGMAJORVERSION."
-        echo $"See $README_DIST for more information."
+        bad_version "$real_version"
         exit 1
     fi
 else
     # No existing PGDATA! Warn the user to initdb it.
     echo $"\"$PGDATA\" is missing or empty."
-    echo $"Use \"postgresql-setup --initdb\" to initialize the database cluster."
+    echo $"Use \"@NAME_BINARYBASE@-setup --initdb\" to initialize the database cluster."
     echo $"See $README_DIST for more information."
     exit 1
 fi

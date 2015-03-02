@@ -21,6 +21,8 @@ SU_POSTGRES="@SU_POSTGRES@"
 # The where PostgreSQL server listens by default
 PGPORT_DEF=5432
 
+. "@rawpkgdatadir@/library.sh"
+
 # We upgrade by default from system's default PostgreSQL installation
 option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 
@@ -102,103 +104,6 @@ set_var()
 root_prereq()
 {
     test "$(id -u)" -eq 0 || die "$0 requires root access for this action"
-}
-
-
-read_config_file()
-{
-    local key="" val=""
-
-    test -r "$1" || die "can't read file '$1'"
-
-    for i in $2; do
-        eval "unset __pg_conf_$i"
-    done
-
-    # No easy (and secure) way to read configuration files from bash script,
-    # sorry.
-    while read key val; do
-        [[ $key =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || return 1
-
-        case " $2 " in
-        *" $key "*)
-            ;;
-        *)
-            warn "config file '$1':  unknown key '$key'"
-            continue
-            ;;
-        esac
-
-        # Strip double quotes
-        case "$val" in
-        \"*\")
-            val=${val##\"}
-            val=${val%%\"}
-            ;;
-        esac
-
-        # Make it reasonably safe.  Keep dolar-sign escaped.
-        eval "__pg_conf_$key=\$val"
-
-    done < <(grep -v -e "^$" -e "^#" < "$1")
-}
-
-
-parse_upgrade_setup()
-{
-    local action="$1"
-    local expected_id="$2"
-    local id temp_major temp_engine temp_data_default temp_description
-
-    local upgrade_confdir="@sysconfdir@/@NAME_BINARYBASE@-setup/upgrade"
-
-    debug "using 'upgrade' confdir $upgrade_confdir"
-    test -d "$upgrade_confdir" || die "can't read confdir $upgrade_confdir"
-
-    local my_vars="id comment data_default engine description major scls \
-        redhat_sockets_hack"
-    while read conffile
-    do
-        read_config_file "$conffile" "$my_vars"
-
-        if test help = "$action"; then
-            echo "$__pg_conf_id - $__pg_conf_description"
-        elif test config = "$action"; then
-            test "$__pg_conf_id" = "$expected_id" || continue
-            debug "reading config $conffile"
-            for i in $my_vars; do
-                set_var "upgradefrom_$i" "\$__pg_conf_$i"
-
-                local cm="config file '$conffile'"
-                # 'scls' and 'redhat_sockets_hack' are used to adjust
-                # environment and could be bash-injected.
-                case "$i" in
-                scls)
-                    test -z "$upgrade_from_scls" \
-                        || [[ $upgrade_from_scls =~ ^[-a-zA-Z0-9_\ ]+$ ]] \
-                        || die "$cm: bad '$i' value '$upgrade_from_scls'"
-                    ;;
-                redhat_sockets_hack)
-                    case "$upgradefrom_redhat_sockets_hack" in
-                    yes|no|'')
-                        ;;
-                    *)
-                        die "$cm: bad '$i' value"
-                        ;;
-                    esac
-                    ;;
-                esac
-            done
-            return 0
-        fi
-    done < <(find "$upgrade_confdir" -maxdepth 1 -type f -name '*.conf')
-
-    case "$action" in
-        help)
-            return 0
-            ;;
-    esac
-    return 1
 }
 
 

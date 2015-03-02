@@ -71,6 +71,7 @@ conf_dir([systemdunitsdir],          ['${prefix}/lib/systemd/system'])
 conf_dir([systemduserunitsdir],      ['${prefix}/etc/systemd/system'])
 conf_dir([systemdlegacyscriptsdir],  ['${libexecdir}/initscripts/legacy-actions'])
 conf_dir([initscriptsdir],           ['${sysconfdir}/rc.d/init.d'])
+conf_dir([rawpkgdatadir],            ['${datadir}/postgresql-setup'])
 
 INSTANTIATE_CONV="\$(AM_V_GEN)rm -rf \$@; \$(MKDIR_P) \$(@D)"
 INSTANTIATE="\$(INSTANTIATE_CONV) && \$(SED_CALL) \$< > \$@ && chmod -w \$@"
@@ -133,7 +134,12 @@ if test -z "$POSTGRES_HOMEDIR" -a "$pgsetup_cv_os_family" = redhat; then
 fi
 
 if test -z "$PGDATADIR" -a "$pgsetup_cv_os_family" = redhat; then
-    PGDATADIR="\${prefix}/var/lib/pgsql/data"
+    if test x"$prefix" = x/usr
+    then
+        PGDATADIR=/var/lib/pgsql/data
+    else
+        PGDATADIR="\${prefix}/var/lib/pgsql/data"
+    fi
 fi
 
 pgdocdir="\${datarootdir}/doc/\${pkgname}"
