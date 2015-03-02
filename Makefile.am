@@ -1,5 +1,3 @@
-pkgname		= $(NAME_PACKAGE)
-
 setup		= $(NAME_BINARYBASE)-setup
 setup_in	= postgresql-setup.in
 
@@ -38,7 +36,7 @@ systemdunits_DATA = $(service) $(serviceat)
 legacyscripts_SCRIPTS = initdb upgrade
 endif
 
-doc_DATA = $(README_DIST_BASENAME)
+pgdoc_DATA = $(README_DIST_BASENAME)
 
 noinst_DATA = $(TEST_GEN_FILES_LIST)
 
@@ -83,7 +81,7 @@ include $(srcdir)/share/postgresql-setup/Makefile.inc
 GENERATED_FILES += \
 	$(bin_SCRIPTS) \
 	$(libexec_SCRIPTS) \
-	$(doc_DATA) \
+	$(pgdoc_DATA) \
 	$(pkgsysconf_DATA) \
 	$(systemdunits_DATA) \
 	$(initscripts_DATA) \

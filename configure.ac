@@ -37,16 +37,12 @@ sed_subst_var_pattern(docdir)
 sed_subst_var_pattern(libdir)
 sed_subst_var_pattern(libexecdir)
 sed_subst_var_pattern(top_srcdir)
-sed_subst_var_pattern(pgcontribdocdir)
 sed_subst_var_pattern(PGDATADIR)
-sed_subst_var_pattern(pgdocdir)
 sed_subst_var_pattern(PGMAJORVERSION)
 sed_subst_var_pattern(PG_UPGRADE_BIN_USER_OPT)
 sed_subst_var_pattern(PGVERSION)
 sed_subst_var_pattern(PKGCONFIG_DIR)
-sed_subst_var_pattern(pkgname)
 sed_subst_var_pattern(POSTGRES_HOMEDIR)
-sed_subst_var_pattern(rawpkgdatadir)
 sed_subst_var_pattern(README_DIST)
 sed_subst_var_pattern(SU_POSTGRES)
 sed_subst_var_pattern(sysconfdir)
@@ -72,6 +68,8 @@ conf_dir([systemduserunitsdir],      ['${prefix}/etc/systemd/system'])
 conf_dir([systemdlegacyscriptsdir],  ['${libexecdir}/initscripts/legacy-actions'])
 conf_dir([initscriptsdir],           ['${sysconfdir}/rc.d/init.d'])
 conf_dir([rawpkgdatadir],            ['${datadir}/postgresql-setup'])
+conf_dir([pgdocdir],                 ['${datarootdir}/doc/${NAME_PACKAGE}'])
+conf_dir([pgcontribdocdir],          ['${datarootdir}/doc/${NAME_PACKAGE}-contrib'])
 
 INSTANTIATE_CONV="\$(AM_V_GEN)rm -rf \$@; \$(MKDIR_P) \$(@D)"
 INSTANTIATE="\$(INSTANTIATE_CONV) && \$(SED_CALL) \$< > \$@ && chmod -w \$@"
@@ -134,22 +132,13 @@ if test -z "$POSTGRES_HOMEDIR" -a "$pgsetup_cv_os_family" = redhat; then
 fi
 
 if test -z "$PGDATADIR" -a "$pgsetup_cv_os_family" = redhat; then
-    if test x"$prefix" = x/usr
-    then
-        PGDATADIR=/var/lib/pgsql/data
-    else
-        PGDATADIR="\${prefix}/var/lib/pgsql/data"
-    fi
+    # This is based on Red Hat's packaging.
+    PGDATADIR='${localstatedir}/lib/pgsql/data'
 fi
 
-pgdocdir="\${datarootdir}/doc/\${pkgname}"
-pgcontribdocdir="\${datarootdir}/doc/\${pkgname}-contrib"
-
 README_DIST_BASENAME=README.rpm-dist
-README_DIST="\${docdir}/$README_DIST_BASENAME"
+README_DIST="\${pgdocdir}/$README_DIST_BASENAME"
 
-AC_SUBST([pgdocdir])
-AC_SUBST([pgcontribdocdir])
 AC_SUBST([README_DIST])
 AC_SUBST([README_DIST_BASENAME])
 
