@@ -20,11 +20,21 @@ AC_SUBST([TEST_GEN_FILES_LIST], [.generated_files])
 AC_ARG_WITH([sysvinit],
     AS_HELP_STRING([--with-sysvinit],
                    [prepares sys v init script]),
-    [WANT_SYSVINIT=1],
-    [WANT_SYSVINIT=0]
+    [WANT_SYSVINIT=0
+     test x"$withval" = xyes && WANT_SYSVINIT=1]
 )
 
-test -z "$WANT_SYSVINIT" && WANT_SYSVINIT=0
+if test x = x"$WANT_SYSVINIT"
+then
+    WANT_SYSVINIT=0
+    # Try to detect system running systemd
+    AC_PATH_PROG([SYSTEMCTL], [systemctl])
+    test -z "$ac_cv_path_SYSTEMCTL" && WANT_SYSVINIT=1
+fi
+
+INIT_SYSTEM=systemd
+test x"$WANT_SYSVINIT" = x1 && INIT_SYSTEM=sysvinit
+
 AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
 AC_SUBST([WANT_SYSVINIT])
 
@@ -212,4 +222,5 @@ AC_MSG_NOTICE([Configured the folowing way:
     PostgreSQL service: $NAME_SERVICE
     PostgreSQL package: $NAME_PACKAGE
     PostgreSQL bin_pfx: $NAME_BINARYBASE
+    Init system:        $INIT_SYSTEM
 ])

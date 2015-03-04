@@ -22,6 +22,7 @@ readme_dist_sed	= README.rpm-dist.sed
 readme_template	= README.rpm-dist.template
 
 EXTRA_DIST =
+INTERMEDIATE_FILES =
 GENERATED_FILES =
 CLEANFILES =
 
@@ -105,12 +106,14 @@ GENERATED_FILES += \
 	$(pkgsysconf_DATA) \
 	$(systemdunits_DATA) \
 	$(initscripts_DATA) \
-	$(legacyscripts_SCRIPTS) \
+	$(legacyscripts_SCRIPTS)
+
+INTERMEDIATE_FILES += \
 	$(readme_dist_m4) \
 	$(readme_dist_sed) \
 	$(readme_dist_db)
 
-CLEANFILES += $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
+CLEANFILES += $(GENERATED_FILES) $(TEST_GEN_FILES_LIST) $(INTERMEDIATE_FILES)
 
 $(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
 	$(AM_V_GEN)rm -rf $(TEST_GEN_FILES_LIST) && \
