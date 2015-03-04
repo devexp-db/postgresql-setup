@@ -24,7 +24,9 @@ AC_ARG_WITH([sysvinit],
     [WANT_SYSVINIT=0]
 )
 
+test -z "$WANT_SYSVINIT" && WANT_SYSVINIT=0
 AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
+AC_SUBST([WANT_SYSVINIT])
 
 # Instatiating generated files by sed instead of config.status.
 # This is encouraged by autoconf documentation itself because if we used
@@ -47,7 +49,8 @@ sed_subst_var_pattern(README_DIST)
 sed_subst_var_pattern(SU_POSTGRES)
 sed_subst_var_pattern(sysconfdir)
 sed_subst_var_pattern(TEST_GEN_FILES_LIST)
-sed_subst_var_pattern(VERSION)"
+sed_subst_var_pattern(VERSION)
+sed_subst_var_pattern(WANT_SYSVINIT)"
 
 m4_define([add_sed_subst_var], [
 SED_RULES="$SED_RULES

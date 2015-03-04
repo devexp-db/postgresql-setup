@@ -22,7 +22,7 @@ postgresql*-ctl
 postgresql*.service
 /postgresql*-setup
 postgresql*-setup.1
-README.rpm-dist
+README.rpm-dist*
 testsuite
 testsuite.dir/
 initdb

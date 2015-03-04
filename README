@@ -2,4 +2,5 @@
 postgresql-setup
 ----------------
 
-TODO
+BuildRequires:
+    - m4, docbook-utils, help2man

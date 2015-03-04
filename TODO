@@ -22,3 +22,5 @@
       edit generated file instead its '*.in' parent
 
 * Allow guys from KDE upgrade the PG stack somehow.
+
+* stylesheets & html version for README.rpm-dist

@@ -15,6 +15,12 @@ serviceat_in	= postgresql.service.in
 initscript	= $(NAME_SERVICE)
 initscript_in	= postgresql.init.in
 
+readme_dist	= README.rpm-dist
+readme_dist_db	= README.rpm-dist.sgml
+readme_dist_m4	= README.rpm-dist.m4
+readme_dist_sed	= README.rpm-dist.sed
+readme_template	= README.rpm-dist.template
+
 EXTRA_DIST =
 GENERATED_FILES =
 CLEANFILES =
@@ -36,7 +42,7 @@ systemdunits_DATA = $(service) $(serviceat)
 legacyscripts_SCRIPTS = initdb upgrade
 endif
 
-pgdoc_DATA = $(README_DIST_BASENAME)
+pgdoc_DATA = $(readme_dist)
 
 noinst_DATA = $(TEST_GEN_FILES_LIST)
 
@@ -69,12 +75,26 @@ $(service): $(service_in) $(c_s)
 	    -e 's|@PGDATA_ENVIRONMENT[@]|Environment=PGDATA=$(PGDATADIR)|' \
 	    $< > $@
 
-$(README_DIST_BASENAME): $(README_DIST_BASENAME).in $(c_s)
+$(readme_dist_sed): $(readme_template) $(c_s)
 	$(INSTANTIATE)
+
+$(readme_dist_m4): $(readme_dist_sed)
+	$(INSTANTIATE_CONV) && \
+	    m4 -P < $< > $@
+
+$(readme_dist_db): $(readme_dist_m4)
+	$(INSTANTIATE_CONV) && \
+	    $(SED_CALL) < $(readme_dist_m4) | m4 -P > $(readme_dist_db)
+
+$(readme_dist): $(readme_dist_db) style.dsl
+	$(INSTANTIATE_CONV) && docbook2txt -d style.dsl $(readme_dist_db) >/dev/null && \
+	    mv -f $(readme_dist).txt $(readme_dist)
 
 EXTRA_DIST += \
 	$(srcdir)/*.in \
-	$(srcdir)/etc/postgresql-setup/upgrade/postgresql.conf
+	$(srcdir)/etc/postgresql-setup/upgrade/postgresql.conf \
+	$(readme_template) \
+	style.dsl
 
 include $(srcdir)/share/postgresql-setup/Makefile.inc
 
@@ -85,7 +105,10 @@ GENERATED_FILES += \
 	$(pkgsysconf_DATA) \
 	$(systemdunits_DATA) \
 	$(initscripts_DATA) \
-	$(legacyscripts_SCRIPTS)
+	$(legacyscripts_SCRIPTS) \
+	$(readme_dist_m4) \
+	$(readme_dist_sed) \
+	$(readme_dist_db)
 
 CLEANFILES += $(GENERATED_FILES) $(TEST_GEN_FILES_LIST)
 
