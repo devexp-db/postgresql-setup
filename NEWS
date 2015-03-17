@@ -13,6 +13,11 @@ New in 3.0 version
 * There are now options (by upgrade configuration file) how to upgrade from an
   PG stack running in SCL (Software Collections)
 
+* documentation README.rpm-dist is generated from docbook sources
+
+* The sysvinit support should be OK finally, sysvinit system is now
+  automatically detected without --with-sysvinit configure option.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 2.0 version
