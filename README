@@ -4,3 +4,6 @@ postgresql-setup
 
 BuildRequires:
     - m4, docbook-utils, help2man
+
+Maintainer's BuildRequires
+    - autoconf, automake, autoconf-archive

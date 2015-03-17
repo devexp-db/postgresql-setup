@@ -17,18 +17,25 @@ service_name="$1"
 if [ -z "$PGDATA" ]; then
     echo $"You try to start '$service_name' service"
     echo $"but the required \$PGDATA environment variable is not set."
-    echo $"You should use the @systemduserunitsdir@/$service_name.service.d/ANYTHING.conf"
+
+    if test @WANT_SYSVINIT@ -eq 1; then
+        echo $"You should use the @initscriptsconfdir@/$service_name"
+    else
+        echo $"You should use the @systemduserunitsdir@/$service_name.service.d/ANYTHING.conf"
+    fi
+
     echo $"configuration file to set \$PGDATA.  For more info see"
     echo $"the @README_DIST@ file."
 
     exit 1
 fi
 
+
 # Warn the user that the configuration should be adjusted via drop-in, in case
 # the $PGDATA variable is set different way (and non-default service name is
-# used).
+# used, systemd systems only).
 conf_dir="@systemduserunitsdir@/$service_name.service.d"
-if [[ "$service_name" == *@* ]] &&  test ! -d "$conf_dir"; then
+if test @WANT_SYSVINIT@ = 0 && [[ "$service_name" == *@* ]] &&  test ! -d "$conf_dir"; then
     echo >&2 $"WARNING: Note that the '$conf_dir'"
     echo >&2 $"directory does not exist while you are using non-default service"
     echo >&2 $"name '$service_name'.  You are encouraged to use the"
@@ -87,8 +94,9 @@ then
     fi
 else
     # No existing PGDATA! Warn the user to initdb it.
-    echo $"\"$PGDATA\" is missing or empty."
-    echo $"Use \"@NAME_BINARYBASE@-setup --initdb\" to initialize the database cluster."
+    echo $"Directory \"$PGDATA\" is missing or empty."
+    echo $"Use \"@bindir@/@NAME_BINARYBASE@-setup --initdb\""
+    echo $"to initialize the database cluster."
     echo $"See $README_DIST for more information."
     exit 1
 fi

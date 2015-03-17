@@ -26,4 +26,5 @@ README.rpm-dist*
 testsuite
 testsuite.dir/
 initdb
+initscript
 upgrade

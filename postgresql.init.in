@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 #
-# postgresql	This is the init script for starting up the PostgreSQL
-#		server.
+# @NAME_SERVICE@
+#
+# This is the init script for starting up the PostgreSQL server.
 #
 # This script is slightly unusual in that the name of the daemon (postmaster)
 # is not the same as the name of the subsystem (postgresql)
@@ -10,25 +11,22 @@
 # description: PostgreSQL database server.
 # processname: postmaster
 # pidfile: /var/run/postmaster.PORT.pid
+
 ### BEGIN INIT INFO
-# Provides: postgresql
+# Provides: @NAME_SERVICE@
 # Required-Start: $local_fs $remote_fs $network $named $syslog $time
 # Required-Stop: $local_fs $remote_fs $network $named $syslog $time
-# Short-Description: start and stop PostgreSQL server
+# Short-Description: start and stop PostgreSQL @PGVERSION@ server
 # Description: PostgreSQL database server
 ### END INIT INFO
 
 # PGVERSION is the full package version, e.g., 9.0.2
 # Note: the specfile inserts the correct value during package build
 PGVERSION=@PGVERSION@
+
 # PGMAJORVERSION is major version, e.g., 9.0 (this should match PG_VERSION)
 PGMAJORVERSION=@PGMAJORVERSION@
-# PREVMAJORVERSION is the previous major version, e.g., 8.4, for upgrades
-# Note: the specfile inserts the correct value during package build
-PREVMAJORVERSION=@PREVMAJORVERSION@
-# PREVPGENGINE is the directory containing the previous postmaster executable
-# Note: the specfile inserts the correct value during package build
-PREVPGENGINE=@PREVPGENGINE@
+
 # PGDOCDIR is the directory containing the package's documentation
 # Note: the specfile inserts the correct value during package build
 
@@ -41,6 +39,11 @@ README_DIST=@README_DIST@
 # Get network config.
 . /etc/sysconfig/network
 
+# postgresql-setup library
+. "@rawpkgdatadir@/library.sh"
+
+@SCL_SOURCE@
+
 # Find the name of the script
 NAME=`basename $0`
 if [ ${NAME:0:1} = "S" -o ${NAME:0:1} = "K" ]
@@ -51,10 +54,19 @@ fi
 SU_POSTGRES="@SU_POSTGRES@"
 
 # Set defaults for configuration variables
-PGENGINE=/usr/bin
-PGPORT=5432
-PGDATA=/var/lib/pgsql/data
-PGLOG=/var/lib/pgsql/pgstartup.log
+PGENGINE=@bindir@
+
+# Only default system service has default PGDATA set.  This allows us to catch
+# admin's mistake of not creating /etc/sysconfig/psql/$NAME configuration file
+# and just hard/symlinking default init script.  That way we can avoid (inside
+# postgresql-check-db-dir) runnnig "secondary" server against "default" data
+# directory.
+if test "@NAME_SERVICE@" = "$NAME"; then
+    PGDATA=@PGDATADIR@
+fi
+
+PGLOG=@POSTGRES_HOMEDIR@/pgstartup-@NAME_SERVICE@.log
+
 # Value to set as postmaster process's oom_adj
 PG_OOM_ADJ=-17
 
@@ -65,11 +77,16 @@ export PGDATA
 export PGPORT
 
 lockfile="/var/lock/subsys/${NAME}"
-pidfile="/var/run/postmaster.${PGPORT}.pid"
+
+# Ideally, we should use $PGDATA/postmaster.pid.  It apparently works, but to
+# be honest I'm not sure about consequences.  Most probably 'service status'
+# would not work for non-root/non-postgres users.  TODO?
+pidfile="/var/run/${NAME}.pid"
 
 script_result=0
 
-start(){
+start()
+{
 	[ -x "$PGENGINE/postmaster" ] || exit 5
 
 	PSQL_START=$"Starting ${NAME} service: "
@@ -83,40 +100,27 @@ start(){
 		[ -x /sbin/restorecon ] && /sbin/restorecon "$PGLOG"
 	fi
 
-	# Check for the PGDATA structure
-	if [ -f "$PGDATA/PG_VERSION" ] && [ -d "$PGDATA/base" ]
-	then
-		# Check version of existing PGDATA
-		if [ x`cat "$PGDATA/PG_VERSION"` = x"$PGMAJORVERSION" ]
-		then
-			: A-OK
-		elif [ x`cat "$PGDATA/PG_VERSION"` = x"$PREVMAJORVERSION" ]
-		then
-			echo
-			echo $"An old version of the database format was found."
-			echo $"Use \"service postgresql upgrade\" to upgrade to version $PGMAJORVERSION."
-			echo $"See $README_DIST for more information."
-			exit 1
-		else
-			echo
-			echo $"An old version of the database format was found."
-			echo $"You need to dump and reload before using PostgreSQL $PGMAJORVERSION."
-			echo $"See $README_DIST for more information."
-			exit 1
-		fi
-	else
-		# No existing PGDATA! Warn the user to initdb it.
-		echo
-                echo $"$PGDATA is missing. Use \"service postgresql initdb\" to initialize the cluster first."
-		echo_failure
-		echo
-		exit 1
- 	fi
+    @libexecdir@/postgresql-check-db-dir "$NAME" || {
+        echo_failure
+        echo
+        exit 1
+    }
 
 	echo -n "$PSQL_START"
 	test x"$PG_OOM_ADJ" != x && echo "$PG_OOM_ADJ" > /proc/self/oom_adj
-	$SU_POSTGRES -c "$PGENGINE/postmaster -p '$PGPORT' -D '$PGDATA' ${PGOPTS} &" >> "$PGLOG" 2>&1 < /dev/null
+
+    # Note that this does not fail/exit the 'service start' if the postmaster
+    # is already running.  We should probably 'status' first and start only if
+    # postmaster is down.  This just unnecessarily wastes time and generates
+    # too much (false) rush in $PGLOG.
+    run_cmd_as_dbadmin \
+            "$PGENGINE/postmaster ${PGPORT+-o "-p $PGPORT"} \
+                    -D '$PGDATA' ${PGOPTS} &"               \
+            "$PGLOG" "$PGLOG"
+
+	# TODO: parametrize
 	sleep 2
+
 	pid=`head -n 1 "$PGDATA/postmaster.pid" 2>/dev/null`
 	if [ "x$pid" != x ]
 	then
@@ -131,12 +135,15 @@ start(){
 	fi
 }
 
-stop(){
+stop()
+{
 	echo -n $"Stopping ${NAME} service: "
 	if [ -e "$lockfile" ]
 	then
-	    $SU_POSTGRES -c "$PGENGINE/pg_ctl stop -D '$PGDATA' -s -m fast" > /dev/null 2>&1 < /dev/null
-	    ret=$? 
+        run_cmd_as_dbadmin \
+                "$PGENGINE/pg_ctl stop -D '$PGDATA' -s -m fast" \
+                /dev/null /dev/null
+	    ret=$?
 	    if [ $ret -eq 0 ]
 	    then
 		echo_success
@@ -162,137 +169,34 @@ condrestart(){
     [ -e "$lockfile" ] && restart || :
 }
 
-reload(){
-    $SU_POSTGRES -c "$PGENGINE/pg_ctl reload -D '$PGDATA' -s" > /dev/null 2>&1 < /dev/null
+reload()
+{
+    $SU_POSTGRES -c "@SCL_SOURCE@ $PGENGINE/pg_ctl reload -D '$PGDATA' -s" > /dev/null 2>&1 < /dev/null
 }
 
-# code shared between initdb and upgrade actions
-perform_initdb(){
-	if [ ! -e "$PGDATA" -a ! -h "$PGDATA" ]
-	then
-		mkdir -p "$PGDATA" || return 1
-		chown postgres:postgres "$PGDATA"
-		chmod go-rwx "$PGDATA"
-	fi
-	# Clean up SELinux tagging for PGDATA
-	[ -x /sbin/restorecon ] && /sbin/restorecon "$PGDATA"
-
-	# Make sure the startup-time log file is OK, too
-	if [ ! -e "$PGLOG" -a ! -h "$PGLOG" ]
-	then
-		touch "$PGLOG" || return 1
-		chown postgres:postgres "$PGLOG"
-		chmod go-rwx "$PGLOG"
-		[ -x /sbin/restorecon ] && /sbin/restorecon "$PGLOG"
-	fi
-
-	# Initialize the database
-	$SU_POSTGRES -c "$PGENGINE/initdb --pgdata='$PGDATA' --auth='ident'" >> "$PGLOG" 2>&1 < /dev/null
-
-	# Create directory for postmaster log
-	mkdir "$PGDATA/pg_log"
-	chown postgres:postgres "$PGDATA/pg_log"
-	chmod go-rwx "$PGDATA/pg_log"
-
-	if [ -f "$PGDATA/PG_VERSION" ]
-	then
-	    return 0
-	fi
-	return 1
-}
-
-initdb(){
-    if [ -f "$PGDATA/PG_VERSION" ]
-    then
-	echo -n $"Data directory is not empty!"
-	echo_failure
-	echo
-	script_result=1
-    else
-	echo -n $"Initializing database: "
-	if perform_initdb
-	then
-	    echo_success
-	else
-	    echo_failure
-	    script_result=1
-	fi
-	echo
-    fi
-}
-
-upgrade(){
-    # must see previous version in PG_VERSION
-    if [ ! -f "$PGDATA/PG_VERSION" -o \
-	 x`cat "$PGDATA/PG_VERSION"` != x"$PREVMAJORVERSION" ]
-    then
-	echo
-	echo $"Cannot upgrade because database is not of version $PREVMAJORVERSION."
-	echo_failure
-	echo
-	exit 1
-    fi
-    if [ ! -x "$PGENGINE/pg_upgrade" ]
-    then
-	echo
-	echo $"Please install the postgresql-upgrade RPM."
-	echo_failure
-	echo
-	exit 5
-    fi
-    # Make sure service is stopped
-    stop
-
-    echo -n $"Upgrading database: "
-
-    # Set up log file for pg_upgrade
-    PGUPLOG=/var/lib/pgsql/pgupgrade.log
-    rm -f "$PGUPLOG"
-    touch "$PGUPLOG" || exit 1
-    chown postgres:postgres "$PGUPLOG"
-    chmod go-rwx "$PGUPLOG"
-    [ -x /sbin/restorecon ] && /sbin/restorecon "$PGUPLOG"
-
-    # Move old DB to PGDATAOLD
-    PGDATAOLD="${PGDATA}-old"
-    rm -rf "$PGDATAOLD"
-    mv "$PGDATA" "$PGDATAOLD" || exit 1
-
-    # Create empty new-format database
-    if perform_initdb
-    then
-	# Do the upgrade
-	$SU_POSTGRES -c "$PGENGINE/pg_upgrade \
-		'--old-bindir=$PREVPGENGINE' \
-		'--new-bindir=$PGENGINE' \
-		'--old-datadir=$PGDATAOLD' \
-		'--new-datadir=$PGDATA' \
-		--link \
-		'--old-port=$PGPORT' '--new-port=$PGPORT' \
-		--user=postgres" >> "$PGUPLOG" 2>&1 < /dev/null
-	if [ $? -ne 0 ]
-	then
-	    # pg_upgrade failed
-	    script_result=1
-	fi
-    else
-	# initdb failed
-	script_result=1
-    fi
-
-    if [ $script_result -eq 0 ]
-    then
-	    echo_success
-    else
-	    # Clean up after failure
-	    rm -rf "$PGDATA"
-	    mv "$PGDATAOLD" "$PGDATA"
-
-	    echo_failure
-    fi
+__single_comand()
+{
+    local msg="$1"
+    shift
+    echo $"$msg ($@)"
+    "$@" && success || failure || script_result=1
     echo
-    echo $"See $PGUPLOG for details."
 }
+
+
+initdb()
+{
+    __single_comand $"Initializing database" \
+        @NAME_BINARYBASE@-setup --initdb "$NAME" "$@"
+}
+
+
+upgrade()
+{
+    __single_comand $"Upgrading database" \
+        @NAME_BINARYBASE@-setup --upgrade "$NAME" "$@"
+}
+
 
 # See how we were called.
 case "$1" in
@@ -319,11 +223,13 @@ case "$1" in
 	restart
 	;;
   initdb)
-	initdb
-	;;
+    shift
+    initdb "$@"
+    ;;
   upgrade)
-	upgrade
-	;;
+    shift
+    upgrade "$@"
+    ;;
   *)
 	echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload|initdb|upgrade}"
 	exit 2

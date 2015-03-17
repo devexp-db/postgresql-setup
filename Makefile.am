@@ -12,7 +12,7 @@ service_in	= postgresql.service.in
 serviceat	= $(NAME_SERVICE)@.service
 serviceat_in	= postgresql.service.in
 
-initscript	= $(NAME_SERVICE)
+initscript	= initscript
 initscript_in	= postgresql.init.in
 
 readme_dist	= README.rpm-dist
@@ -35,9 +35,12 @@ libexec_SCRIPTS = $(ctl) $(checkdb)
 
 legacyscriptsdir = $(systemdlegacyscriptsdir)/$(NAME_SERVICE)
 
+noinst_DATA =
+
 # TODO: Ideally, 'make distcheck' should check every file we generate.
 if WANT_SYSVINIT
-initscripts_DATA = $(initscript)
+noinst_DATA += $(initscript)
+GENERATED_FILES += $(initscript)
 else
 systemdunits_DATA = $(service) $(serviceat)
 legacyscripts_SCRIPTS = initdb upgrade
@@ -45,7 +48,7 @@ endif
 
 pgdoc_DATA = $(readme_dist)
 
-noinst_DATA = $(TEST_GEN_FILES_LIST)
+noinst_DATA += $(TEST_GEN_FILES_LIST)
 
 $(ctl): $(ctl_in) $(c_s)
 	$(INSTANTIATE_SCRIPT)
@@ -57,7 +60,7 @@ $(checkdb): $(check) $(checkdb_in) $(c_s)
 	$(INSTANTIATE_SCRIPT)
 
 $(initscript): $(initscript_in) $(c_s)
-	$(INSTANTIATE)
+	$(INSTANTIATE_SCRIPT)
 
 initdb upgrade: legacy-sysv-script.in $(c_s)
 	$(INSTANTIATE_SCRIPT)
@@ -105,7 +108,6 @@ GENERATED_FILES += \
 	$(pgdoc_DATA) \
 	$(pkgsysconf_DATA) \
 	$(systemdunits_DATA) \
-	$(initscripts_DATA) \
 	$(legacyscripts_SCRIPTS)
 
 INTERMEDIATE_FILES += \
@@ -122,8 +124,20 @@ $(TEST_GEN_FILES_LIST): $(GENERATED_FILES)
 	done
 
 install-data-hook:
+if WANT_SYSVINIT
+else
 	test `id -u` -ne 0 || systemctl daemon-reload
+endif
 	$(MKDIR_P) $(DESTDIR)/$(sysconfdir)/$(NAME_BINARYBASE)-setup/upgrade
+
+install-exec-hook:
+if WANT_SYSVINIT
+	$(MKDIR_P) $(DESTDIR)/$(initscriptsdir)
+	$(install_sh_SCRIPT) $(initscript) $(DESTDIR)/$(initscriptsdir)/$(NAME_SERVICE)
+endif
+
+uninstall-hook:
+	rm -rf $(DESTDIR)/$(initscriptsdir)/$(NAME_SERVICE)
 
 GL_GEN_BIN = gitlog-to-changelog
 GL_GEN = if test -d .git; then \

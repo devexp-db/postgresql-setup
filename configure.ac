@@ -80,6 +80,7 @@ conf_dir([systemdunitsdir],          ['${prefix}/lib/systemd/system'])
 conf_dir([systemduserunitsdir],      ['${prefix}/etc/systemd/system'])
 conf_dir([systemdlegacyscriptsdir],  ['${libexecdir}/initscripts/legacy-actions'])
 conf_dir([initscriptsdir],           ['${sysconfdir}/rc.d/init.d'])
+conf_dir([initscriptsconfdir],       ['/etc/sysconfig/pgsql'])
 conf_dir([rawpkgdatadir],            ['${datadir}/postgresql-setup'])
 conf_dir([pgdocdir],                 ['${datarootdir}/doc/${NAME_PACKAGE}'])
 conf_dir([pgcontribdocdir],          ['${datarootdir}/doc/${NAME_PACKAGE}-contrib'])
@@ -126,7 +127,7 @@ if test -z "$PGVERSION" -a -z "$PGMAJORVERSION"; then
     PGVERSION=${raw_version##* }
     AC_MSG_RESULT($PGVERSION)
 
-    PGMAJORVERSION=${PGVERSION%%.[[0-9]]}
+    PGMAJORVERSION=`echo $PGVERSION | sed 's/\.[0-9]\+$//'`
 fi
 
 AX_COMPARE_VERSION([9.4], [le], [$PGVERSION],
@@ -183,6 +184,7 @@ PGSETUP_SUBST_OPT([SCLS], [],
 
 SCL_BINDIR=/usr/bin
 SCL_BINARY=scl
+SCL_SOURCE=
 SCL_SHELL_WRAPPER=
 if test -n "$SCLS"
 then

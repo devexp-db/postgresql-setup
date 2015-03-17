@@ -23,6 +23,8 @@ PGPORT_DEF=5432
 
 . "@rawpkgdatadir@/library.sh"
 
+@SCL_SOURCE@
+
 # We upgrade by default from system's default PostgreSQL installation
 option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 
@@ -231,12 +233,17 @@ upgrade()
         socket_hacks="export REDHAT_PGUPGRADE_FROM_RHEL=yes ;"
     }
 
+    test -n "$upgradefrom_pghost_override" && {
+        pghost_override="PGHOST='$upgradefrom_pghost_override'"
+    }
+
     # Create empty new-format database
     if perform_initdb; then
         # Do the upgrade
-        $SU_POSTGRES -c "\
-                        @SCL_SOURCE@ $scls_upgrade_hacks \
+        run_cmd_as_dbadmin "\
+                        $scls_upgrade_hacks \
                         $socket_hacks \
+                        $pghost_override \
                         $PGENGINE/pg_upgrade \
                         '--old-bindir=$upgradefrom_engine' \
                         '--new-bindir=$PGENGINE' \
@@ -246,13 +253,15 @@ upgrade()
                         '--old-port=$PGPORT' '--new-port=$PGPORT' \
                         @PG_UPGRADE_BIN_USER_OPT@=postgres \
                         $PGSETUP_PGUPGRADE_OPTIONS" \
-                                >> "$upgrade_log" 2>&1 < /dev/null
+                        "$upgrade_log" "$upgrade_log"
         if [ $? -ne 0 ]; then
             # pg_upgrade failed
+            error $"pg_upgrade tool failed"
             script_result=1
         fi
     else
         # initdb failed
+        error $"initdb failed"
         script_result=1
     fi
 
@@ -270,7 +279,7 @@ upgrade()
         # Clean up after failure.
         rm -rf "$pgdata"
         $inplace && mv "$pgdataold" "$pgdata"
-        error $"failed"
+        error $"Upgrade failed."
     fi
     info $"See $upgrade_log for details."
 }
@@ -300,6 +309,22 @@ EOF
 }
 
 
+check_daemon_reload()
+{
+    local nr_option=NeedDaemonReload
+
+    test @WANT_SYSVINIT@ = 1 && return 0
+
+    local nr_out="`systemctl show -p $nr_option $option_service.service 2>/dev/null`"
+    if [[ "$nr_out" != "$nr_option=no" ]]; then
+        error   $"Note that systemd configuration for '$option_service' changed."
+        error_q $"You need to perform 'systemctl daemon-reload' otherwise the"
+        error_q $"results of this script can be inadequate."
+        exit 1
+    fi
+}
+
+
 handle_service_env()
 {
     local service="$1"
@@ -323,6 +348,29 @@ handle_service_env()
 }
 
 
+handle_envfile()
+{
+    local file="$1"
+
+    debug "trying to read '$file' env file"
+    if test ! -r "$file"; then
+        if test @WANT_SYSVINIT@ = 1; then
+            return
+        fi
+        error   "Can not read EnvironmentFile '$file' specified"
+        error_q "in ${service}.service"
+    fi
+
+    # Note that the env file parser in systemd does not perform exactly the
+    # same job.
+    unset PGPORT PGDATA
+    . "$file"
+    envfile_pgdata="$PGDATA"
+    envfile_pgport="$PGPORT"
+    unset PGPORT PGDATA
+}
+
+
 handle_service_envfiles()
 {
     local mode="$1"
@@ -338,24 +386,9 @@ handle_service_envfiles()
             -e 's| ([^)]*)$||'
     )
 
-
     # Read the file names line-by-line (spaces may be inside)
     while read line; do
-        debug "trying to read '$line' env file"
-
-        if test ! -r "$line"; then
-            error   "Can not read EnvironmentFile '$line' specified"
-            error_q "in ${service}.service"
-        fi
-
-        # Note that the env file parser in systemd does not perform exactly the
-        # same job.
-        unset PGPORT PGDATA
-        . "$line"
-        envfile_pgdata="$PGDATA"
-        envfile_pgport="$PGPORT"
-        unset PGPORT PGDATA
-
+        handle_envfile "$line"
     done <<<"$envfiles"
 }
 
@@ -399,8 +432,17 @@ service_configuration()
     local service="$service"
     test upgrade = "$mode" && service="$option_upgradefrom"
 
-    handle_service_env "$service"
-    handle_service_envfiles "$option_mode" "$service"
+    # Sysvinit has the default PGDATA configured inside the script, no
+    # additional configuration must exist.  Don't set the default for upgrade,
+    # however.
+    test initdb = "$mode" && set_var "$datavar" "@PGDATADIR@"
+
+    if test "@WANT_SYSVINIT@" = 1; then
+        handle_envfile "@initscriptsconfdir@/$service"
+    else
+        handle_service_env "$service"
+        handle_service_envfiles "$option_mode" "$service"
+    fi
 
     test -n "$unit_pgdata"      && set_var "$datavar" "$unit_pgdata"
     test -n "$envfile_pgdata"   && set_var "$datavar" "$envfile_pgdata"
@@ -647,14 +689,7 @@ Port is not set by postgresql.conf nor by --port."
 
 ## LAST CHECK THE SETUP ##
 
-nr_option=NeedDaemonReload
-nr_out="`systemctl show -p $nr_option $option_service.service 2>/dev/null`"
-if [[ "$nr_out" != "$nr_option=no" ]]; then
-    error   $"Note that systemd configuration for '$option_service' changed."
-    error_q $"You need to perform 'systemctl daemon-reload' otherwise the"
-    error_q $"results of this script can be inadequate."
-    exit 1
-fi
+check_daemon_reload
 
 # These variables are read by underlying utilites, rather export them.
 export PGDATA=$pgdata
