@@ -91,6 +91,16 @@ print_version()
 }
 
 
+check_not_initialized()
+{
+    if test -f "$pgdata/PG_VERSION"; then
+        error $"Data directory $pgdata is not empty!"
+        return 1
+    fi
+    return 0
+}
+
+
 # code shared between initdb and upgrade actions
 perform_initdb()
 {
@@ -138,31 +148,22 @@ perform_initdb()
         fi
     fi
 
-    if [ -f "$pgdata/PG_VERSION" ]; then
-        return 0
-    fi
-
-    return 1
+    test -f "$pgdata/PG_VERSION"
 }
 
 
 initdb()
 {
-    if [ -f "$pgdata/PG_VERSION" ]; then
-        error $"Data directory $pgdata is not empty!"
-        script_result=1
-    else
-        port_info=
-        test "$pgport" != "$PGPORT_DEF" \
-            && port_info=$", listening on port '$pgport'"
+    port_info=
+    test "$pgport" != "$PGPORT_DEF" \
+        && port_info=$", listening on port '$pgport'"
 
-        info $"Initializing database in '$pgdata'$port_info"
-        if perform_initdb; then
-            info $"Initialized, logs are in ${initdb_log}"
-        else
-            error $"Initializing database failed, possibly see $initdb_log"
-            script_result=1
-        fi
+    info $"Initializing database in '$pgdata'$port_info"
+    if check_not_initialized && perform_initdb; then
+        info $"Initialized, logs are in ${initdb_log}"
+    else
+        error $"Initializing database failed, possibly see $initdb_log"
+        script_result=1
     fi
 }
 
@@ -237,9 +238,15 @@ upgrade()
         pghost_override="PGHOST='$upgradefrom_pghost_override'"
     }
 
-    # Create empty new-format database
-    if perform_initdb; then
-        # Do the upgrade
+    local cleanup=true
+
+    if ! check_not_initialized; then
+        # Don't try to re-init initialized data directory and also do not
+        # remove it after this unsuccessful upgrade.
+        cleanup=false
+        script_result=1
+    elif perform_initdb; then
+        # After creating the empty new-format database, do the upgrade
         run_cmd_as_dbadmin "\
                         $scls_upgrade_hacks \
                         $socket_hacks \
@@ -260,7 +267,6 @@ upgrade()
             script_result=1
         fi
     else
-        # initdb failed
         error $"initdb failed"
         script_result=1
     fi
@@ -277,7 +283,7 @@ upgrade()
         warn $pgdataold.
     else
         # Clean up after failure.
-        rm -rf "$pgdata"
+        $cleanup && rm -rf "$pgdata"
         $inplace && mv "$pgdataold" "$pgdata"
         error $"Upgrade failed."
     fi
