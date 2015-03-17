@@ -1,7 +1,20 @@
 #!/bin/bash
 
-# This script is compat-wrapper for PGPORT specifying directly in
-# postgresql.service.  There is not possible to do conditional step in service
-# file based on (non)existence of PGPORT variable.
+# Thin wrapper arount pg_ctl.
+#
+# This file exists for the following reasons:
+#
+# * It is s compat-wrapper for the cases when PGPORT *is* set directly in
+#   postgresql.service (nowadays users should configure port directly in
+#   postgresql.conf).  This is hack which allows us to do a conditional step
+#   before running pg_ctl (which is not allowed by systemd).
+#
+# * This helper script is necessary for having proper SELinux context of daemon
+#   process run in SCL environment via systemd/sysvinit service file.  Without
+#   this script the process looses SELinux type because /usr/bin/scl
+#   has context bin_t and 'unit_t -> bin_t' results in unconfined process.
+#   This file must thus have 'postgresql_exec_t' fcontext.
 
-@bindir@/pg_ctl "$@" ${PGPORT+-o "-p $PGPORT"}
+@SCL_SOURCE@
+
+exec @bindir@/pg_ctl "$@" ${PGPORT+-o "-p $PGPORT"}

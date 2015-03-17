@@ -87,7 +87,7 @@ script_result=0
 
 start()
 {
-	[ -x "$PGENGINE/postmaster" ] || exit 5
+	[ -x "$PGENGINE/postgres" ] || exit 5
 
 	PSQL_START=$"Starting ${NAME} service: "
 
@@ -114,7 +114,7 @@ start()
     # postmaster is down.  This just unnecessarily wastes time and generates
     # too much (false) rush in $PGLOG.
     run_cmd_as_dbadmin \
-            "$PGENGINE/postmaster ${PGPORT+-o "-p $PGPORT"} \
+            "$PGENGINE/postgres ${PGPORT+-o "-p $PGPORT"} \
                     -D '$PGDATA' ${PGOPTS} &"               \
             "$PGLOG" "$PGLOG"
 
@@ -207,7 +207,7 @@ case "$1" in
 	stop
 	;;
   status)
-	status -p "$pidfile" postmaster
+	status -p "$pidfile" postgres
 	script_result=$?
 	;;
   restart)
