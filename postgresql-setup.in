@@ -39,26 +39,33 @@ For more info and howto/when use this script please look at the documentation
 file $README_DIST.
 
 Available operation mode:
-  --initdb      Create a new PostgreSQL database cluster.  This is usually the
+  --initdb      Initialize new PostgreSQL database cluster.  This is usually the
                 first action you perform after PostgreSQL server installation.
   --upgrade     Upgrade database cluster for new major version of PostgreSQL
                 server.  See the --upgrade-from option for more info.
 
 Options:
-  --unit=UNIT_NAME           The UNIT_NAME is used to select proper systemd's
-                             unit configuration.  For example, if you want to
-                             work with unit 'postgresql@com_example.service',
-                             you should use 'postgresql@com_example' (without
-                             trailing .service string).  When no UNIT_NAME is
-                             explicitly passed, the 'postgresql' string is used
-                             by default.
-  --port=PORT                port where the server will listen for connections
+  --unit=UNIT_NAME           The UNIT_NAME is used to select proper unit
+                             configuration (unit == service or initscript name
+                             on non-systemd systems).  For example, if you want
+                             to work with unit called
+                             'postgresql@com_example.service', you should use
+                             'postgresql@com_example' (without trailing .service
+                             string).  When no UNIT_NAME is explicitly passed,
+                             the 'postgresql' string is used by default.
+  --port=PORT                port where the initialized server will listen for
+                             connections"
+
+test 0 -eq @WANT_SYSVINIT@ && \
+USAGE_STRING+="
   --datadir=PATH             Specify absolute path to DB data directory, only
                              use with --new-systemd-unit.
   --new-systemd-unit         Pre-generate system'd configuration in drop-in
                              directory if the unit is not yet configured,
                              requires non-default --unit specified and explicit
-                             --datadir and --port.
+                             --datadir and --port."
+
+USAGE_STRING+="
   --upgrade-ids              Print list of available IDs of upgrade scenarios to
                              standard output.
   --upgrade-from=ID          Specify id \"old\" postgresql stack to upgrade
@@ -686,9 +693,12 @@ if test "$pgport" = default -a "$option_service" = "@NAME_SERVICE@"; then
     pgport=$PGPORT_DEF
 fi
 
-test "$pgport" = default \
-    && die $"\
-Port is not set by postgresql.conf nor by --port."
+if test "$pgport" = default; then
+    # initdb case..  Note that this may be called by initscripts.  If this gets
+    # called by legacy script, we can't help too much because systemd does not
+    # allow passing additional arguments to 'service XX initdb' command.
+    die $"For non-default unit names you must specify port by --port option."
+fi
 
 [[ "$option_port" =~ ^[0-9]*$ ]] \
     || die $"port set to '$option_port', must be integer number"
