@@ -7,11 +7,20 @@ m4_changequote(`[', `]')
 m4_define([PGSETUP_SERVICE],
 m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
 [service $1 $2],m4_dnl
-[systemctl $1.service $2]))
+[systemctl $2 $1.service]))
 
 m4_define([PGSETUP_SERVICE_START],      PGSETUP_SERVICE($1, start))
 m4_define([PGSETUP_SERVICE_STOP],       PGSETUP_SERVICE($1, stop))
-m4_define([PGSETUP_SERVICE_ENABLE],     PGSETUP_SERVICE($1, enable))
+
+m4_define([PGSETUP_SERVICE_ENABLE],
+m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
+[chkconfig $1 on],m4_dnl
+[systemctl enable $1.service]))
+
+m4_define([PGSETUP_SERVICE_DISABLE],
+m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
+[chkconfig $1 off],m4_dnl
+[systemctl disable $1.service]))
 
 m4_define([PGSETUP_ADMIN], [postgres])
 
@@ -116,56 +125,59 @@ m4_divert[]m4_dnl
   </para>
 
   <para>
-    In some major releases, the RPMs also support in-place upgrade from the
-    immediately previous major release.  Currently, you can upgrade in-place
-    from .x to @PGMAJORVERSION@.x.  This is much faster than a
-    dump and reload.
-    To do an in-place upgrade:
+    In some major releases, the RPMs also support faster upgrade from concrete
+    subset of previous releases.  You can run the:
+
+          PGSETUP_COMMAND(@NAME_BINARYBASE@ --upgrade-ids)
+
+    to see what previous versions you are able to upgrade from.  This is much
+    faster than a dump and reload.  To do a faster upgrade:
     <orderedlist>
       <listitem>
         <para>
-          shut down the old postmaster
-          PGSETUP_COMMAND(PGSETUP_SERVICE_STOP(@NAME_SERVICE@))
-        </para>
-      </listitem>
-      <listitem>
-        <para>optionally make a backup of @PGDATADIR@ (recommended!)</para>
-      </listitem>
-      <listitem>
-        <para>
-          install the new version's RPMs (install all the ones you
-          had before, plus @NAME_PACKAGE@-upgrade)
+          shut down the old postmaster running against old data
         </para>
       </listitem>
       <listitem>
         <para>
-          as root, run "@NAME_BINARYBASE@-setup --upgrade"
+          optionally make a backup of data directory (recommended!)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          install the new version's RPMs (install all the ones you had before,
+          plus @NAME_PACKAGE@-upgrade)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          as root, run "@NAME_BINARYBASE@-setup --upgrade [[--upgrade-from ID]]"
         </para>
       </listitem>
       <listitem>
         <para>
           update the configuration files @PGDATADIR@/*.conf with any
           customizations you had before (your old configuration files are in
-          @POSTGRES_HOMEDIR@/data-old/)
+          old data directory or in @POSTGRES_HOMEDIR@/data-old/ if you've done
+          in-place upgrade)
         </para>
       </listitem>
       <listitem>
         <para>
-          as root, run
-          PGSETUP_SERVICE_START(@NAME_SERVICE@)
+          as root, run "PGSETUP_SERVICE_START(@NAME_SERVICE@)"
         </para>
       </listitem>
       <listitem>
         <para>
           the @NAME_PACKAGE@-upgrade package can be removed after the update is
-          complete, as can @POSTGRES_HOMEDIR@/data-old/
+          complete, as can old data directory
         </para>
       </listitem>
     </orderedlist>
 
     NOTE: The in-place upgrade process is new and relatively poorly tested,
     so if your data is critical it's a really good idea to make a tarball
-    backup of @PGDATADIR@ before running the upgrade.  This will
+    backup of old data directory before running the upgrade.  This will
     let you get back to where you were in case of disaster.
 
   </para>
@@ -306,6 +318,67 @@ m4_divert[]m4_dnl
 
 <sect1>
   <title>MULTIPLE POSTMASTERS</title>
+m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
+[
+  <para>
+    The @NAME_PACKAGE@-server RPM contains an "initscript" that is used to start
+    the postmaster.  The current version of this script has logic to be able to
+    start multiple postmasters, with different data areas, listening on
+    different ports, etc.  To use this functionality requires root access.
+  </para>
+
+  <para>
+    As an example, let us create a secondary postmaster called, creatively
+    enough, 'secondary'.  Here are the steps:
+  </para>
+
+  <orderedlist>
+    <listitem>
+      <para>
+        create a hard link in /etc/rc.d/init.d (or equivalent location) to
+        '@NAME_SERVICE@' named 'secondary'.
+        PGSETUP_COMMAND(ln @NAME_SERVICE@ secondary)
+        Pick a name not already used in /etc/rc.d/init.d!
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        create a file in /etc/sysconfig/pgsql named secondary.  This file is
+        a shell script -- typically you would define PGDATA, PGPORT, and PGOPTS
+        here.  Since $PGDATA/postgresql.conf may override many of these
+        settings, except PGDATA, you might be surprised on startup.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        create the target PGDATA
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Initdb the targe PGDATA as documented in the main documentation.
+        Automatic initdb may or may not work for you, so a manual one is
+        preferred.  This must be done as user 'postgres'
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Edit postgresql.conf to change the port, address, tcpip settings, etc.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Start the postmaster with 'service secondary start'.
+      </para>
+    </listitem>
+  </orderedlist>
+
+  <para>
+    Note that there may be problems with the standard symlink -- consider this
+    support experimental at this point in time.
+  </para>
+], m4_dnl
+[
   <para>
     The postgresql-server package contains a systemd "unit" files
     @NAME_SERVICE@.service and @NAME_SERVICE@@.service.  The first file is used
@@ -376,6 +449,7 @@ m4_divert[]m4_dnl
     semanage".
   </para>
 
+])
 </sect1>
 
 <sect1>
@@ -388,11 +462,11 @@ m4_divert[]m4_dnl
   </para>
   <para>
     To run the regression tests under the RPM installation, make sure that the
-    PostgreSQL server has been started (if not, su to root and do "systemctl
-    start @NAME_SERVICE@.service"), su to postgres, cd to
-    @libdir@/pgsql/test/regress and execute "make check".  This command will
-    start the regression tests and will both show the results to the screen and
-    store the results in the file regress.out.
+    PostgreSQL server has been started (if not, su to root and do
+    PGSETUP_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@))
+    su to postgres, cd to @libdir@/pgsql/test/regress and execute "make check".
+    This command will start the regression tests and will both show the results
+    to the screen and store the results in the file regress.out.
   </para>
   <para>
     If any tests fail, see the file regression.diffs in that directory for
@@ -414,16 +488,18 @@ m4_divert[]m4_dnl
     A systemd unit file for PostgreSQL is provided in the server package, as
     @systemdunitsdir@/@NAME_SERVICE@.service.  To start the postmaster manually,
     as root run
-    PGSETUP_COMMAND(systemctl start @NAME_SERVICE@.service)
+    PGSETUP_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@))
     To shut the postmaster down,
-    PGSETUP_COMMAND(systemctl stop @NAME_SERVICE@.service)
+    PGSETUP_COMMAND(PGSETUP_SERVICE_STOP(@NAME_SERVICE@))
     These two commands only change the postmaster's current status.  If you want
     the postmaster to be started automatically during future system startups,
     run
-    PGSETUP_COMMAND(systemctl enable @NAME_SERVICE@.service)
+    PGSETUP_COMMAND(PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@))
     To undo that again,
-    PGSETUP_COMMAND(systemctl disable @NAME_SERVICE@.service)
-    See "man systemctl" for other possible subcommands.
+    PGSETUP_COMMAND(PGSETUP_SERVICE_DISABLE(@NAME_SERVICE@))
+m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
+[See "man chkconfig" and "man service" for other possible subcommands.],m4_dnl
+[See "man systemctl" for other possible subcommands.]))
   </para>
 </sect1>
 
@@ -561,7 +637,8 @@ m4_divert[]m4_dnl
   <para>
     Please help make this packaging better -- let us know if you find problems,
     or better ways of doing things. You can reach us by e-mail at
-    pgsql-pkg-yum@postgresql.org
+    pgsql-pkg-yum@postgresql.org or fail a bug against postgresql component on
+    bugzilla.redhat.com.
   </para>
 </sect1>
 

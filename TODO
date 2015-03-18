@@ -24,3 +24,12 @@
 * Allow guys from KDE upgrade the PG stack somehow.
 
 * stylesheets & html version for README.rpm-dist
+
+* option for admin-defined configuration file
+
+* old stack breakage after pg_upgrade (check whats going on?)
+
+* check for running postmaster!  (even running postgresql92 server breaks
+  upgrade from postgresql to rh-postgresql94-postgresql on RHEL6)
+
+* SELinux advice (if selinux is not disabled)
