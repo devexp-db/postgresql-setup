@@ -187,14 +187,14 @@ __single_comand()
 initdb()
 {
     __single_comand $"Initializing database" \
-        @NAME_BINARYBASE@-setup --initdb "$NAME" "$@"
+        @bindir@/@NAME_BINARYBASE@-setup --initdb "$NAME" "$@"
 }
 
 
 upgrade()
 {
     __single_comand $"Upgrading database" \
-        @NAME_BINARYBASE@-setup --upgrade "$NAME" "$@"
+        @bindir@/@NAME_BINARYBASE@-setup --upgrade "$NAME" "$@"
 }
 
 

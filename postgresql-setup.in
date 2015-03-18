@@ -408,7 +408,7 @@ handle_pgconf()
 
     test -r "$conffile" || {
         error "config file $conffile is not readable or does not exist"
-        return 1
+        die "Old cluster in '$data' does not seem to be initialized"
     }
 
     local sp='[[:space:]]'

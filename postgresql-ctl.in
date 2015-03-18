@@ -17,4 +17,9 @@
 
 @SCL_SOURCE@
 
-exec @bindir@/pg_ctl "$@" ${PGPORT+-o "-p $PGPORT"}
+port=()
+if test "$1" = "start" && test -n "$PGPORT"; then
+    port=(-o "-p $PGPORT")
+fi
+
+exec @bindir@/pg_ctl "$@" "${port[@]}"

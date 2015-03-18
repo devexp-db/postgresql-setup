@@ -3,7 +3,7 @@ postgresql-setup
 ----------------
 
 BuildRequires:
-    - m4, docbook-utils, help2man
+    - m4, docbook-utils, help2man, elinks (pretty README.rpm-dist)
 
 Maintainer's BuildRequires
     - autoconf, automake, autoconf-archive
