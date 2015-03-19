@@ -51,8 +51,6 @@ then
 	NAME=${NAME:3}
 fi
 
-SU_POSTGRES="@SU_POSTGRES@"
-
 # Set defaults for configuration variables
 PGENGINE=@bindir@
 
@@ -171,7 +169,8 @@ condrestart(){
 
 reload()
 {
-    $SU_POSTGRES -c "@SCL_SOURCE@ $PGENGINE/pg_ctl reload -D '$PGDATA' -s" > /dev/null 2>&1 < /dev/null
+    run_cmd_as_dbadmin "$PGENGINE/pg_ctl reload -D '$PGDATA' -s" \
+            /dev/null /dev/null
 }
 
 __single_comand()
