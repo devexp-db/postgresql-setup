@@ -1,5 +1,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Bugfixes in 3.1 version
+
+* The 'pg_upgrade --link' option is not used for non-in-place upgrades
+  scenarios.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 3.0 version
 
 * Use 'pg_upgrade --username' instead of 'pg_upgrade --user' for

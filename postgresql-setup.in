@@ -253,6 +253,8 @@ upgrade()
         cleanup=false
         script_result=1
     elif perform_initdb; then
+        $inplace && link_option=--link
+
         # After creating the empty new-format database, do the upgrade
         run_cmd_as_dbadmin "\
                         $scls_upgrade_hacks \
@@ -263,7 +265,7 @@ upgrade()
                         '--new-bindir=$PGENGINE' \
                         '--old-datadir=$pgdataold' \
                         '--new-datadir=$pgdata' \
-                        --link \
+                        $link_option \
                         '--old-port=$PGPORT' '--new-port=$PGPORT' \
                         @PG_UPGRADE_BIN_USER_OPT@=postgres \
                         $PGSETUP_PGUPGRADE_OPTIONS" \
