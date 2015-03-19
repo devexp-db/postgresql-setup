@@ -175,6 +175,15 @@ initdb()
 }
 
 
+old_data_in_use()
+{
+    local pidfile="$pgdataold/postmaster.pid"
+    test -f "$pidfile" || return 1
+    error   $"The pidfile '$pidfile' exists.  Verify that there is no postmaster"
+    error_q $"running the $pgdataold directory."
+}
+
+
 upgrade()
 {
     local inplace=false
@@ -245,13 +254,16 @@ upgrade()
         pghost_override="PGHOST='$upgradefrom_pghost_override'"
     }
 
-    local cleanup=true
-
-    if ! check_not_initialized; then
+    local failure_cleanup=true
+    if old_data_in_use; then
+        script_result=1
+        # Cleanup makes sense once perform_initdb gets called.
+        failure_cleanup=false
+    elif ! check_not_initialized; then
         # Don't try to re-init initialized data directory and also do not
         # remove it after this unsuccessful upgrade.
-        cleanup=false
         script_result=1
+        failure_cleanup=false
     elif perform_initdb; then
         $inplace && link_option=--link
 
@@ -292,7 +304,7 @@ upgrade()
         warn $pgdataold.
     else
         # Clean up after failure.
-        $cleanup && rm -rf "$pgdata"
+        $failure_cleanup && rm -rf "$pgdata"
         $inplace && mv "$pgdataold" "$pgdata"
         error $"Upgrade failed."
     fi

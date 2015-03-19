@@ -1,5 +1,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 3.1 version
+
+* When doing --upgrade, postgresql-setup now guards against upgrading when
+  the old postgresql server is still running.
+
 Bugfixes in 3.1 version
 
 * The 'pg_upgrade --link' option is not used for non-in-place upgrades
