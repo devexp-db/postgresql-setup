@@ -18,6 +18,8 @@ New in 3.0 version
 * The sysvinit support should be OK finally, sysvinit system is now
   automatically detected without --with-sysvinit configure option.
 
+* The starting timeout is now configurable via PGSTARTTIMEOUT.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 2.0 version
