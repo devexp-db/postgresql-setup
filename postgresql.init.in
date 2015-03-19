@@ -74,6 +74,7 @@ PG_OOM_ADJ=-17
 export PGDATA
 export PGPORT
 export PGSTARTTIMEOUT
+export PGSCLS
 
 lockfile="/var/lock/subsys/${NAME}"
 
@@ -117,8 +118,9 @@ start()
     # the system too long.  See `man pg_ctl & -w option`.  This is not issue in
     # case of systemd.
 
-    run_cmd_as_dbadmin \
-            "@libexecdir@/postgresql-ctl start -D ${PGDATA} -s \
+    run_cmd_as_dbadmin "\
+            PGSCLS='${PGSCLS}' \
+            @libexecdir@/postgresql-ctl start -D ${PGDATA} -s \
                 -w -t ${PGSTARTTIMEOUT-30}" \
             "$PGLOG" "$PGLOG"
 

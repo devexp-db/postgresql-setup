@@ -20,6 +20,10 @@ New in 3.0 version
 
 * The starting timeout is now configurable via PGSTARTTIMEOUT.
 
+* Service file and initscript now support running of PostgreSQL extensions
+  built against specific software collections, specified by PGSCLS
+  environment variable.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 2.0 version

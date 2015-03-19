@@ -17,6 +17,11 @@
 
 @SCL_SOURCE@
 
+# Help users to run postgresql server extensions built against specific
+# software collection (that said, such collection is runtime dependancy of
+# such extension, not the server itself).
+test -n "$PGSCLS" && source scl_source enable $PGSCLS
+
 port=()
 if test "$1" = "start" && test -n "$PGPORT"; then
     port=(-o "-p $PGPORT")
