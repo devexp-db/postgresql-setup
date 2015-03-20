@@ -478,8 +478,8 @@ service_configuration()
             && set_var "$datavar" "@PGDATADIR@"
         handle_envfile "@initscriptsconfdir@/$service"
     else
-        # We ship two service files, @SERVICE_NAME@.service and
-        # @SERVICE_NAME@@.service.  The former has PGDATA set by default
+        # We ship two service files, @NAME_SERVICE@.service and
+        # @NAME_SERVICE@@.service.  The former has PGDATA set by default
         # similarly to sysvinit case.
         handle_service_env "$service"
         handle_service_envfiles "$option_mode" "$service"
