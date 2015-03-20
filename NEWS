@@ -1,5 +1,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 3.1 version
+
+* The --new-systemd-unit option now cleans the recently created drop-in
+  directory if something goes wrong.
+
 Bugfixes in 3.2 version
 
 * Fix regression of setting the default pgdata variable for non-default

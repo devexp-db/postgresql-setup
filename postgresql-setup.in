@@ -168,6 +168,7 @@ initdb()
     info $"Initializing database in '$pgdata'$port_info"
     if check_not_initialized && perform_initdb; then
         info $"Initialized, logs are in ${initdb_log}"
+        cleanup_dropin=
     else
         error $"Initializing database failed, possibly see $initdb_log"
         script_result=1
@@ -323,6 +324,8 @@ generate_systemd_dropin()
 
     mkdir -p "$dropindir" \
         || die "Can not create '$dropindir'"
+
+    cleanup_dropin="rm -rf \"$dropindir\""
 
     cat <<EOF > "$dropin" || die "Can not write to '$dropin'"
 [Service]
@@ -502,6 +505,16 @@ service_configuration()
     test -n "$envfile_pgport" && set_var "$portvar" "$envfile_pgport"
 }
 
+cleanup_dropin=
+exit_handler()
+{
+    test -n "$cleanup_dropin" && {
+        info "cleaning up created dropin directory"
+        eval "$cleanup_dropin"
+    }
+}
+
+trap exit_handler 0
 
 # <Compat>
 # Alow users to use the old style arguments like
