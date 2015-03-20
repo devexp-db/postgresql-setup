@@ -450,27 +450,44 @@ service_configuration()
     local unit_pgdata=
     local envfile_pgport=
     local envfile_pgdata=
+
+    # 'mode' is 'initdb' or 'upgrade'.  Basically, if called with mode=initdb, we
+    # parse configuration of the current (maybe already configured) service.
+    # When run with mode=upgrade, we try to parse the configuration of the old
+    # PostgreSQL configuration that we try to upgrade from.
+
     local mode="$1" datavar="$2" portvar="$3" service="$4"
 
     debug "running service_configuration() for $mode"
 
-    # Well, until the bug #1139148 is not resolved somehow, we need to stay ugly
-    # and parse Environment= and EnvironmentFile= statements.
     local service="$service"
     test upgrade = "$mode" && service="$option_upgradefrom"
 
-    # Sysvinit has the default PGDATA configured inside the script, no
-    # additional configuration must exist.  Don't set the default for upgrade,
-    # however.
-    test initdb = "$mode" && set_var "$datavar" "@PGDATADIR@"
-
     if test "@WANT_SYSVINIT@" = 1; then
+        # Sysvinit has the default PGDATA (for default unit name only)
+        # configured directly in the initscript, so no additional configuration
+        # must exist.  Set the default value of pgdata here to match whats in
+        # initscript for the cases when no additional configuration file exists.
+        # This is done to avoid parsing of whole initscript (for the real value)
+        # and mainly to not fail in the logic following 'service_configuration'
+        # call, where we usually want to error that pgdata is not defined..
+        # Don't set the default pgdata for upgrade case, however, as we must
+        # upgrade only from already properly configured & working stack (missing
+        # pgdata here is a good reason to die later).
+        test initdb = "$mode" && test "$service" = "@NAME_SERVICE@" \
+            && set_var "$datavar" "@PGDATADIR@"
         handle_envfile "@initscriptsconfdir@/$service"
     else
+        # We ship two service files, @SERVICE_NAME@.service and
+        # @SERVICE_NAME@@.service.  The former has PGDATA set by default
+        # similarly to sysvinit case.
         handle_service_env "$service"
         handle_service_envfiles "$option_mode" "$service"
     fi
 
+    # EnvironmentFile beats Environment configuration in systemd.  In sysvinit
+    # there is no "unit_pgdata".  So make sure the envfile_gpdata is used later
+    # than unit_pgdata.
     test -n "$unit_pgdata"      && set_var "$datavar" "$unit_pgdata"
     test -n "$envfile_pgdata"   && set_var "$datavar" "$envfile_pgdata"
 
