@@ -90,8 +90,8 @@ $(readme_dist_db): $(readme_dist_m4)
 	$(INSTANTIATE_CONV) && \
 	    $(SED_CALL) < $(readme_dist_m4) | m4 -P > $(readme_dist_db)
 
-$(readme_dist): $(readme_dist_db) style.dsl
-	$(INSTANTIATE_CONV) && docbook2txt -d style.dsl $(readme_dist_db) >/dev/null && \
+$(readme_dist): $(readme_dist_db) $(srcdir)/style.dsl
+	$(INSTANTIATE_CONV) && docbook2txt -d $(srcdir)/style.dsl $(readme_dist_db) >/dev/null && \
 	    mv -f $(readme_dist).txt $(readme_dist)
 
 EXTRA_DIST += \
