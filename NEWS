@@ -1,6 +1,20 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-New in 3.1 version
+Bugfixes in 3.3 version
+
+* The PGPORT/PGOPTS/.. variables should be correctly forwarded down from
+  the initstcript into postgresql-ctl.
+
+* Initscript's 'start' function again reports success if daemon is already
+  running.
+
+New in 3.3 version
+
+* New option PGSTARTWAIT for sysvinit systems.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New in 3.2 version
 
 * The --new-systemd-unit option now cleans the recently created drop-in
   directory if something goes wrong.

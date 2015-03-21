@@ -117,11 +117,26 @@ start()
     # The maximum waiting time PGSTARTTIMEOUT is set to 30 second to not hold
     # the system too long.  See `man pg_ctl & -w option`.  This is not issue in
     # case of systemd.
+    #
+    # PGSTARTWAIT turns on waiting for server to become fully ready to accept
+    # connection.
+
+    # clean the variable if not set to 1
+    test x1 != x"$PGSTARTWAIT" && PGSTARTWAIT=
+
+    # success if already started (pg_ctl -w could fail later)
+    status -p "$pidfile" postgres &>/dev/null && {
+        success "$PSQL_START"
+        echo
+        exit 0
+    }
 
     run_cmd_as_dbadmin "\
-            PGSCLS='${PGSCLS}' \
-            @libexecdir@/postgresql-ctl start -D ${PGDATA} -s \
-                -w -t ${PGSTARTTIMEOUT-30}" \
+            PGSCLS=$(printf %q "$PGSCLS") \
+            PGOPTS=$(printf %q "$PGOPTS") \
+            PGPORT=$(printf %q "$PGPORT") \
+            @libexecdir@/postgresql-ctl start -D $(printf %q "$PGDATA") -s \
+                ${PGSTARTWAIT:+-w -t ${PGSTARTTIMEOUT:-30}}" \
             "$PGLOG" "$PGLOG"
 
     if test $? -ne 0; then
@@ -131,18 +146,41 @@ start()
         return
     fi
 
-	pid=`head -n 1 "$PGDATA/postmaster.pid" 2>/dev/null`
-	if [ "x$pid" != x ]
-	then
-		success "$PSQL_START"
-		touch "$lockfile"
-		echo $pid > "$pidfile"
-		echo
-	else
-		failure "$PSQL_START"
-		echo
-		script_result=1
-	fi
+    # pg_ctl succeed, now recognize the pid number
+
+    pid=
+    if test x1 != x"$PGSTARTWAIT" ; then
+        # We don't wait for the full postgresql server start.  In this case,
+        # wait for pidfile creation only.  This should take _very_ short time in
+        # most cases but on highly overloaded machines - several seconds may
+        # not be enough.  See rhbz#800534 and rhbz#1188942 for more info.
+        # Original waiting implementation by Jozef Mlích.
+
+        decounter=${PGSTARTTIMEOUT:-30}
+        while test "$decounter" -ge 0; do
+            pid=$(head -n 1 "$PGDATA/postmaster.pid" 2>/dev/null)
+
+            test "x$pid" != x && break
+
+            # pidfile does not exist yet, wait a sec more
+            decounter=$(( decounter - 1 ))
+            sleep 1
+        done
+    else
+        # pg_ctl -w succeed, pidfile must exist if everything is OK
+        pid=$(head -n 1 "$PGDATA/postmaster.pid" 2>/dev/null)
+    fi
+
+    if test "x$pid" != x; then
+        success "$PSQL_START"
+        touch "$lockfile"
+        echo "$pid" > "$pidfile"
+        echo
+    else
+        failure "$PSQL_START"
+        echo
+        script_result=1
+    fi
 }
 
 stop()

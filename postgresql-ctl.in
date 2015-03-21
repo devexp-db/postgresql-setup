@@ -22,9 +22,10 @@
 # such extension, not the server itself).
 test -n "$PGSCLS" && source scl_source enable $PGSCLS
 
-port=()
-if test "$1" = "start" && test -n "$PGPORT"; then
-    port=(-o "-p $PGPORT")
-fi
+opts=()
+test "$1" = "start" && test -n "$PGOPTS" && opts=(-o "$PGOPTS")
 
-exec @bindir@/pg_ctl "$@" "${port[@]}"
+# cleanup possibly empty PGPORT
+test -z "$PGPORT" && unset PGPORT
+
+exec @bindir@/pg_ctl "$@" "${opts[@]}"
