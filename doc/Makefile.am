@@ -25,6 +25,6 @@ setup_man = $(srcdir)/$(NAME_BINARYBASE)-setup.1
 
 dist_man_MANS = $(setup_man)
 
-$(setup_man): $(top_srcdir)/postgresql-setup.in
+$(setup_man): $(top_srcdir)/postgresql-setup
 	$(AM_V_GEN)export input=$(top_srcdir)/$(NAME_BINARYBASE)-setup ; \
 	    $(HELP2MAN_RUN)
