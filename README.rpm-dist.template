@@ -158,7 +158,7 @@ m4_divert[]m4_dnl
         <para>
           update the configuration files @PGDATADIR@/*.conf with any
           customizations you had before (your old configuration files are in
-          old data directory or in @POSTGRES_HOMEDIR@/data-old/ if you've done
+          old data directory or in @PGDATADIR@-old/ if you've done
           in-place upgrade)
         </para>
       </listitem>
@@ -287,16 +287,16 @@ m4_divert[]m4_dnl
       <tbody>
         <row><entry>Executables</entry><entry>@bindir@</entry></row>
         <row><entry>Libraries</entry><entry>@libdir@</entry></row>
-        <row><entry>Documentation</entry><entry>/usr/share/doc/postgresql/html</entry></row>
-        <row><entry>PDF documentation</entry><entry>/usr/share/doc/postgresql-docs</entry></row>
-        <row><entry>Contrib documentation</entry><entry>/usr/share/doc/postgresql-contrib</entry></row>
+        <row><entry>Documentation</entry><entry>@pgdocdir@/html</entry></row>
+        <row><entry>PDF documentation</entry><entry>@pgdocdir@</entry></row>
+        <row><entry>Contrib documentation</entry><entry>@pgcontribdocdir@</entry></row>
         <row><entry>Source</entry><entry>not installed</entry></row>
-        <row><entry>Data</entry><entry>/var/lib/pgsql/data</entry></row>
-        <row><entry>Backup area</entry><entry>/var/lib/pgsql/backups</entry></row>
-        <row><entry>Templates</entry><entry>/usr/share/pgsql</entry></row>
+        <row><entry>Data</entry><entry>@PGDATADIR@</entry></row>
+        <row><entry>Backup area</entry><entry>@sharedstatedir@/pgsql/backups</entry></row>
+        <row><entry>Templates</entry><entry>@datadir@/pgsql</entry></row>
         <row><entry>Procedural Languages</entry><entry>@libdir@/pgsql</entry></row>
-        <row><entry>Development Headers</entry><entry>/usr/include/pgsql</entry></row>
-        <row><entry>Other shared data</entry><entry>/usr/share/pgsql</entry></row>
+        <row><entry>Development Headers</entry><entry>@includedir@/pgsql</entry></row>
+        <row><entry>Other shared data</entry><entry>@datadir@/pgsql</entry></row>
         <row><entry>Regression tests</entry><entry>@libdir@/pgsql/test/regress  (in the -test package)</entry></row>
       </tbody>
     </tgroup>
