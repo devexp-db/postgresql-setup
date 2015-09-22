@@ -677,7 +677,8 @@ test "$option_mode" = none \
 
 if ! parse_upgrade_setup config "$option_upgradefrom"; then
     if test upgrade = "$option_mode"; then
-        die $"bad --upgrade-from parameter '$option_upgradefrom'"
+        die $"bad --upgrade-from parameter '$option_upgradefrom'," \
+            $"try --upgrade-ids"
     fi
 fi
 
