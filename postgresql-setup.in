@@ -28,6 +28,9 @@ PGPORT_DEF=5432
 # We upgrade by default from system's default PostgreSQL installation
 option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 
+srvsuff=
+test 0 -eq @WANT_SYSVINIT@ && srvsuff=".service"
+
 USAGE_STRING=$"\
 Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]
 
@@ -66,6 +69,8 @@ USAGE_STRING+="
                              --datadir and --port."
 
 USAGE_STRING+="
+  --upgrade-from-unit=UNIT   Select proper unit name to upgrade from.  This
+                             has similar semantics as --unit option.
   --upgrade-ids              Print list of available IDs of upgrade scenarios to
                              standard output.
   --upgrade-from=ID          Specify id \"old\" postgresql stack to upgrade
@@ -461,10 +466,7 @@ service_configuration()
 
     local mode="$1" datavar="$2" portvar="$3" service="$4"
 
-    debug "running service_configuration() for $mode"
-
-    local service="$service"
-    test upgrade = "$mode" && service="$option_upgradefrom"
+    debug "running service_configuration() for $service, mode: $mode"
 
     if test "@WANT_SYSVINIT@" = 1; then
         # Sysvinit has the default PGDATA (for default unit name only)
@@ -560,6 +562,7 @@ option_service="@NAME_SERVICE@"
 option_port=
 option_pgdata=
 option_debug=0
+option_upgradefrom_unit=
 
 # Content of EnvironmentFile= files fills those:
 envfile_pgdata=
@@ -585,7 +588,7 @@ short_opts=""
 long_opts="\
 initdb,upgrade,\
 new-systemd-unit,upgrade-ids,\
-unit:,service:,port:,datadir:,upgrade-from:,\
+unit:,service:,port:,datadir:,upgrade-from:,upgrade-from-unit:,\
 debug,\
 version,help,usage"
 
@@ -637,6 +640,11 @@ while true; do
 
         --upgrade-from)
             option_upgradefrom="$2"
+            shift 2
+            ;;
+
+        --upgrade-from-unit)
+            option_upgradefrom_unit="$2"
             shift 2
             ;;
 
@@ -720,7 +728,31 @@ test -n "$option_port" && pgport=$option_port
 
 if test upgrade = "$option_mode"; then
     upgradefrom_data="$upgradefrom_data_default"
-    service_configuration upgrade upgradefrom_data pgport "$option_upgradefrom"
+
+    if test -z "$option_upgradefrom_unit"; then
+        if test "@NAME_DEFAULT_PREV_SERVICE@" = "@NAME_SERVICE@"; then
+            # Fedora usecase -> upgrade while keeping the same name of
+            # service/unit.
+            option_upgradefrom_unit=$option_service
+        else
+            # PGRPMs/RHSCL usecase -> we upgrade from one service/unit name to
+            # a different one, e.g. from postgresql92 to postgresql93, or from
+            # postgresql (system version) to postgresql94 (scl).
+            option_upgradefrom_unit=$upgradefrom_id
+
+            # Try to predict situations: postgresql93@second -> postgresql94@second
+            if [[ "$option_service" =~ ^@NAME_SERVICE@@(.*)$ ]]; then
+                option_upgradefrom_unit="$upgradefrom_id@${BASH_REMATCH[1]}"
+            fi
+        fi
+    fi
+
+    test "$option_service" = "$option_upgradefrom_unit" \
+        || info "upgrading from '$option_upgradefrom_unit$srvsuff'" \
+                "to '$option_service$srvsuff'"
+
+    service_configuration upgrade upgradefrom_data pgport \
+                          "$option_upgradefrom_unit"
     test -n "$option_port" -a "$option_port" != "$pgport" \
         && warn "Old pgport $pgport has bigger priority than --pgport value."
 fi
