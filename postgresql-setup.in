@@ -715,7 +715,7 @@ elif test -n "$option_pgdata"; then
 fi
 
 test "$pgdata" = default \
-    && die $"no db datadir (PGDATA) configured for '$option_service.service'"
+    && die $"no db datadir (PGDATA) configured for '$option_service$srvsuff' unit"
 
 [[ "$pgdata" =~ ^/.* ]] \
     || die $"the PostgreSQL datadir not absolute path: '$pgdata', try --debug"
