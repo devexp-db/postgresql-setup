@@ -50,6 +50,7 @@ sed_subst_var_pattern(docdir)
 sed_subst_var_pattern(includedir)
 sed_subst_var_pattern(libdir)
 sed_subst_var_pattern(libexecdir)
+sed_subst_var_pattern(MOUNTPOINT)
 sed_subst_var_pattern(top_srcdir)
 sed_subst_var_pattern(PGDATADIR)
 sed_subst_var_pattern(PGMAJORVERSION)
@@ -110,6 +111,8 @@ test -z "$ac_cv_path_SU" &&
     AC_MSG_ERROR([Neither 'runuser' nor 'su' program found])
 SU_POSTGRES="$SU -s /bin/sh -l postgres"
 AC_SUBST([SU_POSTGRES])
+
+AC_PATH_PROG([MOUNTPOINT], [mountpoint], [false])
 
 PGSETUP_PACKAGING_INIT
 

@@ -793,6 +793,16 @@ debug "final pgport: $pgport"
 
 script_result=0
 
+if @MOUNTPOINT@ -q "$pgdata" || @MOUNTPOINT@ -q "$(dirname "$pgdata")"; then
+    warn   $"Note that either your data directory '$pgdata' or"
+    warn_q $"the parent directory '$(dirname "$pgdata")'"
+    warn_q $"is a direct mountpoint.  This is usually bad idea and your"
+    warn_q $"filesystem layout should ideally look like:"
+    warn_q $"/ROOT_OWNED_MOUNTPOINT/POSTGRES_OWNED_DIRECTORY/DATADIR."
+    warn_q $"See the upstream documentation for more info:"
+    warn_q $"http://www.postgresql.org/docs/@PGMAJORVERSION@/static/creating-cluster.html"
+fi
+
 # See how we were called.
 case "$option_mode" in
     initdb)

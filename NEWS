@@ -4,8 +4,13 @@ Bugfixes in 3.4 version
 
 * Fix upgrade for non-standard unit names with --unit option.
 
+New in 3.4 version
+
 * Add --upgrade-from-unit option which allows proper selection of
   predecessor service name (when the default detection does not help).
+
+* postgresql-setup now throws warning if the PGDATA directory (or its
+  parent directory) is a mountpoint.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
