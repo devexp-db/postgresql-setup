@@ -24,7 +24,7 @@ TESTSUITE = $(srcdir)/testsuite
 CHECK_DEPS = atconfig atlocal $(TESTSUITE) $(top_builddir)/$(TEST_GEN_FILES_LIST)
 
 atlocal: atlocal.in $(c_s)
-	$(INSTANTIATE)
+	$(text_tpl_gen)
 
 check-local: $(CHECK_DEPS)
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)

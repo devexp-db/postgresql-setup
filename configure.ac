@@ -13,7 +13,10 @@ AM_SILENT_RULES([yes])
 AC_CONFIG_TESTDIR(tests)
 AC_CONFIG_FILES([tests/Makefile])
 AM_MISSING_PROG([AUTOM4TE], [autom4te])
-AC_SUBST([TEST_GEN_FILES_LIST], [.generated_files])
+
+_AX_TEXT_TPL_INIT
+
+_AX_TEXT_TPL_SUBST([TEST_GEN_FILES_LIST], [.generated_files])
 
 # TODO: detect systemd/sysvinit.  Also, we should probably be able to install
 # both configuration at once when needed.
@@ -36,45 +39,11 @@ INIT_SYSTEM=systemd
 test x"$WANT_SYSVINIT" = x1 && INIT_SYSTEM=sysvinit
 
 AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
-AC_SUBST([WANT_SYSVINIT])
-
-# Instatiating generated files by sed instead of config.status.
-# This is encouraged by autoconf documentation itself because if we used
-# config.status directly, e.g. libexecdir may result into
-# '${exec_prefix}/libexec' -- but we need fully expanded strings.
-m4_define([sed_subst_var_pattern], [	-e 's|@$1[[@]]|\$($1)|g' \\])
-SED_RULES="\\
-sed_subst_var_pattern(bindir)
-sed_subst_var_pattern(datadir)
-sed_subst_var_pattern(docdir)
-sed_subst_var_pattern(includedir)
-sed_subst_var_pattern(libdir)
-sed_subst_var_pattern(libexecdir)
-sed_subst_var_pattern(MOUNTPOINT)
-sed_subst_var_pattern(top_srcdir)
-sed_subst_var_pattern(PGDATADIR)
-sed_subst_var_pattern(PGMAJORVERSION)
-sed_subst_var_pattern(PG_UPGRADE_BIN_USER_OPT)
-sed_subst_var_pattern(PGVERSION)
-sed_subst_var_pattern(PKGCONFIG_DIR)
-sed_subst_var_pattern(POSTGRES_HOMEDIR)
-sed_subst_var_pattern(README_DIST)
-sed_subst_var_pattern(sharedstatedir)
-sed_subst_var_pattern(SU_POSTGRES)
-sed_subst_var_pattern(sysconfdir)
-sed_subst_var_pattern(TEST_GEN_FILES_LIST)
-sed_subst_var_pattern(VERSION)
-sed_subst_var_pattern(WANT_SYSVINIT)"
-
-m4_define([add_sed_subst_var], [
-SED_RULES="$SED_RULES
-sed_subst_var_pattern($1)"
-AC_SUBST($1)
-])
+_AX_TEXT_TPL_SUBST([WANT_SYSVINIT])
 
 m4_define([conf_dir], [dnl
 test -z "$$1" && $1=$2
-add_sed_subst_var($1)
+_AX_TEXT_TPL_SUBST([$1])
 ])
 
 SED_CALL="\$(SED) \$(SED_RULES)"
@@ -95,13 +64,6 @@ INSTANTIATE="\$(INSTANTIATE_CONV) && \$(SED_CALL) \$< > \$@ && chmod -w \$@"
 INSTANTIATE_SCRIPT="\$(INSTANTIATE) && chmod +x \$@"
 c_s='$(top_builddir)/config.status'
 
-AC_SUBST([SED_CALL])
-AC_SUBST([INSTANTIATE])
-AC_SUBST([INSTANTIATE_CONV])
-AC_SUBST([INSTANTIATE_SCRIPT])
-AC_SUBST([c_s])
-
-
 AC_PATH_PROG([SED], [sed])
 test -z "$ac_cv_path_SED" &&
     AC_MSG_ERROR([Sed is needed but not found.])
@@ -110,9 +72,10 @@ AC_PATH_PROGS([SU], [runuser su])
 test -z "$ac_cv_path_SU" &&
     AC_MSG_ERROR([Neither 'runuser' nor 'su' program found])
 SU_POSTGRES="$SU -s /bin/sh -l postgres"
-AC_SUBST([SU_POSTGRES])
+_AX_TEXT_TPL_SUBST([SU_POSTGRES])
 
 AC_PATH_PROG([MOUNTPOINT], [mountpoint], [false])
+_AX_TEXT_TPL_SUBST([MOUNTPOINT])
 
 PGSETUP_PACKAGING_INIT
 
@@ -140,7 +103,7 @@ fi
 AX_COMPARE_VERSION([9.4], [le], [$PGVERSION],
   [PG_UPGRADE_BIN_USER_OPT="--username"],
   [PG_UPGRADE_BIN_USER_OPT="--user"])
-AC_SUBST([PG_UPGRADE_BIN_USER_OPT])
+_AX_TEXT_TPL_SUBST([PG_UPGRADE_BIN_USER_OPT])
 
 AC_PATH_PROG([PG_UPGRADE_BIN], [pg_upgrade])
 
@@ -160,8 +123,8 @@ fi
 README_DIST_BASENAME=README.rpm-dist
 README_DIST="\${pgdocdir}/$README_DIST_BASENAME"
 
-AC_SUBST([README_DIST])
-AC_SUBST([README_DIST_BASENAME])
+_AX_TEXT_TPL_SUBST([README_DIST])
+_AX_TEXT_TPL_SUBST([README_DIST_BASENAME])
 
 PGSETUP_SUBST_REQ([PGVERSION],         [full PG version])
 PGSETUP_SUBST_REQ([PGMAJORVERSION],    [major PG version])
@@ -198,29 +161,17 @@ then
     SCL_SHELL_WRAPPER="$SCL_BINDIR/$SCL_BINARY enable $SCLS -- "
     SCL_SOURCE="source scl_source enable $SCLS ;"
 fi
-add_sed_subst_var(SCL_SHELL_WRAPPER)
-add_sed_subst_var(SCL_SOURCE)
+
+_AX_TEXT_TPL_SUBST([SCL_SHELL_WRAPPER])
+_AX_TEXT_TPL_SUBST([SCL_SOURCE])
 
 NAME_BINARYBASE="$NAME_BIN_PFX""postgresql$NAME_BIN_SFX"
 NAME_PACKAGE="$NAME_PKG_PFX""postgresql$NAME_PKG_SFX"
 NAME_SERVICE="$NAME_SRV_PFX""postgresql$NAME_SRV_SFX"
 
-AC_SUBST([NAME_BINARYBASE])
-AC_SUBST([NAME_PACKAGE])
-AC_SUBST([NAME_SERVICE])
-
-AC_SUBST([NAME_BINARYBASE])
-AC_SUBST([NAME_PACKAGE])
-AC_SUBST([NAME_SERVICE])
-
-add_sed_subst_var(NAME_SERVICE)
-add_sed_subst_var(NAME_PACKAGE)
-add_sed_subst_var(NAME_BINARYBASE)
-
-# As late as possible.
-SED_RULES="$SED_RULES
-	-e 's|@__FILE__[[@]]|\$@|g'"
-AC_SUBST([SED_RULES])
+_AX_TEXT_TPL_SUBST([NAME_BINARYBASE])
+_AX_TEXT_TPL_SUBST([NAME_PACKAGE])
+_AX_TEXT_TPL_SUBST([NAME_SERVICE])
 
 AC_OUTPUT
 

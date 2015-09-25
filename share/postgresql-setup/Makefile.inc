@@ -16,6 +16,6 @@ GENERATED_FILES += $(rawdata_generated_files)
 EXTRA_DIST += $(rawdata_static_files) $(rawdata_template_files)
 
 $(lib): $(lib_in) $(c_s)
-	$(INSTANTIATE_SCRIPT)
+	$(text_tpl_gen)
 
 # vim: ft=automake noet
