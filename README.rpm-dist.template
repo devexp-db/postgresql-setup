@@ -24,11 +24,14 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
 
 m4_define([PGSETUP_ADMIN], [postgres])
 
-m4_define([PGSETUP_COMMAND], [
+m4_define([_PGSETUP_COMMAND], [
 <screen>
-        <prompt>$ </prompt><userinput>$1</userinput>
+        <prompt>$2 </prompt><userinput>$1</userinput>
 </screen>
 ])
+
+m4_define([PGSETUP_COMMAND],      [_PGSETUP_COMMAND($1, [$])])
+m4_define([PGSETUP_ROOT_COMMAND], [_PGSETUP_COMMAND($1, [#])])
 
 m4_divert[]m4_dnl
 -->
@@ -62,14 +65,14 @@ m4_divert[]m4_dnl
   <title>QUICKSTART</title>
   <para>
     For a fresh installation, you will need to initialize the cluster first (as
-    a PGSETUP_ADMIN user):
+    a root user):
 
-    PGSETUP_COMMAND(@NAME_BINARYBASE@-setup --initdb)
+    PGSETUP_ROOT_COMMAND(@NAME_BINARYBASE@-setup --initdb)
 
     and it will prepare a new database cluster for you.  Then you will need to
-    start PostgreSQL.  Now, as 'root', run:
+    start PostgreSQL.  Now, as root, run:
 
-    PGSETUP_COMMAND([PGSETUP_SERVICE_START(@NAME_SERVICE@)])
+    PGSETUP_ROOT_COMMAND([PGSETUP_SERVICE_START(@NAME_SERVICE@)])
 
     This command will start a postmaster that will listen on localhost and Unix
     socket 5432 only.  Edit @PGDATADIR@/postgresql.conf and pg_hba.conf if you
@@ -78,7 +81,7 @@ m4_divert[]m4_dnl
 
     You will probably also want to do
 
-    PGSETUP_COMMAND([PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@)])
+    PGSETUP_ROOT_COMMAND([PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@)])
 
     so that the postmaster is automatically started during future reboots.
 
@@ -128,7 +131,7 @@ m4_divert[]m4_dnl
     In some major releases, the RPMs also support faster upgrade from concrete
     subset of previous releases.  You can run the:
 
-          PGSETUP_COMMAND(@NAME_BINARYBASE@ --upgrade-ids)
+          PGSETUP_COMMAND(@NAME_BINARYBASE@-setup --upgrade-ids)
 
     to see what previous versions you are able to upgrade from.  This is much
     faster than a dump and reload.  To do a faster upgrade:
@@ -337,7 +340,7 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
       <para>
         create a hard link in /etc/rc.d/init.d (or equivalent location) to
         '@NAME_SERVICE@' named 'secondary'.
-        PGSETUP_COMMAND(ln @NAME_SERVICE@ secondary)
+        PGSETUP_ROOT_COMMAND(ln @NAME_SERVICE@ secondary)
         Pick a name not already used in /etc/rc.d/init.d!
       </para>
     </listitem>
@@ -420,9 +423,9 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
     <listitem>
       <para>
         Start the new service with this command:
-        PGSETUP_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@@secondary))
+        PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@@secondary))
         You will probably also want to run the command
-        PGSETUP_COMMAND(PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@@secondary))
+        PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@@secondary))
         so that the new service is automatically started in future reboots.
       </para>
     </listitem>
@@ -430,7 +433,7 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
   <para>
     When doing a major-version upgrade of a secondary service, add the service
     name to the @NAME_BINARYBASE@-setup command, for example:
-    PGSETUP_COMMAND(@NAME_BINARYBASE@-setup --upgrade --unit @NAME_SERVICE@@secondary)
+    PGSETUP_ROOT_COMMAND(@NAME_BINARYBASE@-setup --upgrade --unit @NAME_SERVICE@@secondary)
     This will let @NAME_BINARYBASE@-setup find the correct data directory from
     the proper configuration file.
   </para>
@@ -440,11 +443,11 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
     adjust SELinux policy to allow the secondary server to use non-default
     PGPORT or PGDATA settings.  To allow use of a non-default port, say 5433, do
     this as root:
-    PGSETUP_COMMAND(semanage port -a -t postgresql_port_t -p tcp 5433)
+    PGSETUP_ROOT_COMMAND(semanage port -a -t postgresql_port_t -p tcp 5433)
     To allow use of a non-default data directory, say /special/pgdata, do:
-    PGSETUP_COMMAND(semanage fcontext -a -t postgresql_db_t "/special/pgdata(/.*)?")
+    PGSETUP_ROOT_COMMAND(semanage fcontext -a -t postgresql_db_t "/special/pgdata(/.*)?")
     If you already created the directory, follow that with:
-    PGSETUP_COMMAND(restorecon -R /special/pgdata)
+    PGSETUP_ROOT_COMMAND(restorecon -R /special/pgdata)
     These settings are persistent across reboots.  For more information see "man
     semanage".
   </para>
@@ -463,7 +466,7 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
   <para>
     To run the regression tests under the RPM installation, make sure that the
     PostgreSQL server has been started (if not, su to root and do
-    PGSETUP_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@))
+    PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@))
     su to postgres, cd to @libdir@/pgsql/test/regress and execute "make check".
     This command will start the regression tests and will both show the results
     to the screen and store the results in the file regress.out.
@@ -488,15 +491,15 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
     A systemd unit file for PostgreSQL is provided in the server package, as
     @systemdunitsdir@/@NAME_SERVICE@.service.  To start the postmaster manually,
     as root run
-    PGSETUP_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@))
+    PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@))
     To shut the postmaster down,
-    PGSETUP_COMMAND(PGSETUP_SERVICE_STOP(@NAME_SERVICE@))
+    PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_STOP(@NAME_SERVICE@))
     These two commands only change the postmaster's current status.  If you want
     the postmaster to be started automatically during future system startups,
     run
-    PGSETUP_COMMAND(PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@))
+    PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@))
     To undo that again,
-    PGSETUP_COMMAND(PGSETUP_SERVICE_DISABLE(@NAME_SERVICE@))
+    PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_DISABLE(@NAME_SERVICE@))
 m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
 [See "man chkconfig" and "man service" for other possible subcommands.],m4_dnl
 [See "man systemctl" for other possible subcommands.]))
@@ -540,7 +543,7 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
   <para>
     If you have not previously rebuilt any RPMs, set up the required environment:
     make a work directory, say ~/rpmwork, then cd into it and do
-    PGSETUP_COMMAND(mkdir BUILD BUILDROOT RPMS SOURCES SPECS SRPMS)
+    PGSETUP_ROOT_COMMAND(mkdir BUILD BUILDROOT RPMS SOURCES SPECS SRPMS)
     Then make a file ~/.rpmmacros containing
     <screen><userinput>%_topdir full_path_to_work_directory_here</userinput></screen>
   </para>
