@@ -1,5 +1,15 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Bugfixes in 3.5 version
+
+* Fix spelling in error message regarding data-dir mountpoint.
+
+* Fix testsuite for SCL.
+
+* Fix documentation regarding --initdb (we require root actually).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Bugfixes in 3.4 version
 
 * Fix upgrade for non-standard unit names with --unit option.
