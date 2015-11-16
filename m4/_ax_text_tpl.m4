@@ -142,11 +142,12 @@ AC_SUBST([text_tpl_gen_script])
 AC_SUBST([text_tpl_gen_script_verbose])
 ])
 
-# _AX_TEXT_TPL_SUBST SHELL_VARNAME
-# --------------------------------
+# _AX_TEXT_TPL_SUBST SHELL_VARNAME [VALUE]
+# ----------------------------------------
 # Do substitution of SHELL_VARNAME both by config.status, and by sed call
 # in instantiation rules.
 AC_DEFUN([_AX_TEXT_TPL_SUBST], [
+test x = x"$2" || $1=$2
 __ax_text_tpl_user_sed_rules="$__ax_text_tpl_user_sed_rules\
 sed_subst_var_pattern($1)"
 AC_SUBST($1)
