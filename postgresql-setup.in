@@ -793,6 +793,13 @@ debug "final pgport: $pgport"
 
 script_result=0
 
+$SU_POSTGRES -c 'test -w @POSTGRES_HOMEDIR@' || {
+    # pg_upgrade binary needs to have write-able $PWD (and we use 'su -')
+    error   $"The @POSTGRES_HOMEDIR@ directory has wrong permissions."
+    error_q $"Please make sure the directory is writable by postgres."
+    exit 1
+}
+
 if @MOUNTPOINT@ -q "$pgdata" || @MOUNTPOINT@ -q "$(dirname "$pgdata")"; then
     warn   $"Note that either your data directory '$pgdata' or"
     warn_q $"the parent directory '$(dirname "$pgdata")'"
