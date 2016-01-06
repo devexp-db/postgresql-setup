@@ -1,5 +1,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 4.0 version:
+
+* The postgresql-upgrade package is now optional packaging feature, for the
+  postgresql-setup --upgrade scenario it might/might not be needed.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Bugfixes in 3.5 version
 
 * Fix spelling in error message regarding data-dir mountpoint.

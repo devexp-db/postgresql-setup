@@ -71,7 +71,7 @@ parse_upgrade_setup()
     test -d "$upgrade_confdir" || die "can't read confdir $upgrade_confdir"
 
     local my_vars="id comment data_default engine description major scls \
-        redhat_sockets_hack pghost_override"
+        redhat_sockets_hack pghost_override package"
     while read conffile
     do
         read_config_file "$conffile" "$my_vars"

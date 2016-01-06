@@ -206,8 +206,8 @@ upgrade()
         error_q $"version $old_data_version but it should be $upgradefrom_major"
         exit 1
     fi
-    if [ ! -x "$PGENGINE/pg_upgrade" ]; then
-        error $"Please install the @NAME_PACKAGE@-upgrade package."
+    if [ ! -x "$upgradefrom_engine/postgres" ]; then
+        error $"Please install the $upgradefrom_package package."
         exit 5
     fi
 
