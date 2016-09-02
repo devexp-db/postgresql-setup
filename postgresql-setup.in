@@ -241,6 +241,9 @@ upgrade()
         # to any database without password.  Temporarily, no other type
         # of connection is needed.
         echo "local all postgres ident" > "$pgdataold/pg_hba.conf"
+        chown postgres:postgres "$pgdataold/pg_hba.conf"
+        chmod go-rwx "$pgdataold/pg_hba.conf"
+        [ -x /sbin/restorecon ] && /sbin/restorecon "$pgdataold/pg_hba.conf"
     fi
 
     info $"Upgrading database."

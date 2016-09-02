@@ -1,5 +1,11 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Bugfixes in 4.1 version
+
+* postgresql-setup --upgrade now works with "umask & 0004 != 0"
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 4.0 version:
 
 * The postgresql-upgrade package is now optional packaging feature, for the
