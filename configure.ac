@@ -1,5 +1,5 @@
 # Use the MAJ.MIN[~SUFF].  Note that X.X > X.X~SUFF!
-AC_INIT([postgresql-setup], [4.0], [praiskup@redhat.com])
+AC_INIT([postgresql-setup], [4.1], [praiskup@redhat.com])
 AC_CONFIG_AUX_DIR(auxdir)
 config_aux_dir=auxdir
 AC_SUBST([config_aux_dir])
