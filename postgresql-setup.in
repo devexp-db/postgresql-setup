@@ -254,7 +254,7 @@ upgrade()
         scls_upgrade_hacks="source scl_source enable $upgradefrom_scls ;"
     }
 
-    test -n "$upgradefrom_redhat_sockets_hack" && {
+    test x"$upgradefrom_redhat_sockets_hack" = xyes && {
         debug "upgrading from redhat server"
         socket_hacks="export REDHAT_PGUPGRADE_FROM_RHEL=yes ;"
     }

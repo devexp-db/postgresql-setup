@@ -4,6 +4,8 @@ Bugfixes in 4.1 version
 
 * postgresql-setup --upgrade now works with "umask & 0004 != 0"
 
+* fixed semantics of 'redhat_sockets_hack' configuration option
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 4.0 version:
