@@ -4,10 +4,12 @@ Bugfixes in 5.0 version
 
 * postgresql-setup --upgrade now works with "umask & 0004 != 0"
 
-* fixed semantics of 'redhat_sockets_hack' configuration option
+* Fixed semantics of 'redhat_sockets_hack' configuration option.
 
 * The RPM macros file is installed automatically, it provides now
   %postgresql_major, %pgtests_init and %pgtests_start macros.
+
+* Fixed automatic detection of $PGMAJORVERSION.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -98,7 +98,7 @@ if test -z "$PGVERSION" -a -z "$PGMAJORVERSION"; then
     PGVERSION=${raw_version##* }
     AC_MSG_RESULT($PGVERSION)
 
-    PGMAJORVERSION=`echo $PGVERSION | sed 's/\.[0-9]\+$//'`
+    PGMAJORVERSION=`echo $PGVERSION | sed 's/\.[[0-9]]\+$//'`
 fi
 
 AX_COMPARE_VERSION([9.4], [le], [$PGVERSION],
