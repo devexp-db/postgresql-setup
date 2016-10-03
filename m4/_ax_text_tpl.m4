@@ -123,7 +123,7 @@ text_tpl_gen_script_verbose="\$(text_tpl_gen_verbose) && chmod +x \@S|@@"
 text_tpl_gen_script="\$(AM_V_GEN)\$(text_tpl_gen_script_verbose) && chmod +x \@S|@@"
 
 # Make dependencies for targets of $(text_tpl_gen) and $(text_tpl_gen_script)
-text_tpl_deps='$(top_builddir)/config.status'
+text_tpl_deps='$(top_builddir)/config.status Makefile'
 
 AC_PATH_PROG([SED], [sed])
 test -z "$ac_cv_path_SED" &&

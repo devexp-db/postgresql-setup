@@ -23,7 +23,7 @@ rawpkgdata_DATA = \
 GENERATED_FILES += $(rawdata_generated_files)
 EXTRA_DIST += $(rawdata_static_files) $(rawdata_template_files)
 
-$(lib): $(lib_in) $(c_s)
+$(lib): $(lib_in) $(text_tpl_deps)
 	$(text_tpl_gen)
 
 # vim: ft=automake noet

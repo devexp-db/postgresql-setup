@@ -51,36 +51,36 @@ pgdoc_DATA = $(readme_dist)
 
 noinst_DATA += $(TEST_GEN_FILES_LIST)
 
-$(ctl): $(ctl_in) $(c_s)
+$(ctl): $(ctl_in) $(text_tpl_deps)
 	$(text_tpl_gen_script)
 
-$(setup): $(setup_in) $(c_s)
+$(setup): $(setup_in) $(text_tpl_deps)
 	$(text_tpl_gen_script)
 
-$(checkdb): $(check) $(checkdb_in) $(c_s)
+$(checkdb): $(check) $(checkdb_in) $(text_tpl_deps)
 	$(text_tpl_gen_script)
 
-$(initscript): $(initscript_in) $(c_s)
+$(initscript): $(initscript_in) $(text_tpl_deps)
 	$(text_tpl_gen_script)
 
-initdb upgrade: legacy-sysv-script.in $(c_s)
+initdb upgrade: legacy-sysv-script.in $(text_tpl_deps)
 	$(text_tpl_gen_script)
 
 # In ideal world, postgresql@.service would be hardlink to postgresql.service.
 # That would require, however, the rhbz#1141824 resolved so we could install
 # system-default drop-in file.  Make a "almost" duplicate files now.
 
-$(serviceat): $(serviceat_in) $(c_s)
+$(serviceat): $(serviceat_in) $(text_tpl_deps)
 	$(AM_V_GEN)\
 	ax_text_add_sed_substs="-e /@PGDATA_ENVIRONMENT[@]/d" ; \
 	$(text_tpl_gen_verbose)
 
-$(service): $(service_in) $(c_s)
+$(service): $(service_in) $(text_tpl_deps)
 	$(AM_V_GEN)\
 	ax_text_add_sed_substs="-e s|@PGDATA_ENVIRONMENT[@]|Environment=PGDATA=$(PGDATADIR)|" ; \
 	$(text_tpl_gen_verbose)
 
-$(readme_dist_sed): $(readme_template) $(c_s)
+$(readme_dist_sed): $(readme_template) $(text_tpl_deps)
 	$(text_tpl_gen)
 
 $(readme_dist_m4): $(readme_dist_sed)

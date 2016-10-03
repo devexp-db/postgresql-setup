@@ -63,7 +63,6 @@ conf_dir([pgcontribdocdir],          ['${datarootdir}/doc/${NAME_PACKAGE}-contri
 INSTANTIATE_CONV="\$(AM_V_GEN)rm -rf \$@; \$(MKDIR_P) \$(@D)"
 INSTANTIATE="\$(INSTANTIATE_CONV) && \$(SED_CALL) \$< > \$@ && chmod -w \$@"
 INSTANTIATE_SCRIPT="\$(INSTANTIATE) && chmod +x \$@"
-c_s='$(top_builddir)/config.status'
 
 AC_PATH_PROG([SED], [sed])
 test -z "$ac_cv_path_SED" &&

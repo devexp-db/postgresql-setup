@@ -23,7 +23,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 TESTSUITE = $(srcdir)/testsuite
 CHECK_DEPS = atconfig atlocal $(TESTSUITE) $(top_builddir)/$(TEST_GEN_FILES_LIST)
 
-atlocal: atlocal.in $(c_s)
+atlocal: atlocal.in $(text_tpl_deps)
 	$(text_tpl_gen)
 
 check-local: $(CHECK_DEPS)

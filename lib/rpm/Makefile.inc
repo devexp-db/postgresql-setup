@@ -6,5 +6,5 @@ rpmmacros_DATA	= $(rpm_macros)
 GENERATED_FILES	+= $(rpmmacros_DATA)
 EXTRA_DIST	+= $(rpm_macros_in)
 
-$(rpm_macros): $(rpm_macros_in) $(c_s)
+$(rpm_macros): $(rpm_macros_in) $(text_tpl_deps)
 	$(text_tpl_gen)
