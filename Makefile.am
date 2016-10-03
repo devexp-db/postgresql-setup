@@ -101,6 +101,7 @@ EXTRA_DIST += \
 	style.dsl
 
 include $(srcdir)/share/postgresql-setup/Makefile.inc
+include $(srcdir)/lib/rpm/Makefile.inc
 
 GENERATED_FILES += \
 	$(bin_SCRIPTS) \

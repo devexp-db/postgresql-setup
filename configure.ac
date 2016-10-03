@@ -1,5 +1,5 @@
 # Use the MAJ.MIN[~SUFF].  Note that X.X > X.X~SUFF!
-AC_INIT([postgresql-setup], [4.1], [praiskup@redhat.com])
+AC_INIT([postgresql-setup], [5.0], [praiskup@redhat.com])
 AC_CONFIG_AUX_DIR(auxdir)
 config_aux_dir=auxdir
 AC_SUBST([config_aux_dir])
@@ -49,6 +49,7 @@ _AX_TEXT_TPL_SUBST([$1])
 SED_CALL="\$(SED) \$(SED_RULES)"
 m4_pattern_allow(AM_V_GEN)
 
+conf_dir([rpmmacrosdir],             ['${prefix}/lib/rpm/macros.d'])
 conf_dir([systemdunitsdir],          ['${prefix}/lib/systemd/system'])
 conf_dir([systemduserunitsdir],      ['${prefix}/etc/systemd/system'])
 conf_dir([systemdlegacyscriptsdir],  ['${libexecdir}/initscripts/legacy-actions'])

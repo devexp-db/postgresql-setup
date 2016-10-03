@@ -1,0 +1,7 @@
+# Macros from this file should exist on system only once, so it package
+# maintainer's responsibility to guarantee that all packages which install
+# these macros collide, or that (during package-build time) only one such
+# package is installed (e.g. similarly to %%scl macro defined installed by
+# *-build subpackage).
+
+%postgresql_major @PGMAJORVERSION@

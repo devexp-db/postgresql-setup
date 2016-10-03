@@ -1,10 +1,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Bugfixes in 4.1 version
+Bugfixes in 5.0 version
 
 * postgresql-setup --upgrade now works with "umask & 0004 != 0"
 
 * fixed semantics of 'redhat_sockets_hack' configuration option
+
+* the RPM macros file is installed automatically
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
