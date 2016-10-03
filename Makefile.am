@@ -25,6 +25,7 @@ EXTRA_DIST =
 INTERMEDIATE_FILES =
 GENERATED_FILES =
 CLEANFILES =
+_AX_TEXT_ADDITIONAL_SED_SUBSTITUTIONS =
 
 # include $(srcdir)/build-helpers/Makefile.inc
 

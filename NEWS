@@ -6,7 +6,8 @@ Bugfixes in 5.0 version
 
 * fixed semantics of 'redhat_sockets_hack' configuration option
 
-* the RPM macros file is installed automatically
+* The RPM macros file is installed automatically, it provides now
+  %postgresql_major, %pgtests_init and %pgtests_start macros.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
