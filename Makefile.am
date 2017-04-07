@@ -27,6 +27,8 @@ GENERATED_FILES =
 CLEANFILES =
 _AX_TEXT_ADDITIONAL_SED_SUBSTITUTIONS =
 
+DISTCHECK_CONFIGURE_FLAGS = rpmmacrosdir=$$dc_install_base/etc/rpm
+
 # include $(srcdir)/build-helpers/Makefile.inc
 
 SUBDIRS = . doc tests
