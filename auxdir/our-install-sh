@@ -1,0 +1,48 @@
+#! /bin/sh
+
+/usr/bin/install -c "$@" || exit $?
+
+edit_installed ()
+{
+    file=$1
+
+    cp "$file" "$file"~
+
+    awk '
+    BEGIN { matched = 0 ; }
+
+    /^builddir_source \(\)/ { matched = 1 ; }
+
+    /^}$/ {
+        if (matched)
+            matched = 0;
+        else
+            print;
+        next;
+    }
+
+    /^builddir_source "/ {
+        $1 = "." ;
+        print ;
+        next;
+    }
+
+    { if (!matched) print ; }
+
+    ' > "$file" < "$file"~
+
+    rm "$file"~
+}
+
+for arg in "$@"
+do
+    last=$arg
+done
+
+prev=$1
+shift
+
+for arg in "$@"
+do
+    edit_installed "$last/$(basename "$prev")"
+done

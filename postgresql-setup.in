@@ -21,7 +21,14 @@ SU_POSTGRES="@SU_POSTGRES@"
 # The where PostgreSQL server listens by default
 PGPORT_DEF=5432
 
-. "@rawpkgdatadir@/library.sh"
+builddir_source ()
+{
+    # To simplify manpage generator.  Build-time-only.
+    file=$(echo "$1" | sed -e "s|@rawpkgdatadir@|share/postgresql-setup|")
+    . "@abs_top_builddir@/$file"
+}
+
+builddir_source "@rawpkgdatadir@/library.sh"
 
 @SCL_SOURCE@
 

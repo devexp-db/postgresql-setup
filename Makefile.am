@@ -21,7 +21,8 @@ readme_dist_m4	= README.rpm-dist.m4
 readme_dist_sed	= README.rpm-dist.sed
 readme_template	= README.rpm-dist.template
 
-EXTRA_DIST =
+INSTALL_SCRIPT = $(top_srcdir)/auxdir/our-install-sh
+EXTRA_DIST = $(INSTALL_SCRIPT)
 INTERMEDIATE_FILES =
 GENERATED_FILES =
 CLEANFILES =

@@ -26,7 +26,7 @@ setup_man = %D%/$(NAME_BINARYBASE)-setup.1
 dist_man_MANS = $(setup_man)
 
 $(setup_man): $(NAME_BINARYBASE)-setup
-	$(AM_V_GEN)export input=$(NAME_BINARYBASE)-setup ; \
+	$(AM_V_GEN)export input=$(builddir)/$(NAME_BINARYBASE)-setup ; \
 	    $(HELP2MAN_RUN)
 
 DISTCLEANFILES += $(setup_man)

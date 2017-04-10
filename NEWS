@@ -6,6 +6,8 @@ Bugfixes in 5.1 version
 
 * the sysvinit/systemd systems are now detected
 
+* properly generate manpage with help2man
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Bugfixes in 5.0 version
