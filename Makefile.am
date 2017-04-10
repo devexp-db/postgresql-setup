@@ -25,6 +25,7 @@ EXTRA_DIST =
 INTERMEDIATE_FILES =
 GENERATED_FILES =
 CLEANFILES =
+DISTCLEANFILES =
 _AX_TEXT_ADDITIONAL_SED_SUBSTITUTIONS =
 
 DISTCHECK_CONFIGURE_FLAGS = \
@@ -38,7 +39,7 @@ DISTCHECK_CONFIGURE_FLAGS = \
 
 # include $(srcdir)/build-helpers/Makefile.inc
 
-SUBDIRS = . doc tests
+SUBDIRS = . tests
 
 bin_SCRIPTS = $(setup)
 libexec_SCRIPTS = $(ctl) $(checkdb)
@@ -112,6 +113,7 @@ EXTRA_DIST += \
 
 include $(srcdir)/share/postgresql-setup/Makefile.inc
 include $(srcdir)/lib/rpm/Makefile.inc
+include $(srcdir)/doc/Makefile.inc
 
 GENERATED_FILES += \
 	$(bin_SCRIPTS) \
@@ -171,4 +173,4 @@ ChangeLog:
 
 dist-hook: ChangeLog
 
-DISTCLEANFILES = ChangeLog
+DISTCLEANFILES += ChangeLog
