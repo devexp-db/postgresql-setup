@@ -27,7 +27,14 @@ GENERATED_FILES =
 CLEANFILES =
 _AX_TEXT_ADDITIONAL_SED_SUBSTITUTIONS =
 
-DISTCHECK_CONFIGURE_FLAGS = rpmmacrosdir=$$dc_install_base/etc/rpm
+DISTCHECK_CONFIGURE_FLAGS = \
+	rpmmacrosdir=$$dc_install_base/etc/rpm \
+	systemdunitsdir=$$dc_install_base/lib/systemd/system \
+	systemdunitsdir=$$dc_install_base/var/lib/systemd/system \
+	systemduserunitsdir=$$dc_install_base/etc/systemd/system \
+	systemdlegacyscriptsdir=$$dc_install_base/usr/libexec/initscripts/legacy-actions \
+	initscriptsdir=$$dc_install_base=/etc/rc.d/init.d \
+	initscriptsconfdir=$$dc_install_base/etc/sysconfig/pgsql
 
 # include $(srcdir)/build-helpers/Makefile.inc
 

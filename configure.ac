@@ -18,26 +18,12 @@ _AX_TEXT_TPL_INIT
 
 _AX_TEXT_TPL_SUBST([TEST_GEN_FILES_LIST], [.generated_files])
 
-# TODO: detect systemd/sysvinit.  Also, we should probably be able to install
-# both configuration at once when needed.
-AC_ARG_WITH([sysvinit],
-    AS_HELP_STRING([--with-sysvinit],
-                   [prepares sys v init script]),
-    [WANT_SYSVINIT=0
-     test x"$withval" = xyes && WANT_SYSVINIT=1]
-)
-
-if test x = x"$WANT_SYSVINIT"
-then
-    WANT_SYSVINIT=0
-    # Try to detect system running systemd
-    AC_PATH_PROG([SYSTEMCTL], [systemctl])
-    test -z "$ac_cv_path_SYSTEMCTL" && WANT_SYSVINIT=1
-fi
-
+WANT_SYSVINIT=0
 INIT_SYSTEM=systemd
-test x"$WANT_SYSVINIT" = x1 && INIT_SYSTEM=sysvinit
-
+test -d /usr/lib/systemd/system/ || {
+    INIT_SYSTEM=sysvinit
+    WANT_SYSVINIT=1
+}
 AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
 _AX_TEXT_TPL_SUBST([WANT_SYSVINIT])
 
@@ -62,10 +48,10 @@ AC_CACHE_CHECK(
 )
 
 conf_dir([rpmmacrosdir],             [$my_cv_macrosdir])
-conf_dir([systemdunitsdir],          ['${prefix}/lib/systemd/system'])
-conf_dir([systemduserunitsdir],      ['${prefix}/etc/systemd/system'])
-conf_dir([systemdlegacyscriptsdir],  ['${libexecdir}/initscripts/legacy-actions'])
-conf_dir([initscriptsdir],           ['${sysconfdir}/rc.d/init.d'])
+conf_dir([systemdunitsdir],          ['/usr/lib/systemd/system'])
+conf_dir([systemduserunitsdir],      ['/etc/systemd/system'])
+conf_dir([systemdlegacyscriptsdir],  ['/usr/libexec/initscripts/legacy-actions'])
+conf_dir([initscriptsdir],           ['/etc/rc.d/init.d'])
 conf_dir([initscriptsconfdir],       ['/etc/sysconfig/pgsql'])
 conf_dir([rawpkgdatadir],            ['${datadir}/postgresql-setup'])
 # Those two should be specified explicitly.
