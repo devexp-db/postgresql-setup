@@ -5,7 +5,7 @@ config_aux_dir=auxdir
 AC_SUBST([config_aux_dir])
 
 AM_INIT_AUTOMAKE([-Wall])
-AC_CONFIG_FILES([Makefile doc/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AM_SILENT_RULES([yes])
 
