@@ -8,6 +8,9 @@ BuildRequires:
     - help2man
     - elinks (pretty README.rpm-dist)
 
+Requires:
+    - coreutils
+
 Suggested BuildRequires:
     - util-linux (mountpoint utility)
 

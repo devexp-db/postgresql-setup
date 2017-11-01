@@ -108,7 +108,7 @@ parse_upgrade_setup()
             done
             return 0
         fi
-    done < <(find "$upgrade_confdir" -maxdepth 1 -type f -name '*.conf')
+    done < <(LC_ALL=C ls -1 "$upgrade_confdir"/*.conf || :)
 
     case "$action" in
         help|list)
