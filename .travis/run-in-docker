@@ -1,0 +1,37 @@
+#! /bin/bash -x
+
+container_id=$(
+    docker run -d -ti -v `pwd`:/workdir:Z -u $(id -u) registry.fedoraproject.org/fedora:rawhide bash
+)
+
+cleanup ()
+{
+    docker rm --force "$container_id"
+}
+
+trap cleanup EXIT
+
+run_in_container ()
+{
+    local uid=$(id -u)
+    if ${as_root-false}; then
+        uid=0
+    fi
+
+    docker exec -u $uid -ti "$container_id" "$@"
+}
+
+buildrequires='
+autoconf-archive
+automake
+help2man
+elinks
+findutils
+docbook-utils
+postgresql-devel
+postgresql-server
+'
+
+as_root=true \
+run_in_container bash -c "dnf install -y $(echo $buildrequires)"
+run_in_container bash -c "set -x ; cd /workdir && ./.travis/distcheck"

@@ -1,0 +1,3 @@
+services:
+  - docker
+script: .travis/run-in-docker
