@@ -1,0 +1,6 @@
+#! /bin/sh -x
+
+set -e
+autoreconf -vfi
+./configure
+make distcheck IGNORE_CHANGELOG=yes
