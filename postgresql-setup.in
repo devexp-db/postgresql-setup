@@ -230,6 +230,15 @@ upgrade()
         error $"Please install the $upgradefrom_package package."
         exit 5
     fi
+    if [ ! -x "$PGENGINE/pg_upgrade" ]; then
+        # The "$PGENGINE/postgres" depends transitively on
+        # pg_upgrade binary in rather newer packaging, but SCL with PostgreSQL
+        # 9.4 provides '*-upgrade' package having `pg_upgrade` inside.  We need
+        # to have this installed, too.  Keep till {rh,sclo}-postgresql94 is
+        # still a thing.
+        error $"Please install the @NAME_PACKAGE@-upgrade package."
+        exit 5
+    fi
 
     # Set up log file for pg_upgrade
     rm -f "$upgrade_log"
