@@ -31,12 +31,12 @@ if ! WANT_SYSVINIT
 dist_man_MANS += $(new_unit_man)
 endif
 
-$(setup_man): $(NAME_BINARYBASE)-setup
+$(setup_man): $(NAME_BINARYBASE)-setup $(lib)
 	$(AM_V_GEN)odir=`dirname "$@"` ; mkdir -p "$$odir" ; \
 	export input=$(builddir)/$(NAME_BINARYBASE)-setup ; \
 	    $(HELP2MAN_RUN)
 
-$(new_unit_man): sbin/$(NAME_BINARYBASE)-new-systemd-unit
+$(new_unit_man): sbin/$(NAME_BINARYBASE)-new-systemd-unit $(lib)
 	$(AM_V_GEN)odir=`dirname "$@"`; mkdir -p "$$odir" ; \
 	export PGSETUP_TEST=: ; \
 	export input=$(builddir)/sbin/$(NAME_BINARYBASE)-new-systemd-unit ; \
