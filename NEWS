@@ -4,6 +4,14 @@ Bugfixes in 6.0 version
 
 * Dropped dependency on /bin/find utility.
 
+* The postgresql-setup doesn't need root permissions.  It is better to not
+  run this script as 'root' user from now.
+
+Incompatible changes in 6.0 version
+
+* The postgresql-setup doesn't support --new-systemd-unit option.  Please use
+  postgresql-new-systemd-unit script instead (as 'root').
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Bugfixes in 5.1 version

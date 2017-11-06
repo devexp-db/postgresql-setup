@@ -16,6 +16,7 @@ set_var()
 
 root_prereq()
 {
+    test -z "$PGSETUP_TEST" || return 0
     test "$(id -u)" -eq 0 || die "$0 requires root access for this action"
 }
 
@@ -116,24 +117,4 @@ parse_upgrade_setup()
             ;;
     esac
     return 1
-}
-
-
-# run_cmd_as_dbadmin COMMAND STDOUT STDERR
-run_cmd_as_dbadmin()
-{
-    # Convenient tool-aliases
-    local SU_POSTGRES="@SU_POSTGRES@"
-
-    local cmd="@SCL_SOURCE@$1"
-    local stdout="$2" stderr="$3"
-
-    # don't print additional spaces
-    set -- $cmd
-    debug "running command under postgres user: $@"
-    (
-        test -n "$stdout" && exec >>"$stdout"
-        test -n "$stderr" && exec 2>>"$stderr"
-        $SU_POSTGRES -c "$cmd" < /dev/null
-    )
 }

@@ -2,9 +2,33 @@
 #
 # postgresql-setup - Initialization and upgrade operations for PostgreSQL
 
+if test "$(id -u)" -eq 0; then
+    cmd=
+    for v in PGSETUP_DEBUG PGSETUP_INITDB_OPTIONS PGSETUP_PGUPGRADE_OPTIONS; do
+        eval var_content=\$$v
+        test -z "$var_content" && continue
+        cmd+=$v="$(printf %q "$var_content") "
+    done
+    cmd+=$(printf %q "$(readlink -f "$0")")
+    for arg; do cmd+=" $(printf %q "$arg")" ; done
+    # Drop root privileges asap.  It's not recommended to run postgresql-setup
+    # script under root nowadays; so we take the liberty to switch to the
+    # PostgreSQL admin user (by default 'postgres') without any other option.
+    exec @SU_POSTGRES@ -c "$cmd"
+fi
+
+# ensure privacy
+umask 0077
+
+: ${RESTORECON=/sbin/restorecon}
+test -x $RESTORECON || RESTORECON=:
+
 test -z "$PATH" && export PATH="/sbin:/usr/sbin:/bin:/usr/bin"
 
 test x"$PGSETUP_DEBUG" != x && set -x && PS4='${LINENO}: '
+
+# The current user name.
+USER=$(id -u -n)
 
 # Directory containing the postmaster executable
 PGENGINE=@bindir@
@@ -14,9 +38,6 @@ README_DIST=@README_DIST@
 
 # Home directory of postgres user
 POSTGRES_HOMEDIR=@POSTGRES_HOMEDIR@
-
-# Convenient tool-aliases
-SU_POSTGRES="@SU_POSTGRES@"
 
 # The where PostgreSQL server listens by default
 PGPORT_DEF=5432
@@ -68,12 +89,10 @@ Options:
 
 test 0 -eq @WANT_SYSVINIT@ && \
 USAGE_STRING+="
-  --datadir=PATH             Specify absolute path to DB data directory, only
-                             use with --new-systemd-unit.
-  --new-systemd-unit         Pre-generate system'd configuration in drop-in
-                             directory if the unit is not yet configured,
-                             requires non-default --unit specified and explicit
-                             --datadir and --port."
+  --new-systemd-unit         We dropped this option for security reasons.
+                             Nowadays, please use the root-only script
+                             @sbindir@/@NAME_BINARYBASE@-new-systemd-unit.
+  --datadir                  Dropped with --new-systemd-unit."
 
 USAGE_STRING+="
   --upgrade-from-unit=UNIT   Select proper unit name to upgrade from.  This
@@ -125,33 +144,28 @@ perform_initdb()
 {
     if [ ! -e "$pgdata" ]; then
         mkdir "$pgdata" || return 1
-        chown postgres:postgres "$pgdata"
-        chmod go-rwx "$pgdata"
     fi
+    $RESTORECON "$pgdata"
+    test -w "$pgdata" || die "$pgdata is not writeable by $USER"
 
     # Clean up SELinux tagging for pgdata
     [ -x /sbin/restorecon ] && /sbin/restorecon "$pgdata"
 
     # Create the initdb log file if needed
-    if [ ! -e "$initdb_log" -a ! -h "$initdb_log" ]; then
+    if [ ! -e "$initdb_log" ]; then
         touch "$initdb_log" || return 1
-        chown postgres:postgres "$initdb_log"
-        chmod go-rwx "$initdb_log"
-        [ -x /sbin/restorecon ] && /sbin/restorecon "$initdb_log"
     fi
+    $RESTORECON "$initdb_log"
+    test -w "$initdb_log" || echo "$initdb_log is not writeable by $USER"
 
     # Initialize the database
-    initdbcmd="@SCL_SOURCE@"
-    initdbcmd+=" $PGENGINE/initdb --pgdata='$pgdata' --auth='ident'"
-    initdbcmd+=" $PGSETUP_INITDB_OPTIONS"
-
-    $SU_POSTGRES -c "$initdbcmd" >> "$initdb_log" 2>&1 < /dev/null
+    initdbcmd+=( "$PGENGINE"/initdb --pgdata="$pgdata" --auth=ident )
+    eval "initdbcmd+=( $PGSETUP_INITDB_OPTIONS )"
+    "${initdbcmd[@]}" >> "$initdb_log" 2>&1 < /dev/null
 
     # Create directory for postmaster log files
     mkdir "$pgdata/pg_log"
-    chown postgres:postgres "$pgdata/pg_log"
-    chmod go-rwx "$pgdata/pg_log"
-    [ -x /sbin/restorecon ] && /sbin/restorecon "$pgdata/pg_log"
+    $RESTORECON "$pgdata/pg_log"
 
     # This if-fork is just to not unnecessarily overwrite what upstream
     # generates by initdb (upstream implicitly uses PGPORT_DEF).
@@ -180,7 +194,6 @@ initdb()
     info $"Initializing database in '$pgdata'$port_info"
     if check_not_initialized && perform_initdb; then
         info $"Initialized, logs are in ${initdb_log}"
-        cleanup_dropin=
     else
         error $"Initializing database failed, possibly see $initdb_log"
         script_result=1
@@ -221,10 +234,7 @@ upgrade()
     # Set up log file for pg_upgrade
     rm -f "$upgrade_log"
     touch "$upgrade_log" || die "can't write into $upgrade_log file"
-
-    chown postgres:postgres "$upgrade_log"
-    chmod go-rwx "$upgrade_log"
-    [ -x /sbin/restorecon ] && /sbin/restorecon "$upgrade_log"
+    $RESTORECON "$upgrade_log"
 
     # Move old DB to pgdataold
 
@@ -248,9 +258,7 @@ upgrade()
         # to any database without password.  Temporarily, no other type
         # of connection is needed.
         echo "local all postgres ident" > "$pgdataold/pg_hba.conf"
-        chown postgres:postgres "$pgdataold/pg_hba.conf"
-        chmod go-rwx "$pgdataold/pg_hba.conf"
-        [ -x /sbin/restorecon ] && /sbin/restorecon "$pgdataold/pg_hba.conf"
+        $RESTORECON "$pgdataold"
     fi
 
     info $"Upgrading database."
@@ -258,16 +266,16 @@ upgrade()
     scls_upgrade_hacks=
     test -n "$upgradefrom_scls" && {
         debug "scls [$upgradefrom_scls] will be enabled"
-        scls_upgrade_hacks="source scl_source enable $upgradefrom_scls ;"
+        scls_upgrade_hacks="source scl_source enable $upgradefrom_scls"
     }
 
     test x"$upgradefrom_redhat_sockets_hack" = xyes && {
         debug "upgrading from redhat server"
-        socket_hacks="export REDHAT_PGUPGRADE_FROM_RHEL=yes ;"
+        socket_hacks="export REDHAT_PGUPGRADE_FROM_RHEL=yes"
     }
 
     test -n "$upgradefrom_pghost_override" && {
-        pghost_override="PGHOST='$upgradefrom_pghost_override'"
+        pghost_override="export PGHOST='$upgradefrom_pghost_override'"
     }
 
     local failure_cleanup=true
@@ -284,20 +292,28 @@ upgrade()
         $inplace && link_option=--link
 
         # After creating the empty new-format database, do the upgrade
-        run_cmd_as_dbadmin "\
-                        $scls_upgrade_hacks \
-                        $socket_hacks \
-                        $pghost_override \
-                        $PGENGINE/pg_upgrade \
-                        '--old-bindir=$upgradefrom_engine' \
-                        '--new-bindir=$PGENGINE' \
-                        '--old-datadir=$pgdataold' \
-                        '--new-datadir=$pgdata' \
-                        $link_option \
-                        '--old-port=$PGPORT' '--new-port=$PGPORT' \
-                        @PG_UPGRADE_BIN_USER_OPT@=postgres \
-                        $PGSETUP_PGUPGRADE_OPTIONS" \
-                        "$upgrade_log" "$upgrade_log"
+        (
+        cd # pg_upgrade writes to $PWD
+        eval "
+            $scls_upgrade_hacks
+            $socket_hacks
+            $pghost_override
+        "
+        eval "add_options=( $PGSETUP_PGUPGRADE_OPTIONS )"
+
+        "$PGENGINE"/pg_upgrade \
+            --old-bindir="$upgradefrom_engine" \
+            --new-bindir="$PGENGINE" \
+            --old-datadir="$pgdataold" \
+            --new-datadir="$pgdata" \
+            $link_option \
+            --old-port="$PGPORT" \
+            --new-port="$PGPORT" \
+            @PG_UPGRADE_BIN_USER_OPT@=postgres \
+            "${add_options[@]}" \
+            >>"$upgrade_log" 2>>"$upgrade_log"
+        )
+
         if [ $? -ne 0 ]; then
             # pg_upgrade failed
             error $"pg_upgrade tool failed"
@@ -325,32 +341,6 @@ upgrade()
         error $"Upgrade failed."
     fi
     info $"See $upgrade_log for details."
-}
-
-
-generate_systemd_dropin()
-{
-    local service="$1"
-    local dropindir="@systemduserunitsdir@/$service.service.d"
-    local dropin="$dropindir/30-@NAME_BINARYBASE@-setup.conf"
-
-    test -e "$dropindir" \
-        && die "The systemd drop-in directory '$dropindir' exists already"
-
-    mkdir -p "$dropindir" \
-        || die "Can not create '$dropindir'"
-
-    cleanup_dropin="rm -rf \"$dropindir\""
-
-    cat <<EOF > "$dropin" || die "Can not write to '$dropin'"
-[Service]
-Environment=PGDATA=$pgdata
-EOF
-
-    reload_systemd="systemctl daemon-reload"
-    $reload_systemd || die $"Can not perform '$reload_systemd'"
-
-    info $"The '$option_service' configured in '$dropindir' directory"
 }
 
 
@@ -517,17 +507,6 @@ service_configuration()
     test -n "$envfile_pgport" && set_var "$portvar" "$envfile_pgport"
 }
 
-cleanup_dropin=
-exit_handler()
-{
-    test -n "$cleanup_dropin" && {
-        info "cleaning up created dropin directory"
-        eval "$cleanup_dropin"
-    }
-}
-
-trap exit_handler 0
-
 # <Compat>
 # Alow users to use the old style arguments like
 # 'postgresql-setup initdb $SERVICE_NAME'.
@@ -570,7 +549,6 @@ esac
 option_mode=none
 option_service="@NAME_SERVICE@"
 option_port=
-option_pgdata=
 option_debug=0
 option_upgradefrom_unit=
 
@@ -628,14 +606,10 @@ while true; do
             shift 2
             ;;
 
-        --new-systemd-unit)
-            option_systemd_config=yes
-            shift
-            ;;
-
-        --datadir)
-            option_pgdata=$2
-            shift 2
+        --datadir|--new-systemd-unit)
+            error   $"Removed option --new-systemd-unit/--datadir, please use"
+            error_q $"@sbindir@/@NAME_BINARYBASE@-new-systemd-unit script"
+            exit 1
             ;;
 
         --debug)
@@ -700,38 +674,14 @@ upgrade_log="$POSTGRES_HOMEDIR/upgrade_${option_service}.log"
 debug "mode used: $option_mode"
 debug "service name: $option_service"
 
-root_prereq
-
 # load service's pgdata
 service_configuration initdb pgdata UNUSED "$option_service"
-
-# Check that nothing breaks --new-systemd-unit
-if test "$option_systemd_config" = yes; then
-    if test "$option_service" = "@NAME_SERVICE@"; then
-        die $"Default unit '@NAME_SERVICE@.service' should not need --new-systemd-unit"
-    elif test "$pgdata" != default; then
-        die $"Option --new-systemd-unit failed, is '$option_service.service'"\
-            $"already configured to '$pgdata'?"
-    elif test -z "$option_pgdata"; then
-        die $"Option --new-systemd-unit requires --datadir"
-    fi
-
-    # pgdata == default && option_pgdata is set
-    pgdata="$option_pgdata"
-
-elif test -n "$option_pgdata"; then
-    warn   $"--datadir option is ignored, either use --new-systemd-unit"
-    warn_q $"option, or configure the systemd unit manually."
-fi
 
 test "$pgdata" = default \
     && die $"no db datadir (PGDATA) configured for '$option_service$srvsuff' unit"
 
 [[ "$pgdata" =~ ^/.* ]] \
     || die $"the PostgreSQL datadir not absolute path: '$pgdata', try --debug"
-
-test "$option_systemd_config" = yes \
-    && generate_systemd_dropin "$option_service"
 
 ## GATHER DATA FROM INITIALIZED DATADIR ##
 
@@ -803,10 +753,10 @@ debug "final pgport: $pgport"
 
 script_result=0
 
-$SU_POSTGRES -c 'test -w @POSTGRES_HOMEDIR@' || {
+test -w "@POSTGRES_HOMEDIR@" || {
     # pg_upgrade binary needs to have write-able $PWD (and we use 'su -')
     error   $"The @POSTGRES_HOMEDIR@ directory has wrong permissions."
-    error_q $"Please make sure the directory is writable by postgres."
+    error_q $"Please make sure the directory is writable by $USER."
     exit 1
 }
 

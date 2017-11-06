@@ -114,10 +114,12 @@ EXTRA_DIST += \
 
 include $(srcdir)/share/postgresql-setup/Makefile.inc
 include $(srcdir)/lib/rpm/Makefile.inc
+include $(srcdir)/sbin/Makefile.inc
 include $(srcdir)/doc/Makefile.inc
 
 GENERATED_FILES += \
 	$(bin_SCRIPTS) \
+	$(sbin_SCRIPTS) \
 	$(libexec_SCRIPTS) \
 	$(pgdoc_DATA) \
 	$(pkgsysconf_DATA) \

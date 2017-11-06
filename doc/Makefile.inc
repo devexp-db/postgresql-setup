@@ -23,11 +23,23 @@ HELP2MAN_RUN = \
 
 setup_man = %D%/$(NAME_BINARYBASE)-setup.1
 
+new_unit_man = %D%/$(NAME_BINARYBASE)-new-systemd-unit.1
+
 dist_man_MANS = $(setup_man)
+
+if ! WANT_SYSVINIT
+dist_man_MANS += $(new_unit_man)
+endif
 
 $(setup_man): $(NAME_BINARYBASE)-setup
 	$(AM_V_GEN)odir=`dirname "$@"` ; mkdir -p "$$odir" ; \
 	export input=$(builddir)/$(NAME_BINARYBASE)-setup ; \
 	    $(HELP2MAN_RUN)
 
-DISTCLEANFILES += $(setup_man)
+$(new_unit_man): sbin/$(NAME_BINARYBASE)-new-systemd-unit
+	$(AM_V_GEN)odir=`dirname "$@"`; mkdir -p "$$odir" ; \
+	export PGSETUP_TEST=: ; \
+	export input=$(builddir)/sbin/$(NAME_BINARYBASE)-new-systemd-unit ; \
+	    $(HELP2MAN_RUN)
+
+DISTCLEANFILES += $(setup_man) $(new_unit_man)

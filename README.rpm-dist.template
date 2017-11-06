@@ -396,14 +396,19 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
   <orderedlist>
     <listitem>
       <para>
-        Run the following command to create the necessary configuration and to
-        initialize the new database cluster
+        Run the following command to create the necessary systemd configuration:
+      </para>
+      <screen>
+        <prompt># </prompt><userinput>@NAME_BINARYBASE@-new-systemd-unit \</userinput>
+        <userinput>    --unit postgresql@secondary \</userinput>
+        <userinput>    --datadir /path/to/data/directory</userinput>
+      </screen>
+      <para>
+        And then run this command to initialize the new database cluster:
       </para>
       <screen>
         <prompt>$ </prompt><userinput>@NAME_BINARYBASE@-setup --initdb \</userinput>
         <userinput>    --unit postgresql@secondary \</userinput>
-        <userinput>    --new-systemd-unit \</userinput>
-        <userinput>    --datadir /path/to/data/directory \</userinput>
         <userinput>    --port NNNN</userinput>
       </screen>
       <para>

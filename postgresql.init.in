@@ -42,6 +42,9 @@ README_DIST=@README_DIST@
 # postgresql-setup library
 . "@rawpkgdatadir@/library.sh"
 
+: ${RESTORECON=/sbin/restorecon}
+test -x $RESTORECON || RESTORECON=:
+
 @SCL_SOURCE@
 
 # Find the name of the script
@@ -85,6 +88,26 @@ pidfile="/var/run/${NAME}.pid"
 
 script_result=0
 
+# admin_cmd CMD [ARGS [...]]
+# --------------------------
+admin_cmd ()
+{
+    local space="" arg="" cmd="" log="$ADMIN_PGLOG"
+    for arg; do
+        cmd+="$space$(printf %q "$arg")"
+        space=' '
+    done
+
+    local cmd="( umask 0077; @SCL_SOURCE@; $cmd )"
+
+    test -n "$log" || log=/dev/null
+    cmd+=" >>$(printf %q "$log")"
+    cmd+=" 2>>$(printf %q "$log")"
+
+    debug "running command under postgres user: $cmd"
+    @SU_POSTGRES@ -c "$cmd" < /dev/null
+}
+
 start()
 {
 	[ -x "$PGENGINE/postgres" ] || exit 5
@@ -94,13 +117,13 @@ start()
 	# Make sure startup-time log file is valid
 	if [ ! -e "$PGLOG" -a ! -h "$PGLOG" ]
 	then
-		touch "$PGLOG" || exit 4
-		chown postgres:postgres "$PGLOG"
-		chmod go-rwx "$PGLOG"
-		[ -x /sbin/restorecon ] && /sbin/restorecon "$PGLOG"
+        admin_cmd touch "$PGLOG" || exit 4
+        admin_cmd $RESTORECON "$PGLOG"
 	fi
 
-    @libexecdir@/postgresql-check-db-dir "$NAME" || {
+    admin_cmd \
+        "PGDATA=$PGDATA" \
+        @libexecdir@/postgresql-check-db-dir "$NAME" || {
         echo_failure
         echo
         exit 1
@@ -131,13 +154,12 @@ start()
         exit 0
     }
 
-    run_cmd_as_dbadmin "\
-            PGSCLS=$(printf %q "$PGSCLS") \
-            PGOPTS=$(printf %q "$PGOPTS") \
-            PGPORT=$(printf %q "$PGPORT") \
-            @libexecdir@/postgresql-ctl start -D $(printf %q "$PGDATA") -s \
-                ${PGSTARTWAIT:+-w -t ${PGSTARTTIMEOUT:-30}}" \
-            "$PGLOG" "$PGLOG"
+    ADMIN_PGLOG="$PGLOG" admin_cmd \
+            "PGSCLS=$PGSCLS" \
+            "PGOPTS=$PGOPTS" \
+            "PGPORT=$PGPORT" \
+            @libexecdir@/postgresql-ctl start -D "$PGDATA" \
+            -s ${PGSTARTWAIT:+-w -t ${PGSTARTTIMEOUT:-30}}
 
     if test $? -ne 0; then
         failure "$PSQL_START"
@@ -188,9 +210,7 @@ stop()
 	echo -n $"Stopping ${NAME} service: "
 	if [ -e "$lockfile" ]
 	then
-        run_cmd_as_dbadmin \
-                "$PGENGINE/pg_ctl stop -D '$PGDATA' -s -m fast" \
-                /dev/null /dev/null
+        admin_cmd "$PGENGINE/pg_ctl" stop -D "$PGDATA" -s -m fast
 	    ret=$?
 	    if [ $ret -eq 0 ]
 	    then
@@ -219,8 +239,7 @@ condrestart(){
 
 reload()
 {
-    run_cmd_as_dbadmin "$PGENGINE/pg_ctl reload -D '$PGDATA' -s" \
-            /dev/null /dev/null
+    admin_cmd "$PGENGINE/pg_ctl" reload -D "$PGDATA" -s
 }
 
 __single_comand()

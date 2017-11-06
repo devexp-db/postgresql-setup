@@ -1,0 +1,138 @@
+#! /bin/bash
+
+# Automatically create systemd unit for PostgreSQL service.
+
+set -e
+
+builddir_source ()
+{
+    # To simplify manpage generator.  Build-time-only.
+    file=$(echo "$1" | sed -e "s|@rawpkgdatadir@|share/postgresql-setup|")
+    . "@abs_top_builddir@/$file"
+}
+
+builddir_source "@rawpkgdatadir@/library.sh"
+
+USAGE_STRING=$"\
+Usage: $0 --unit SYSTEMD_UNIT --datadir DATADIR
+
+Automatically create systemd unit for PostgreSQL service.
+
+For more info and howto/when use this script please look at the documentation
+file @README_DIST@.
+
+Options:
+  --unit=UNIT_NAME           The name of new systemdunit, of form
+                             @NAME_SERVICE@@<string>, will generate service file
+                             @NAME_SERVICE@@<string>.service.
+  --datadir=DATADIR          Where the data will be stored.  The @PGADMINUSER@
+                             user needs to have permissions to create this
+                             directory.
+"
+
+root_prereq
+
+opt_unit=default
+opt_datadir=default
+
+test $# -ne 0 || {
+    echo >&2 "$USAGE_STRING"
+    exit 1
+}
+
+args=$(getopt -o "" -l "datadir:,unit:,help,version" -n "$0" -- "$@") || exit 1
+eval set -- "$args"
+
+while true; do
+    case "$1" in
+    --datadir|--unit)
+        opt=${1##--}
+        opt=${opt##-}
+        opt=${opt//-/_}
+        eval "opt_$opt=\$2"
+        shift 2
+        ;;
+
+    --help)
+        echo "$USAGE_STRING"
+        exit 0
+        ;;
+
+    --version)
+        echo "@NAME_BINARYBASE@-new-systemd-unit @VERSION@"
+        echo $"Built against PostgreSQL version @PGVERSION@."
+        exit 0
+        ;;
+
+    --) # end!
+        shift
+        break
+        ;;
+
+    *)
+        echo "programmer mistake ($1)" >&2
+        exit 1
+        ;;
+    esac
+done
+
+
+required_ok=:
+for opt in unit datadir; do
+    if eval "test \"\$opt_$opt\" == default"; then
+        required_ok=false
+        error "option --$opt required"
+    fi
+done
+$required_ok || die "missing argument"
+
+case $opt_unit in *.service) opt_unit=${opt_unit%%.service} ;; esac
+case $opt_unit in
+    @NAME_SERVICE@@*) ;;
+    *) die "the --unit needs to start with '@NAME_SERVICE@@', e.g. '@NAME_SERVICE@@second'" ;;
+esac
+
+exit_handler()
+{
+    test -z "$cleanup_dropin" || {
+        info "cleaning up created dropin directory"
+        eval "$cleanup_dropin"
+    }
+}
+cleanup_dropin=
+trap exit_handler 0
+
+dropindir="@systemduserunitsdir@/$opt_unit.service.d"
+dropin="$dropindir/30-@NAME_BINARYBASE@-setup.conf"
+
+test ! -e "$dropindir" \
+    || die "The systemd drop-in directory '$dropindir' already exists"
+
+mkdir -p "$dropindir" \
+    || die "Can not create '$dropindir'"
+
+cleanup_dropin="rm -rf \"$dropindir\""
+
+generate_dropin ()
+{
+cat <<EOF > "$1"
+[Service]
+Environment=PGDATA=$opt_datadir
+EOF
+}
+
+generate_dropin "$dropin" || die "Can not write to '$dropin'"
+
+reload_systemd="systemctl daemon-reload"
+$reload_systemd || die $"Can not perform '$reload_systemd'"
+
+parentdir=$(dirname "$opt_datadir")
+if ! @SU_POSTGRES@ -c "test -w $(printf %q "$parentdir")"; then
+    error   "The '$parentdir' directory doesn't exit or '@PGADMINUSER@' can not"
+    error_q "write there.  Please either fix the permissions or change the"
+    error_q "configuration in dropin directory before trying again."
+    exit 1
+fi
+
+info $"The '$opt_unit.service' configured in '$dropindir' directory."
+cleanup_dropin=

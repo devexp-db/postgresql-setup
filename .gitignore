@@ -20,6 +20,7 @@ macros.postgresql*
 package.m4
 postgresql*-check-db-dir
 postgresql*-ctl
+postgresql*-new-systemd-unit
 postgresql*.service
 /postgresql*-setup
 postgresql*-setup.1

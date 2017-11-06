@@ -69,7 +69,10 @@ test -z "$ac_cv_path_SED" &&
 AC_PATH_PROGS([SU], [runuser su])
 test -z "$ac_cv_path_SU" &&
     AC_MSG_ERROR([Neither 'runuser' nor 'su' program found])
-SU_POSTGRES="$SU -s /bin/sh -l postgres"
+
+PGSETUP_SUBST_OPT([PGADMINUSER], [postgres],
+                  [System-default PostgreSQL admin username])
+SU_POSTGRES="$SU -s /bin/sh -l $PGADMINUSER"
 _AX_TEXT_TPL_SUBST([SU_POSTGRES])
 
 AC_PATH_PROG([MOUNTPOINT], [mountpoint], [false])
@@ -154,12 +157,12 @@ PGSETUP_SUBST_OPT([SCLS], [],
 
 SCL_BINDIR=/usr/bin
 SCL_BINARY=scl
-SCL_SOURCE=
+SCL_SOURCE=:
 SCL_SHELL_WRAPPER=
 if test -n "$SCLS"
 then
     SCL_SHELL_WRAPPER="$SCL_BINDIR/$SCL_BINARY enable $SCLS -- "
-    SCL_SOURCE="source scl_source enable $SCLS ;"
+    SCL_SOURCE="source scl_source enable $SCLS"
 fi
 
 _AX_TEXT_TPL_SUBST([SCL_SHELL_WRAPPER])
