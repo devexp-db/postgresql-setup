@@ -6,6 +6,8 @@
 
 %postgresql_major @PGMAJORVERSION@
 
+%postgresql_module_requires Requires: postgresql-server(:MODULE_COMPAT_@PGMAJORVERSION@)
+
 %_pgtests_tests_lib "@PKG_TESTS_LIB@"
 
 # Initialize the PostgreSQL tests environment.  This is supposed to be invoked
