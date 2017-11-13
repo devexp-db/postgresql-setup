@@ -188,6 +188,15 @@ _AX_TEXT_TPL_SUBST([NAME_PACKAGE])
 _AX_TEXT_TPL_SUBST([NAME_SERVICE])
 _AX_TEXT_TPL_SUBST([NAME_SERVICE_VARNAME])
 
+AC_MSG_CHECKING([whether to install compat %pgtest_* macros])
+# This hack shouldn't be removed sooner than once the F27 postgresql is EOL,
+# since taht's probably the last Fedora release where %pgtest_* macros were
+# used by default.
+COMPAT_MACROS=no
+test "$NAME_SERVICE" = postgresql && COMPAT_MACROS=yes
+AC_MSG_RESULT($COMPAT_MACROS)
+AM_CONDITIONAL([COMPAT_MACROS], [test "$COMPAT_MACROS" = yes])
+
 AC_OUTPUT
 
 AC_MSG_NOTICE([Configured the folowing way:
