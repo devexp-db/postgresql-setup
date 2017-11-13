@@ -6,6 +6,10 @@ New in 7.0 version:
 
 * Simplified build against SCLs with --with-scl option.
 
+* New test macro %postgresql_tests_run.
+
+Incompatible changes in 7.0 version
+
 * The %pgtest_init && %pgtest_start renamed to %postgresql_tests_init and
   %postgresql_tests_start.
 

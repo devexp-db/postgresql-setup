@@ -8,13 +8,11 @@
 
 %@NAME_SERVICE_VARNAME@_module_requires Requires: @NAME_SERVICE_VARNAME@-server(:MODULE_COMPAT_@PGMAJORVERSION@)
 
-%_@NAME_SERVICE_VARNAME@_tests_lib "@PKG_TESTS_LIB@"
-
 # Initialize the PostgreSQL tests environment.  This is supposed to be invoked
 # in prep/build/install (where you plan to run the testsuite), while it defines
 # several useful shell variables and provies useful commands.  Effect of this
 # command end with shell exit.
-%@NAME_SERVICE_VARNAME@_tests_init %_@NAME_SERVICE_VARNAME@_tests_lib
+%@NAME_SERVICE_VARNAME@_tests_init . "@PKG_TESTS_LIB@"
 
 # Start the testing postgresql server, setting the actual unix user to be the
 # PostgreSQL admin.  The $PGHOST/$PGPORT are set appropriately, so psql is able
@@ -22,3 +20,6 @@
 # something goes wrong and package build fails, the temporary database is
 # automatically cleaned up.
 %@NAME_SERVICE_VARNAME@_tests_start pgtests_start
+
+# Initialize database and run server in one step, if this works well-enough.
+%@NAME_SERVICE_VARNAME@_tests_run %@NAME_SERVICE_VARNAME@_tests_init ; %@NAME_SERVICE_VARNAME@_tests_start
