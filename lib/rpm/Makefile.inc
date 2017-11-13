@@ -1,4 +1,4 @@
-rpm_macros	= %D%/macros.d/macros.$(NAME_SERVICE_VARNAME)
+rpm_macros	= %D%/macros.d/macros.$(NAME_SERVICE)
 rpm_macros_in	= %D%/macros.d/macros.in
 
 rpmmacros_DATA	= $(rpm_macros)
