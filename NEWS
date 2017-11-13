@@ -4,6 +4,8 @@ New in 6.1 version:
 
 * New convenience RPM macro %postgresql_module_requires.
 
+* Simplified build against SCLs with --with-scl option.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Bugfixes in 6.0 version

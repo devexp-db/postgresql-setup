@@ -133,6 +133,29 @@ PGSETUP_SUBST_REQ([PKGCONFIG_DIR],     [where configuration should be stored])
 PGSETUP_SUBST_REQ([POSTGRES_HOMEDIR],  [full path to postgres home dir])
 PGSETUP_SUBST_REQ([PGDATADIR],         [full path to postgres data dir])
 
+SCL_BINDIR=/usr/bin
+SCL_BINARY=scl
+SCL_SOURCE=:
+SCL_SHELL_WRAPPER=
+
+scl_enabled_build=false
+AC_ARG_WITH([scl], [Build against Software Collections RPM], [scl_enabled_build=:])
+if $scl_enabled_build; then
+    AC_MSG_CHECKING([which SCL to build against])
+    SCL=`rpm --eval %scl`
+    if test x"$SCL" = x; then
+        AC_MSG_ERROR([Macro %scl undefined, please install COLLECTION-build subpackage])
+    else
+        SCL_SHELL_WRAPPER="$SCL_BINDIR/$SCL_BINARY enable $SCL -- "
+        SCL_SOURCE="source scl_source enable $SCL"
+        AC_MSG_RESULT([$SCL])
+
+        # The variables below override the detected default here.
+        test x = x"$NAME_SRV_PFX" && NAME_SRV_PFX=$SCL-
+        test x = x"$NAME_PKG_PFX" && NAME_PKG_PFX=$SCL-
+    fi
+fi
+
 PGSETUP_SUBST_OPT([NAME_SRV_PFX], [],
                   [service name prefix, like (PFX)postgresql.service])
 PGSETUP_SUBST_OPT([NAME_SRV_SFX], [],
@@ -151,19 +174,6 @@ PGSETUP_SUBST_OPT([NAME_DEFAULT_PREV_SERVICE], [postgresql],
 PGSETUP_SUBST_OPT([rpmmacrosdir], [],
                   [where to install rpm macros files])
 
-PGSETUP_SUBST_OPT([SCLS], [],
-                  [mention software collections which should be enabled
-                   for all binaries from ${bindir}])
-
-SCL_BINDIR=/usr/bin
-SCL_BINARY=scl
-SCL_SOURCE=:
-SCL_SHELL_WRAPPER=
-if test -n "$SCLS"
-then
-    SCL_SHELL_WRAPPER="$SCL_BINDIR/$SCL_BINARY enable $SCLS -- "
-    SCL_SOURCE="source scl_source enable $SCLS"
-fi
 
 _AX_TEXT_TPL_SUBST([SCL_SHELL_WRAPPER])
 _AX_TEXT_TPL_SUBST([SCL_SOURCE])
