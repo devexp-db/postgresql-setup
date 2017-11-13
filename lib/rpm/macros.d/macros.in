@@ -4,21 +4,21 @@
 # package is installed (e.g. similarly to %%scl macro defined installed by
 # *-build subpackage).
 
-%postgresql_major @PGMAJORVERSION@
+%@NAME_SERVICE_VARNAME@_major @PGMAJORVERSION@
 
-%postgresql_module_requires Requires: postgresql-server(:MODULE_COMPAT_@PGMAJORVERSION@)
+%@NAME_SERVICE_VARNAME@_module_requires Requires: @NAME_SERVICE_VARNAME@-server(:MODULE_COMPAT_@PGMAJORVERSION@)
 
-%_pgtests_tests_lib "@PKG_TESTS_LIB@"
+%_@NAME_SERVICE_VARNAME@_tests_lib "@PKG_TESTS_LIB@"
 
 # Initialize the PostgreSQL tests environment.  This is supposed to be invoked
 # in prep/build/install (where you plan to run the testsuite), while it defines
 # several useful shell variables and provies useful commands.  Effect of this
 # command end with shell exit.
-%pgtests_init . %_pgtests_tests_lib
+%@NAME_SERVICE_VARNAME@_tests_init %_@NAME_SERVICE_VARNAME@_tests_lib
 
 # Start the testing postgresql server, setting the actual unix user to be the
 # PostgreSQL admin.  The $PGHOST/$PGPORT are set appropriately, so psql is able
 # to run without passwords.  This also sets shell exit trap callback so that if
 # something goes wrong and package build fails, the temporary database is
 # automatically cleaned up.
-%pgtests_start pgtests_start
+%@NAME_SERVICE_VARNAME@_tests_start pgtests_start

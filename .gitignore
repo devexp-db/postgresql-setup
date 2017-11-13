@@ -16,7 +16,7 @@ install-sh
 Makefile
 Makefile.in
 missing
-macros.postgresql*
+macros.*postgresql*
 package.m4
 postgresql*-check-db-dir
 postgresql*-ctl
