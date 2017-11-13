@@ -1,10 +1,13 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-New in 6.1 version:
+New in 7.0 version:
 
 * New convenience RPM macro %postgresql_module_requires.
 
 * Simplified build against SCLs with --with-scl option.
+
+* The %pgtest_init && %pgtest_start renamed to %postgresql_tests_init and
+  %postgresql_tests_start.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

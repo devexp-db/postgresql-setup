@@ -1,5 +1,5 @@
 # Use the MAJ.MIN[~SUFF].  Note that X.X > X.X~SUFF!
-AC_INIT([postgresql-setup], [6.1~dev], [praiskup@redhat.com])
+AC_INIT([postgresql-setup], [7.0~dev], [praiskup@redhat.com])
 AC_CONFIG_AUX_DIR(auxdir)
 config_aux_dir=auxdir
 AC_SUBST([config_aux_dir])
@@ -98,7 +98,7 @@ if test -z "$PGVERSION" -a -z "$PGMAJORVERSION"; then
     PGVERSION=${raw_version##* }
     AC_MSG_RESULT($PGVERSION)
 
-    PGMAJORVERSION=`echo $PGVERSION | sed 's/\.[[0-9]]\+$//'`
+    PGMAJORVERSION=`echo $PGVERSION | $SED 's/\.[[0-9]]\+$//'`
 fi
 
 AX_COMPARE_VERSION([9.4], [le], [$PGVERSION],
@@ -181,10 +181,12 @@ _AX_TEXT_TPL_SUBST([SCL_SOURCE])
 NAME_BINARYBASE="$NAME_BIN_PFX""postgresql$NAME_BIN_SFX"
 NAME_PACKAGE="$NAME_PKG_PFX""postgresql$NAME_PKG_SFX"
 NAME_SERVICE="$NAME_SRV_PFX""postgresql$NAME_SRV_SFX"
+NAME_SERVICE_VARNAME=`echo "$NAME_SERVICE" | $SED 's/-/_/g'`
 
 _AX_TEXT_TPL_SUBST([NAME_BINARYBASE])
 _AX_TEXT_TPL_SUBST([NAME_PACKAGE])
 _AX_TEXT_TPL_SUBST([NAME_SERVICE])
+_AX_TEXT_TPL_SUBST([NAME_SERVICE_VARNAME])
 
 AC_OUTPUT
 
