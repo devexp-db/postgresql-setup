@@ -18,6 +18,7 @@ Makefile.in
 missing
 macros.*postgresql*
 package.m4
+postgresql_pkg_tests.sh
 postgresql*-check-db-dir
 postgresql*-ctl
 postgresql*-new-systemd-unit
