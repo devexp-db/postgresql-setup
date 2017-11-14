@@ -2,6 +2,8 @@
 
 New in 7.0 version:
 
+* RPM macros file works with SCLs, too.
+
 * New convenience RPM macro %postgresql_module_requires.
 
 * Simplified build against SCLs with --with-scl option.
