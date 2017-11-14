@@ -25,6 +25,8 @@
 export PGPORT=$PGTESTS_PORT
 export PGHOST=$PGTESTS_SOCKETDIR
 
+@SCL_SOURCE@
+
 warning ()
 {
     echo >&2 " ! $*"

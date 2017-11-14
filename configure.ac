@@ -143,7 +143,7 @@ AC_ARG_WITH([scl], [Build against Software Collections RPM], [scl_enabled_build=
 if $scl_enabled_build; then
     AC_MSG_CHECKING([which SCL to build against])
     SCL=`rpm --eval %scl`
-    if test x"$SCL" = x; then
+    if test x"$SCL" = x%scl; then
         AC_MSG_ERROR([Macro %scl undefined, please install COLLECTION-build subpackage])
     else
         SCL_SHELL_WRAPPER="$SCL_BINDIR/$SCL_BINARY enable $SCL -- "
