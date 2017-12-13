@@ -43,7 +43,7 @@ DISTCHECK_CONFIGURE_FLAGS = \
 SUBDIRS = . tests
 
 bin_SCRIPTS = $(setup)
-libexec_SCRIPTS = $(ctl) $(checkdb)
+libexec_SCRIPTS = $(checkdb)
 
 legacyscriptsdir = $(systemdlegacyscriptsdir)/$(NAME_SERVICE)
 
@@ -52,7 +52,8 @@ noinst_DATA =
 # TODO: Ideally, 'make distcheck' should check every file we generate.
 if WANT_SYSVINIT
 noinst_DATA += $(initscript)
-GENERATED_FILES += $(initscript)
+libexec_SCRIPTS += $(ctl)
+GENERATED_FILES += $(initscript) $(ctl)
 else
 systemdunits_DATA = $(service) $(serviceat)
 legacyscripts_SCRIPTS = initdb upgrade

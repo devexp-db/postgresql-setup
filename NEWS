@@ -1,5 +1,13 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 8.0 version:
+
+* PostgreSQL on systems with systemd are now configured with
+  --with-systemd, which simplifies the start/stop handling (we can
+  stop shipping postgresql-ctl wrapper, e.g.).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 7.0 version:
 
 * RPM macros file works with SCLs, too.
