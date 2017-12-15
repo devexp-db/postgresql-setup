@@ -37,10 +37,8 @@ ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
 KillSignal=SIGINT
 
-# Give a reasonable amount of time for the server to start up/shut down.
-# Ideally, the timeout for starting PostgreSQL server should be handled more
-# nicely by pg_ctl in ExecStart, so keep its timeout smaller than this value.
-TimeoutSec=300
+# No artificial start/stop timeout (rhbz#1525477, pgrpms#2786).
+TimeoutSec=0
 
 [Install]
 WantedBy=multi-user.target
