@@ -6,6 +6,9 @@ New in 8.0 version:
   --with-systemd, which simplifies the start/stop handling (we can
   stop shipping postgresql-ctl wrapper, e.g.).
 
+* systemd service doesn't have the artificial timeout for PostgreSQL
+  server start/stop (was 10 minutes before).
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 7.0 version:
