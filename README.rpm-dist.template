@@ -90,8 +90,8 @@ m4_divert[]m4_dnl
   <para>
     The file @POSTGRES_HOMEDIR@/.bash_profile is packaged to help with the
     setting of environment variables.  You may edit this file, and it won't be
-    overwritten during an upgrade.  However, enhancements and bugfixes may be
-    added to this file, so be sure to check .bash_profile.rpmnew after
+    overwritten during a package upgrade.  However, enhancements and bugfixes
+    may be added to this file, so be sure to check .bash_profile.rpmnew after
     upgrading.
   </para>
 
@@ -102,7 +102,6 @@ m4_divert[]m4_dnl
     has no default password, so the only way to become this user is to su to it
     from root.  If you want to be able to su to it from a non-root account or
     log in directly as 'postgres' you will need to set a password using passwd.
-    Test section 2.
   </para>
 
 </sect1>
@@ -111,10 +110,11 @@ m4_divert[]m4_dnl
   <title>UPGRADING AN INSTALLATION</title>
 
   <para>
-    For a minor-version upgrade (such as 9.3.1 to 9.3.4; last number changes),
-    just install the new RPMs; there's usually nothing more to it than that.
+    For a minor-version upgrade (such as 9.3.1 to 9.3.4 for versions
+    &lt; 10, or 10.1 to 10.5 for versions &gt;= 10; last number changes), just
+    install the new RPMs; there's usually nothing more to it than that.
     Upgrading across a major release of PostgreSQL (for example, from 9.2.x to
-    9.3.x) requires more effort.
+    9.3.x or from 10 to 11) requires more effort.
   </para>
 
   <para>
@@ -148,8 +148,8 @@ m4_divert[]m4_dnl
       </listitem>
       <listitem>
         <para>
-          install the new version's RPMs (install all the ones you had before,
-          plus @NAME_PACKAGE@-upgrade)
+          install the new version's RPMs (install all the ones you had
+          before[]m4_ifelse([@SCL_SOURCE@],[:],[, plus @NAME_PACKAGE@-upgrade]))
         </para>
       </listitem>
       <listitem>
@@ -172,8 +172,9 @@ m4_divert[]m4_dnl
       </listitem>
       <listitem>
         <para>
-          the @NAME_PACKAGE@-upgrade package can be removed after the update is
-          complete, as can old data directory
+          the old data directory can be removed after the update is
+          complete[]m4_ifelse([@SCL_SOURCE@], [:],
+          [, as can @NAME_PACKAGE@-upgrade package])
         </para>
       </listitem>
     </orderedlist>
@@ -219,10 +220,12 @@ m4_ifelse([@LIBS_ENABLED@],[yes], [
           <entry>@NAME_PACKAGE@-test:</entry>
           <entry>The regression tests and associated files</entry>
         </row>
+m4_ifelse([@SCL_SOURCE@], [:], [], [
         <row>
           <entry>@NAME_PACKAGE@-upgrade:</entry>
           <entry>Support files for upgrading from previous major version</entry>
         </row>
+])
         <row>
           <entry>@NAME_PACKAGE@-docs:</entry>
           <entry>Full documentation in HTML and PDF, the tutorial files</entry>
