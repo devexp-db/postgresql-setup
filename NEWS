@@ -1,5 +1,13 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 8.1 version:
+
+* Split testing RPM macros into two files;  one is related to build-time
+  _testing_ against postgresql server, second is related to building against
+  postgresql server (building server modules).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 8.0 version:
 
 * PostgreSQL on systems with systemd are now configured with
