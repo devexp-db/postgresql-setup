@@ -30,6 +30,7 @@ findutils
 docbook-utils
 postgresql-devel
 postgresql-server
+make
 '
 
 as_root=true \
