@@ -139,7 +139,10 @@ SCL_SOURCE=:
 SCL_SHELL_WRAPPER=
 
 scl_enabled_build=false
-AC_ARG_WITH([scl], [Build against Software Collections RPM], [scl_enabled_build=:])
+AC_ARG_WITH([scl],
+            [AS_HELP_STRING([--with-scl],
+                            [Build against Software Collections RPM])],
+            [scl_enabled_build=:])
 if $scl_enabled_build; then
     AC_MSG_CHECKING([which SCL to build against])
     SCL=`rpm --eval %scl`
@@ -155,6 +158,12 @@ if $scl_enabled_build; then
         test x = x"$NAME_PKG_PFX" && NAME_PKG_PFX=$SCL-
     fi
 fi
+
+AC_ARG_WITH([libs-pkg],
+            [AS_HELP_STRING([--without-libs-pkg],
+                            [PostgreSQL installation will not have postgresql-libs])],
+            [], [withval=yes])
+_AX_TEXT_TPL_SUBST([LIBS_ENABLED], [$withval])
 
 PGSETUP_SUBST_OPT([NAME_SRV_PFX], [],
                   [service name prefix, like (PFX)postgresql.service])
