@@ -205,10 +205,12 @@ m4_divert[]m4_dnl
           <entry>@NAME_PACKAGE@:</entry>
           <entry>Key client programs and basic documentation</entry>
         </row>
+m4_ifelse([@LIBS_ENABLED@],[yes], [
         <row>
           <entry>@NAME_PACKAGE@-libs:</entry>
           <entry>Client shared libraries</entry>
         </row>
+])
         <row>
           <entry>@NAME_PACKAGE@-server:</entry>
           <entry>Server executables and data files</entry>
@@ -249,9 +251,11 @@ m4_divert[]m4_dnl
     </tgroup>
   </table>
   <para>
-    You have to install @NAME_PACKAGE@ and @NAME_PACKAGE@-libs to do anything.
-    @NAME_PACKAGE@-server is needed unless you only plan to use the clients to
-    work with a remote PostgreSQL server. The others are optional.
+    You have to install @NAME_PACKAGE@
+    m4_ifelse([@LIBS_ENABLED@], [yes], [and @NAME_PACKAGE@-libs])
+    to do anything.
+    Package @NAME_PACKAGE@-server is needed unless you only plan to use the
+    clients to work with a remote PostgreSQL server. The others are optional.
   </para>
   <para>
     Note that there are no @NAME_PACKAGE@-perl, @NAME_PACKAGE@-jdbc,
