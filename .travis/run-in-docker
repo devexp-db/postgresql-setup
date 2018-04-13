@@ -1,7 +1,7 @@
 #! /bin/bash -x
 
 container_id=$(
-    docker run -d -ti -v `pwd`:/workdir:Z -u $(id -u) registry.fedoraproject.org/fedora:rawhide bash
+    docker run -d -ti -v `pwd`:/workdir:Z -u $(id -u) registry.fedoraproject.org/fedora bash
 )
 
 cleanup ()
