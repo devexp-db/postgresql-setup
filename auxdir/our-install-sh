@@ -39,10 +39,9 @@ do
     last=$arg
 done
 
-prev=$1
-shift
-
+prev=
 for arg in "$@"
 do
-    edit_installed "$last/$(basename "$prev")"
+    test -n "$prev" && edit_installed "$last/$(basename "$prev")"
+    prev=$arg
 done
