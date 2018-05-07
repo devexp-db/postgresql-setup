@@ -1,6 +1,3 @@
-setup		= $(NAME_BINARYBASE)-setup
-setup_in	= postgresql-setup.in
-
 ctl		= $(NAME_BINARYBASE)-ctl
 ctl_in		= postgresql-ctl.in
 
@@ -42,7 +39,6 @@ DISTCHECK_CONFIGURE_FLAGS = \
 
 SUBDIRS = . tests
 
-bin_SCRIPTS = $(setup)
 libexec_SCRIPTS = $(checkdb)
 
 legacyscriptsdir = $(systemdlegacyscriptsdir)/$(NAME_SERVICE)
@@ -64,9 +60,6 @@ pgdoc_DATA = $(readme_dist)
 noinst_DATA += $(TEST_GEN_FILES_LIST)
 
 $(ctl): $(ctl_in) $(text_tpl_deps)
-	$(text_tpl_gen_script)
-
-$(setup): $(setup_in) $(text_tpl_deps)
 	$(text_tpl_gen_script)
 
 $(checkdb): $(check) $(checkdb_in) $(text_tpl_deps)
@@ -114,6 +107,7 @@ EXTRA_DIST += \
 	style.dsl
 
 include $(srcdir)/share/postgresql-setup/Makefile.inc
+include $(srcdir)/bin/Makefile.inc
 include $(srcdir)/lib/rpm/Makefile.inc
 include $(srcdir)/sbin/Makefile.inc
 include $(srcdir)/doc/Makefile.inc
