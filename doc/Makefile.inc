@@ -23,9 +23,11 @@ HELP2MAN_RUN = \
 
 setup_man = %D%/$(NAME_BINARYBASE)-setup.1
 
+upgrade_man = %D%/$(NAME_BINARYBASE)-upgrade.1
+
 new_unit_man = %D%/$(NAME_BINARYBASE)-new-systemd-unit.1
 
-dist_man_MANS = $(setup_man)
+dist_man_MANS = $(setup_man) $(upgrade_man)
 
 if ! WANT_SYSVINIT
 dist_man_MANS += $(new_unit_man)
@@ -36,10 +38,15 @@ $(setup_man): $(builddir)/bin/$(NAME_BINARYBASE)-setup $(lib)
 	export input=$(builddir)/bin/$(NAME_BINARYBASE)-setup ; \
 	    $(HELP2MAN_RUN)
 
+$(upgrade_man): $(builddir)/bin/$(NAME_BINARYBASE)-upgrade $(lib)
+	$(AM_V_GEN)odir=`dirname "$@"` ; mkdir -p "$$odir" ; \
+	export input=$(builddir)/bin/$(NAME_BINARYBASE)-upgrade ; \
+	    $(HELP2MAN_RUN)
+
 $(new_unit_man): sbin/$(NAME_BINARYBASE)-new-systemd-unit $(lib)
 	$(AM_V_GEN)odir=`dirname "$@"`; mkdir -p "$$odir" ; \
 	export PGSETUP_TEST=: ; \
 	export input=$(builddir)/sbin/$(NAME_BINARYBASE)-new-systemd-unit ; \
 	    $(HELP2MAN_RUN)
 
-DISTCLEANFILES += $(setup_man) $(new_unit_man)
+DISTCLEANFILES += $(dist_man_MANS) $(new_unit_man)

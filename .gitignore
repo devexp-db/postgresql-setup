@@ -23,7 +23,8 @@ postgresql*-check-db-dir
 postgresql*-ctl
 postgresql*-new-systemd-unit
 postgresql*.service
-/postgresql*-setup
+postgresql*-setup
+postgresql*-upgrade
 postgresql*-setup.1
 README.rpm-dist*
 testsuite
