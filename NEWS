@@ -2,7 +2,12 @@
 
 New in 8.5 version:
 
-*
+* Added 'postgresql-upgrade <DATADIR>' command.  This is similar to
+  'postgresql-setup --upgrade', but is useful to upgrade DATADIR for
+  PostgreSQL servers which were run a non-standard way (under non-standard
+  user, or without systemd service).  Typical use-case can be to migrate
+  database for KDE's Akonadi server;  it is running it's own PostgreSQL server
+  with datadir in user's ~/.local/ directory (under user's UID process).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
