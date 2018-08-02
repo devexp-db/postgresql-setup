@@ -7,6 +7,9 @@ New in 8.2 version:
   same package can happen concurrently on one host and using the same
   port would make random build failures.
 
+* If the testing server fails, the %postgresql_tests_* macros print the
+  error log out for easier debugging.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 8.1 version:
