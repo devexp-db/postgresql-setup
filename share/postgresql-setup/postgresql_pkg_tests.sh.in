@@ -4,11 +4,23 @@
 
 # This file is to be sourced.
 
+try_random_port ()
+{
+    _port=$RANDOM
+    if test -n "$_port" && eval '_port=$(( $_port + 32000 ))' 2>/dev/null; then
+        echo "$_port"
+    elif test -x /usr/bin/shuf; then
+        /usr/bin/shuf -r -n 1 -i 32000-64767
+    else
+        echo 54321
+    fi
+}
+
 : ${PGTESTS_DATADIR=`pwd`/datadir}
 : ${PGTESTS_ADMIN=`id -u -n`}
 : ${PGTESTS_ADMINDB=$PGTESTS_ADMIN}
 : ${PGTESTS_ADMINPASS=$PGTESTS_ADMIN}
-: ${PGTESTS_PORT=54321}
+: ${PGTESTS_PORT=`try_random_port`}
 : ${PGTESTS_SOCKETDIR=/tmp}
 : ${PGTESTS_USERS=test:test}
 : ${PGTESTS_DATABASES=test:test}

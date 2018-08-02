@@ -1,5 +1,14 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 8.2 version:
+
+* %postgresql_tests_* macros now use random port for the test PostgreSQL
+  server.  This helps in Koji build system where multiple builds of the
+  same package can happen concurrently on one host and using the same
+  port would make random build failures.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 8.1 version:
 
 * Split testing RPM macros into two files;  one is related to build-time
