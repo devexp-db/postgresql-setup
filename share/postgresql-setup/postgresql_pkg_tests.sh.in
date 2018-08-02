@@ -66,7 +66,11 @@ __pgtests_initdb ()
 
 __pgtests_start ()
 {
-    pg_ctl -D "$PGTESTS_DATADIR" -l "$PGTESTS_DATADIR"/start.log start -o "-k $PGTESTS_SOCKETDIR -p $PGTESTS_PORT" -w
+    pg_ctl -D "$PGTESTS_DATADIR" -l "$PGTESTS_DATADIR"/start.log start \
+           -o "-k $PGTESTS_SOCKETDIR -p $PGTESTS_PORT" -w || {
+        cat >&2 "$PGTESTS_DATADIR"/start.log
+        false
+    }
 }
 
 
