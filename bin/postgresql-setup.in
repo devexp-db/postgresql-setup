@@ -164,8 +164,8 @@ perform_initdb()
     "${initdbcmd[@]}" >> "$initdb_log" 2>&1 < /dev/null
 
     # Create directory for postmaster log files
-    mkdir "$pgdata/pg_log"
-    $RESTORECON "$pgdata/pg_log"
+    mkdir "$pgdata/@PGLOGDIR_BASENAME@"
+    $RESTORECON "$pgdata/@PGLOGDIR_BASENAME@"
 
     # This if-fork is just to not unnecessarily overwrite what upstream
     # generates by initdb (upstream implicitly uses PGPORT_DEF).
