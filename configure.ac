@@ -1,5 +1,5 @@
 # Use the MAJ.MIN[~SUFF].  Note that X.X > X.X~SUFF!
-AC_INIT([postgresql-setup], [8.2], [praiskup@redhat.com])
+AC_INIT([postgresql-setup], [8.3], [praiskup@redhat.com])
 AC_CONFIG_AUX_DIR(auxdir)
 config_aux_dir=auxdir
 AC_SUBST([config_aux_dir])
@@ -105,6 +105,11 @@ AX_COMPARE_VERSION([9.4], [le], [$PGVERSION],
   [PG_UPGRADE_BIN_USER_OPT="--username"],
   [PG_UPGRADE_BIN_USER_OPT="--user"])
 _AX_TEXT_TPL_SUBST([PG_UPGRADE_BIN_USER_OPT])
+
+PGLOGDIR_BASENAME=log
+AX_COMPARE_VERSION([10], [gt], [$PGVERSION],
+  [PGLOGDIR_BASENAME=pg_log])
+_AX_TEXT_TPL_SUBST([PGLOGDIR_BASENAME])
 
 AC_PATH_PROG([PG_UPGRADE_BIN], [pg_upgrade])
 

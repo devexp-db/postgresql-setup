@@ -1,5 +1,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+New in 8.3 version:
+
+* postgresql-setup creates correct 'log_directory' based on PG version
+  (the default changed from $datadir/pg_log to $datadir/log in v10).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 New in 8.2 version:
 
 * %postgresql_tests_* macros now use random port for the test PostgreSQL
