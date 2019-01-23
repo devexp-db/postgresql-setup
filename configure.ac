@@ -170,6 +170,8 @@ AC_ARG_WITH([libs-pkg],
             [], [withval=yes])
 _AX_TEXT_TPL_SUBST([LIBS_ENABLED], [$withval])
 
+PGSETUP_SUBST_OPT([MODULE_COMPAT_SUFFIX], [],
+                  [add suffix to module provides in %postgresql_module_requires])
 PGSETUP_SUBST_OPT([NAME_SRV_PFX], [],
                   [service name prefix, like (PFX)postgresql.service])
 PGSETUP_SUBST_OPT([NAME_SRV_SFX], [],

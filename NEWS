@@ -5,6 +5,11 @@ New in 8.3 version:
 * postgresql-setup creates correct 'log_directory' based on PG version
   (the default changed from $datadir/pg_log to $datadir/log in v10).
 
+* Modular PostgreSQL builds can provide/depend on
+  postgresql-server(:MODULE_COMPAT_11<some_suffix>) instead of
+  postgresql-server(:MODULE_COMPAT_11) to avoid clash with non-modular
+  builds.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 8.2 version:
