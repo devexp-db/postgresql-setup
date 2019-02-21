@@ -148,6 +148,9 @@ AC_ARG_WITH([scl],
             [AS_HELP_STRING([--with-scl],
                             [Build against Software Collections RPM])],
             [scl_enabled_build=:])
+
+SYSTEMD_EXECSTART='${bindir}/postmaster -D $${PGDATA}'
+
 if $scl_enabled_build; then
     AC_MSG_CHECKING([which SCL to build against])
     SCL=`rpm --eval %scl`
@@ -157,6 +160,8 @@ if $scl_enabled_build; then
         SCL_SHELL_WRAPPER="$SCL_BINDIR/$SCL_BINARY enable $SCL -- "
         SCL_SOURCE="source scl_source enable $SCL"
         AC_MSG_RESULT([$SCL])
+
+        SYSTEMD_EXECSTART="/bin/sh -c '\''source scl_source enable ${SCL} ; exec postmaster -D \$\${PGDATA}'\''"
 
         # The variables below override the detected default here.
         test x = x"$NAME_SRV_PFX" && NAME_SRV_PFX=$SCL-
@@ -193,6 +198,7 @@ PGSETUP_SUBST_OPT([rpmmacrosdir], [],
 
 _AX_TEXT_TPL_SUBST([SCL_SHELL_WRAPPER])
 _AX_TEXT_TPL_SUBST([SCL_SOURCE])
+_AX_TEXT_TPL_SUBST([SYSTEMD_EXECSTART])
 
 NAME_BINARYBASE="$NAME_BIN_PFX""postgresql$NAME_BIN_SFX"
 NAME_PACKAGE="$NAME_PKG_PFX""postgresql$NAME_PKG_SFX"

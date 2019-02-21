@@ -32,7 +32,7 @@ ExecStartPre=@libexecdir@/postgresql-check-db-dir %N
 # Even though the $PGDATA variable is exported (postmaster would accept that)
 # use the -D option here so PGDATA content is printed by /bin/ps and by
 # 'systemctl status'.
-ExecStart=@bindir@/postmaster -D ${PGDATA}
+ExecStart=@SYSTEMD_EXECSTART@
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
 KillSignal=SIGINT

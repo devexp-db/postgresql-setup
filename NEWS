@@ -10,6 +10,10 @@ New in 8.3 version:
   postgresql-server(:MODULE_COMPAT_11) to avoid clash with non-modular
   builds.
 
+* Fixed ExecStart= statement in systemd's service files for Software
+  Collections where we need to first do `source scl_source COLLECTION ;`
+  before we execute postmaster.
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New in 8.2 version:
