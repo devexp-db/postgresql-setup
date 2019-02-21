@@ -121,6 +121,14 @@ Environment:
   PGSETUP_DEBUG              Set to '1' if you want to see very verbose shell
                              debugging output."
 
+# Warning about possible glibc collation changes BZ#1668301
+GLIBC_COLLATION_WARN_STRING="\
+WARNING: If you've just upgraded your database from a previous major
+version of Fedora or RHEL, please run reindexdb against your databases.
+Core library collation data may have changed and this will invalidate
+database indexes.  For example, in Fedora 28 and RHEL 8 there have been
+extensive changes in glibc collations to support ISO 14651:2016 (Unicode
+9.0.0 data) and your indexes may be affected: https://sourceware.org/ml/libc-announce/2018/msg00002.html"
 
 print_version()
 {
@@ -343,6 +351,8 @@ upgrade()
         warn $"The configuration files were replaced by default configuration."
         warn $"The previous configuration and data are stored in folder"
         warn $pgdataold.
+        # Warn about possible glibc collation changes on success BZ#1668301
+        warn "$GLIBC_COLLATION_WARN_STRING"
     else
         # Clean up after failure.
         $failure_cleanup && rm -rf "$pgdata"
