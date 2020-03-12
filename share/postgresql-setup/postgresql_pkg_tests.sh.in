@@ -152,7 +152,7 @@ pgtests_start ()
             fi
         done
 
-        createdb "$_db" --owner "$_part"
+        createdb "$_db" --owner "$_user"
 
         IFS=$save_IFS
     done
