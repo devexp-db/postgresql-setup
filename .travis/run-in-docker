@@ -1,8 +1,9 @@
 #! /bin/bash -x
 
+#The -t flag is removed because it is not supported on ppc64le archictecture on travis and throws a error "The input device is not a TTY"
 container_id=$(
-    docker run -d -ti -v `pwd`:/workdir:Z -u $(id -u) registry.fedoraproject.org/fedora bash
-)
+    docker run -d -i -v `pwd`:/workdir:Z -u $(id -u) registry.fedoraproject.org/fedora bash
+    )
 
 cleanup ()
 {
@@ -17,8 +18,8 @@ run_in_container ()
     if ${as_root-false}; then
         uid=0
     fi
-
-    docker exec -u $uid -ti "$container_id" "$@"
+#The -t flag is removed because it is not supported on ppc64le archictecture on travis and throws a error "The input device is not a TTY" 
+    docker exec -u $uid -i "$container_id" "$@"
 }
 
 buildrequires='
