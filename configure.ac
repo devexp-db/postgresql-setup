@@ -113,17 +113,29 @@ _AX_TEXT_TPL_SUBST([PGLOGDIR_BASENAME])
 
 AC_PATH_PROG([PG_UPGRADE_BIN], [pg_upgrade])
 
-if test -z "$PKGCONFIG_DIR" -a "$pgsetup_cv_os_family" = redhat; then
-    PKGCONFIG_DIR=/etc/postgresql
+if test -z "$PKGCONFIG_DIR"; then
+   case $pgsetup_cv_os_family in
+   redhat|fedora|amazon)
+     PKGCONFIG_DIR=/etc/postgresql
+     ;;
+   esac
 fi
 
-if test -z "$POSTGRES_HOMEDIR" -a "$pgsetup_cv_os_family" = redhat; then
-    POSTGRES_HOMEDIR=/var/lib/pgsql
+if test -z "$POSTGRES_HOMEDIR"; then
+   case $pgsetup_cv_os_family in
+   redhat|fedora|amazon)
+     POSTGRES_HOMEDIR=/var/lib/pgsql
+     ;;
+   esac
 fi
 
-if test -z "$PGDATADIR" -a "$pgsetup_cv_os_family" = redhat; then
-    # This is based on Red Hat's packaging.
-    PGDATADIR='${localstatedir}/lib/pgsql/data'
+if test -z "$PGDATADIR"; then
+   case $pgsetup_cv_os_family in
+   redhat|fedora|amazon)
+     # This is based on Red Hat's packaging.
+     PGDATADIR='${localstatedir}/lib/pgsql/data'
+     ;;
+   esac
 fi
 
 README_DIST_BASENAME=README.rpm-dist
