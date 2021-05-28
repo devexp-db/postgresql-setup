@@ -1,6 +1,6 @@
 AC_DEFUN([PGSETUP_PACKAGING_INIT], [
   AC_CACHE_CHECK(
-    [for oprating system (distribution)],
+    [for operating system (distribution)],
     [pgsetup_cv_os_family], [
       pgsetup_cv_os_family=
       if test -r /etc/redhat-release; then
