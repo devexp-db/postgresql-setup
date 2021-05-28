@@ -1,16 +1,20 @@
 AC_DEFUN([PGSETUP_PACKAGING_INIT], [
   AC_CACHE_CHECK(
-    [for operating system (distribution)],
+    [for operating system (distribution) family],
     [pgsetup_cv_os_family], [
       pgsetup_cv_os_family=
       if test -r /etc/redhat-release; then
-        pgsetup_cv_os_family=redhat
+        pgsetup_cv_os_family=redhat;
+      elif grep -c 'ID="amzn"' /etc/os-release > /dev/null; then
+        pgsetup_cv_os_family=amazon;
+      elif grep -c 'ID_LIKE=.*fedora' /etc/os-release > /dev/null; then
+        pgsetup_cv_os_family=fedora;
       fi
     ]
   )
 
   case $pgsetup_cv_os_family in
-  redhat)
+  redhat|fedora|amazon)
     AC_PATH_PROG([RPM], [rpm])
     if test -z "$ac_cv_path_RPM"; then
       AC_MSG_ERROR("can not find RPM package manager")
