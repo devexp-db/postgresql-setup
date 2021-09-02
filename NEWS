@@ -2,7 +2,12 @@
 
 New in 8.6 version:
 
-*
+* Block execution when 'data_directory' in configuration file is detected.
+  Currently postgresql-{setup, upgrade} doesn't support custom data directory.
+  All changes connected with 'data_directory' made in .conf or .service file
+  should be reverted before usage.
+  That means that detected PGDATA variable in .service file and 'data_directory'
+  in .conf file should be restored to default values.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
