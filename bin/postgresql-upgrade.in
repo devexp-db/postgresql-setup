@@ -163,6 +163,30 @@ if [ ! -x "$upgradefrom_engine/postgres" ]; then
     exit 1
 fi
 
+# Check for data_directory entry in config file
+# valid entry means that custom PGDATA path is present which is not supported
+# BZ (#1935301)
+conffile="$option_datadir/postgresql.conf"
+
+test -r "$conffile" || {
+    error "config file $conffile is not readable or does not exist"
+    die "Old cluster in '$data' does not seem to be initialized"
+}
+
+sp='[[:space:]]'
+sed_expr_pgdata="s/^$sp*data_directory$sp*=\(.*\)/\1/p"
+conf_pgdata=`sed -n "$sed_expr_pgdata" $conffile | tail -1`
+
+test -n "$conf_pgdata" && {
+    error   $"data_directory field in configuration file ($conffile) is not supported."
+    error_q $"db datadir (PGDATA) cannot be specified in the configuration file."
+    error_q $"In order to use this script for upgrade, please, move the files"
+    error_q $"to the default location first and remove data_directory entry from"
+    error_q $"configuration file."
+
+    exit 1
+}
+
 exit_handler_revert_datadir=false
 
 exit_handler ()
