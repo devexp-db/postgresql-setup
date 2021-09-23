@@ -32,9 +32,10 @@ git push
 
 7. Create a tarball
 ```
-aclocal
-automake --add-missing
-autoconf
+# aclocal
+# automake --add-missing
+# autoconf
+autoreconf -vfi
 ./configure
 make dist-gzip
 ```
