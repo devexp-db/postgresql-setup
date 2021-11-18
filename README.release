@@ -3,10 +3,16 @@
 1. Get the maintainer's tools:
 
 ```
-yum install autoconf automake autoconf-archive make
+dnf install autoconf automake autoconf-archive make
 ```
 
-2. Get `gitlog-to-changelog` tool:
+2. Install postgresql-server:
+
+```
+dnf install postgresql-server
+```
+
+3. Get `gitlog-to-changelog` tool:
 
 ```
 wget https://raw.githubusercontent.com/manuelbua/gitver/master/gitlog-to-changelog
@@ -14,23 +20,23 @@ chmod a+x gitlog-to-changelog
 PATH="$(pwd):$PATH"
 ```
 
-3. Git release administrative -- a commit like this: https://github.com/devexp-db/postgresql-setup/commit/3cf4aaa5
+4. Git release administrative -- a commit like this: https://github.com/devexp-db/postgresql-setup/commit/3cf4aaa5
 
-4. Add a tag for the release
+5. Add a tag for the release
 
 ```
 git tag -a v8.6 -m "Release v8.6"
 ```
 
-5. Post-release administrative -- a commit like this: https://github.com/devexp-db/postgresql-setup/commit/c7ed7144
+6. Post-release administrative -- a commit like this: https://github.com/devexp-db/postgresql-setup/commit/c7ed7144
 
-6. Push the changes
+7. Push the changes
 
 ```
 git push
 ```
 
-7. Create a tarball
+8. Create a tarball
 ```
 # aclocal
 # automake --add-missing
@@ -40,7 +46,7 @@ autoreconf -vfi
 make dist-gzip
 ```
 
-8. Upload the tarball to github and create a release from the new tag like this: https://github.com/devexp-db/postgresql-setup/releases/tag/v8.5
+9. Upload the tarball to github and create a release from the new tag like this: https://github.com/devexp-db/postgresql-setup/releases/tag/v8.5
 
 https://github.com/devexp-db/postgresql-setup/releases/new
 
