@@ -2,7 +2,7 @@
 
 New in 8.7 version:
 
-*
+* Reformatted macro postgresql_module_requires due to change in RPM.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
