@@ -6,7 +6,8 @@
 
 [Unit]
 Description=PostgreSQL database server
-After=network.target
+# We should start postgresql service after network is up (rhbz#2127534 and rhbz#2157651)
+After=network-online.target
 
 [Service]
 Type=notify
