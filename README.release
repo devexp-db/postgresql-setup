@@ -30,10 +30,11 @@ git tag -a v8.6 -m "Release v8.6"
 
 6. Post-release administrative -- a commit like this: https://github.com/devexp-db/postgresql-setup/commit/c7ed7144
 
-7. Push the changes
+7. Push the changes and tag
 
 ```
 git push
+git push --tag
 ```
 
 8. Create a tarball
