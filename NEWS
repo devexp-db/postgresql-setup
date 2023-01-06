@@ -2,7 +2,9 @@
 
 New in 8.8 version:
 
-*
+* Postgresql service should be started after network is up.
+  It should prevent situation that postgresql failed to start after reboot.
+  Postgresql systemd unit now waits for network-online.target
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
