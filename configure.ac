@@ -161,7 +161,7 @@ AC_ARG_WITH([scl],
                             [Build against Software Collections RPM])],
             [scl_enabled_build=:])
 
-SYSTEMD_EXECSTART='${bindir}/postmaster -D $${PGDATA}'
+SYSTEMD_EXECSTART='${bindir}/postgres -D $${PGDATA}'
 
 if $scl_enabled_build; then
     AC_MSG_CHECKING([which SCL to build against])

@@ -74,7 +74,7 @@ m4_divert[]m4_dnl
 
     PGSETUP_ROOT_COMMAND([PGSETUP_SERVICE_START(@NAME_SERVICE@)])
 
-    This command will start a postmaster that will listen on localhost and Unix
+    This command will start a postgres that will listen on localhost and Unix
     socket 5432 only.  Edit @PGDATADIR@/postgresql.conf and pg_hba.conf if you
     want to allow remote access -- see the section on Grand Unified
     Configuration.
@@ -83,7 +83,7 @@ m4_divert[]m4_dnl
 
     PGSETUP_ROOT_COMMAND([PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@)])
 
-    so that the postmaster is automatically started during future reboots.
+    so that the postgres is automatically started during future reboots.
 
   </para>
 
@@ -122,7 +122,7 @@ m4_divert[]m4_dnl
     (for example, from 8.3.x to 9.0.x), you will need to follow the
     "traditional" dump and reload process to bring your data into the new
     version.  That is: *before* upgrading, run pg_dumpall to extract all your
-    data into a SQL file.  Shut down the old postmaster, upgrade to the new
+    data into a SQL file.  Shut down the old postgres, upgrade to the new
     version RPMs, perform initdb, and run the dump file through psql to restore
     your data.
   </para>
@@ -138,7 +138,7 @@ m4_divert[]m4_dnl
     <orderedlist>
       <listitem>
         <para>
-          shut down the old postmaster running against old data
+          shut down the old postgres running against old data
         </para>
       </listitem>
       <listitem>
@@ -332,13 +332,13 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
 [
   <para>
     The @NAME_PACKAGE@-server RPM contains an "initscript" that is used to start
-    the postmaster.  The current version of this script has logic to be able to
-    start multiple postmasters, with different data areas, listening on
+    the postgres.  The current version of this script has logic to be able to
+    start multiple postgress, with different data areas, listening on
     different ports, etc.  To use this functionality requires root access.
   </para>
 
   <para>
-    As an example, let us create a secondary postmaster called, creatively
+    As an example, let us create a secondary postgres called, creatively
     enough, 'secondary'.  Here are the steps:
   </para>
 
@@ -378,7 +378,7 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
     </listitem>
     <listitem>
       <para>
-        Start the postmaster with 'service secondary start'.
+        Start the postgres with 'service secondary start'.
       </para>
     </listitem>
   </orderedlist>
@@ -501,13 +501,13 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
   <para>
     Fedora / Red Hat / CentOS use the systemd package to manage server startup.
     A systemd unit file for PostgreSQL is provided in the server package, as
-    @systemdunitsdir@/@NAME_SERVICE@.service.  To start the postmaster manually,
+    @systemdunitsdir@/@NAME_SERVICE@.service.  To start the postgres manually,
     as root run
     PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_START(@NAME_SERVICE@))
-    To shut the postmaster down,
+    To shut the postgres down,
     PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_STOP(@NAME_SERVICE@))
-    These two commands only change the postmaster's current status.  If you want
-    the postmaster to be started automatically during future system startups,
+    These two commands only change the postgres's current status.  If you want
+    the postgres to be started automatically during future system startups,
     run
     PGSETUP_ROOT_COMMAND(PGSETUP_SERVICE_ENABLE(@NAME_SERVICE@))
     To undo that again,
@@ -531,7 +531,7 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
     nonlocal TCP/IP socket connections -- in order to allow these, you will need
     to edit the postgresql.conf file.  The line in question contains the string
     'listen_addresses' -- you need to both uncomment the line and set the value
-    to '*' to get the postmaster to accept nonlocal connections.  You'll also
+    to '*' to get the postgres to accept nonlocal connections.  You'll also
     need to adjust pg_hba.conf appropriately.
   </para>
 </sect1>
@@ -539,7 +539,7 @@ m4_ifelse([@WANT_SYSVINIT@], [1], m4_dnl
 <sect1>
   <title>LOGGING SET UP</title>
   <para>
-    By default, the postmaster's stderr log is directed into files placed in a
+    By default, the postgres's stderr log is directed into files placed in a
     pg_log subdirectory of the data directory (ie, @PGDATADIR@/pg_log).
     The out-of-the-box configuration rotates among seven files, one for each
     day of the week.  You can adjust this by changing postgresql.conf settings.

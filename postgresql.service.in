@@ -20,7 +20,7 @@ Group=postgres
 # This is normally controlled by the global default set by systemd
 # StandardOutput=syslog
 
-# Disable OOM kill on the postmaster
+# Disable OOM kill on the postgres
 OOMScoreAdjust=-1000
 # ... but allow it still to be effective for child processes
 # (note that these settings are ignored by Postgres releases before 9.5)
@@ -30,7 +30,7 @@ Environment=PG_OOM_ADJUST_VALUE=0
 @PGDATA_ENVIRONMENT@
 
 ExecStartPre=@libexecdir@/postgresql-check-db-dir %N
-# Even though the $PGDATA variable is exported (postmaster would accept that)
+# Even though the $PGDATA variable is exported (postgres would accept that)
 # use the -D option here so PGDATA content is printed by /bin/ps and by
 # 'systemctl status'.
 ExecStart=@SYSTEMD_EXECSTART@
