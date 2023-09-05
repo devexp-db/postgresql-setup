@@ -30,7 +30,7 @@ test x"$PGSETUP_DEBUG" != x && set -x && PS4='${LINENO}: '
 # The current user name.
 USER=$(id -u -n)
 
-# Directory containing the postmaster executable
+# Directory containing the postgres executable
 PGENGINE=@bindir@
 
 # Distribution README file
@@ -171,7 +171,7 @@ perform_initdb()
     eval "initdbcmd+=( $PGSETUP_INITDB_OPTIONS )"
     "${initdbcmd[@]}" >> "$initdb_log" 2>&1 < /dev/null
 
-    # Create directory for postmaster log files
+    # Create directory for postgres log files
     mkdir "$pgdata/@PGLOGDIR_BASENAME@"
     $RESTORECON "$pgdata/@PGLOGDIR_BASENAME@"
 
