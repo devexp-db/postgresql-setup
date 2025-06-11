@@ -20,9 +20,11 @@ _AX_TEXT_TPL_SUBST([TEST_GEN_FILES_LIST], [.generated_files])
 
 WANT_SYSVINIT=0
 INIT_SYSTEM=systemd
+INIT_SYSTEM_SERVICE_PATH=/lib/systemd/system
 test -d /usr/lib/systemd/system/ || {
     INIT_SYSTEM=sysvinit
     WANT_SYSVINIT=1
+    INIT_SYSTEM_SERVICE_PATH=
 }
 AM_CONDITIONAL([WANT_SYSVINIT], [test "$WANT_SYSVINIT" -eq 1])
 _AX_TEXT_TPL_SUBST([WANT_SYSVINIT])
@@ -221,6 +223,7 @@ _AX_TEXT_TPL_SUBST([NAME_BINARYBASE])
 _AX_TEXT_TPL_SUBST([NAME_PACKAGE])
 _AX_TEXT_TPL_SUBST([NAME_SERVICE])
 _AX_TEXT_TPL_SUBST([NAME_SERVICE_VARNAME])
+_AX_TEXT_TPL_SUBST([INIT_SYSTEM_SERVICE_PATH])
 
 AC_MSG_CHECKING([whether to install compat %pgtest_* macros])
 # This hack shouldn't be removed sooner than once the F27 postgresql is EOL,
@@ -235,10 +238,11 @@ AC_OUTPUT
 
 AC_MSG_NOTICE([Configured the folowing way:
 
-    PostgreSQL version: $PGVERSION
-    PGDATADIR:          $PGDATADIR
-    PostgreSQL service: $NAME_SERVICE
-    PostgreSQL package: $NAME_PACKAGE
-    PostgreSQL bin_pfx: $NAME_BINARYBASE
-    Init system:        $INIT_SYSTEM
+    PostgreSQL version:    $PGVERSION
+    PGDATADIR:             $PGDATADIR
+    PostgreSQL service:    $NAME_SERVICE
+    PostgreSQL package:    $NAME_PACKAGE
+    PostgreSQL bin_pfx:    $NAME_BINARYBASE
+    Init system:           $INIT_SYSTEM
+    Init system services:  $INIT_SYSTEM_SERVICE_PATH
 ])
