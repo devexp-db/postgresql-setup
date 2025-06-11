@@ -85,16 +85,11 @@ Options:
                              string).  When no UNIT_NAME is explicitly passed,
                              the 'postgresql' string is used by default.
   --port=PORT                port where the initialized server will listen for
-                             connections"
-
-test 0 -eq @WANT_SYSVINIT@ && \
-USAGE_STRING+="
-  --new-systemd-unit         We dropped this option for security reasons.
-                             Nowadays, please use the root-only script
-                             @sbindir@/@NAME_BINARYBASE@-new-systemd-unit.
-  --datadir                  Dropped with --new-systemd-unit."
-
-USAGE_STRING+="
+                             connections
+  --datadir                  Override automatic detection of PostgreSQL data
+                             directory. If your system is using systemd as init
+                             system, it is advisable to change data directory
+                             path in service file instead.
   --upgrade-from-unit=UNIT   Select proper unit name to upgrade from.  This
                              has similar semantics as --unit option.
   --upgrade-ids              Print list of available IDs of upgrade scenarios to
@@ -401,6 +396,37 @@ handle_service_env()
     done
 }
 
+handle_service_file()
+{
+    local service_file="$1"
+    local line var_name var_value
+    debug "Parsing ${service_file}"
+    local systemd_env="$(cat "${service_file}")" \
+        || { return; }
+
+    while IFS= read -r line; do
+        # Only lines starting with Environment=
+        [[ "$line" =~ ^Environment= ]] || continue
+
+        # Remove 'Environment=' prefix
+        line="${line#Environment=}"
+
+        for env_val in $line; do
+            var_name="${env_val%%=*}"
+            var_value="${env_val#*=}"
+            debug "Found environment variable: $var_name=$var_value"
+
+            case "$var_name" in
+                PGDATA)
+                    unit_pgdata="$var_value"
+                    ;;
+                PGPORT)
+                    unit_pgport="$var_value"
+                    ;;
+            esac
+        done
+    done <<< "$systemd_env"
+}
 
 handle_envfile()
 {
@@ -418,6 +444,7 @@ handle_envfile()
     # Note that the env file parser in systemd does not perform exactly the
     # same job.
     unset PGPORT PGDATA
+    # Source the file, loading the variables in it
     . "$file"
     envfile_pgdata="$PGDATA"
     envfile_pgport="$PGPORT"
@@ -503,11 +530,23 @@ service_configuration()
             && set_var "$datavar" "@PGDATADIR@"
         handle_envfile "@initscriptsconfdir@/$service"
     else
-        # We ship two service files, @NAME_SERVICE@.service and
-        # @NAME_SERVICE@@.service.  The former has PGDATA set by default
-        # similarly to sysvinit case.
-        handle_service_env "$service"
-        handle_service_envfiles "$option_mode" "$service"
+        if grep -q systemd /proc/1/comm; then
+            # If booted with systemd as PID 1, we try to find the variables
+            # using systemctl show -p Environment= @NAME_SERVICE@.service
+            # We ship two service files, @NAME_SERVICE@.service and
+            # @NAME_SERVICE@@.service.  The former has PGDATA set by default
+            # similarly to sysvinit case.
+            debug "System booted with systemd as PID 1, using systemctl to find"\
+                  "service configuration for $service"
+            handle_service_env "$service"
+            handle_service_envfiles "$option_mode" "$service"
+        else
+            # If not booted with systemd, we try to find the service file in
+            # predefined path and parse it manually.
+            warn "System not booted with systemd as PID 1. Manually parsing service"\
+                 "file @INIT_SYSTEM_SERVICE_PATH@/$service.service"
+            handle_service_file "@INIT_SYSTEM_SERVICE_PATH@/$service.service"
+        fi
     fi
 
     # EnvironmentFile beats Environment configuration in systemd.  In sysvinit
@@ -515,6 +554,11 @@ service_configuration()
     # than unit_pgdata.
     test -n "$unit_pgdata"      && set_var "$datavar" "$unit_pgdata"
     test -n "$envfile_pgdata"   && set_var "$datavar" "$envfile_pgdata"
+    # If the user specified --datadir, take priority over all
+    if [ -n "${option_datadir}" ]; then
+        info $"Using datadir from --datadir: $option_datadir"
+        set_var "$datavar" "$option_datadir"
+    fi
 
     # skip for the first run
     test initdb = "$mode" && return
@@ -571,6 +615,7 @@ option_service="@NAME_SERVICE@"
 option_port=
 option_debug=0
 option_upgradefrom_unit=
+option_datadir=
 
 # Content of EnvironmentFile= files fills those:
 envfile_pgdata=
@@ -626,10 +671,9 @@ while true; do
             shift 2
             ;;
 
-        --datadir|--new-systemd-unit)
-            error   $"Removed option --new-systemd-unit/--datadir, please use"
-            error_q $"@sbindir@/@NAME_BINARYBASE@-new-systemd-unit script"
-            exit 1
+        --datadir)
+            option_datadir="$2"
+            shift 2
             ;;
 
         --debug)
@@ -698,7 +742,7 @@ debug "service name: $option_service"
 service_configuration initdb pgdata UNUSED "$option_service"
 
 test "$pgdata" = default \
-    && die $"no db datadir (PGDATA) configured for '$option_service$srvsuff' unit"
+    && die $"no db datadir (PGDATA) found, try using --datadir option"
 
 [[ "$pgdata" =~ ^/.* ]] \
     || die $"the PostgreSQL datadir not absolute path: '$pgdata', try --debug"
@@ -775,7 +819,10 @@ fi
 
 ## LAST CHECK THE SETUP ##
 
-check_daemon_reload
+if grep -q systemd /proc/1/comm; then
+    # Check only if we are running under systemd.
+    check_daemon_reload
+fi
 
 # These variables are read by underlying utilites, rather export them.
 export PGDATA=$pgdata
