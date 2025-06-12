@@ -36,6 +36,21 @@ If your distribution doesn't include this
 script with PostgreSQL and you are using this on your own, please update
 `etc/postgresql-setup/upgrade/postgresql.conf` to reflect your setup.
 
+### Running without systemd/init system
+Your setup might not include systemd as the init system or include any
+init system at all. This would be the case in most of the base container images
+for example. This script will try to compensate by parsing systemd
+service file in preconfigured path directly. By default the path is
+`/lib/systemd/system`.
+
+If there is no systemd service file, or for whatever reason the script is unable
+to find valid PostgreSQL data directory, you can still provide PostgreSQL data
+directory path manually by using `--datadir` argument. For example when
+initializing new data directory use `./postgresql-setup --initdb --datadir=/my/path`.
+
+This feature is most beneficial when using this script inside container images,
+as it gives you the most control with least dependencies.
+
 ## Maintainer notes
 Be careful about paths. Your might need to tweak paths either in configure
   files, or in code based on your environment.
