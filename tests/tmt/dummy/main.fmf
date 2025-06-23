@@ -1,0 +1,8 @@
+summary: Dummy test
+description: A test that always passes
+contact: your-email@redhat.com
+component: dummy
+framework: shell
+test: ./pass.sh
+duration: 1s
+
