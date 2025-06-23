@@ -1,9 +1,0 @@
-summary: Dummy plan for CI testing
-enabled: true
-discover:
-  how: fmf
-  name: dummy
-  directory: .
-execute:
-  script: ./pass.sh
-

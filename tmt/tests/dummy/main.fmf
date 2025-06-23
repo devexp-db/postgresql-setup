@@ -1,0 +1,4 @@
+summary: Dummy test that always passes
+framework: shell
+test: ./pass.sh
+
