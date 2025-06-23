@@ -1,0 +1,19 @@
+summary: Sanity test for db initialization by postgresql-setup 
+require:
+  - make
+  - m4
+  - docbook-utils
+  - help2man
+  - elinks
+  - postgresql-server
+  - coreutils
+  - autoconf
+  - automake
+  - autoconf-archive
+  - git
+framework: shell
+contact: ndavidov@redhat.com
+tag:
+  - fedora-init
+test: ./init.sh
+

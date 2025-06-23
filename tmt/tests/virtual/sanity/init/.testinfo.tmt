@@ -1,0 +1,8 @@
+Description: Sanity test for `postgresql-setup --initdb` command
+Owner: ndavidov@redhat.com
+RunFor: 
+RunTest: ./init.sh
+Path: /mnt/tests/tests/virtual/sanity/init
+Requires: make m4 docbook-utils help2man elinks postgresql-server coreutils autoconf automake autoconf-archive git
+Requires: 
+TestTime: 5m

@@ -1,0 +1,8 @@
+name: /plans/fedora
+summary: Run tests in a fedora virtual machine environment
+discover:
+  how: fmf
+  filter: tag:fedora-init
+execute:
+  how: tmt
+

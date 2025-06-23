@@ -1,0 +1,53 @@
+name: Run tests on Testing Farm
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  test-init:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test init on Fedora VM
+        uses: sclorg/testing-farm-as-github-action@v4
+        with:
+          api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
+          compose: Fedora-Rawhide
+          tmt_path: "tmt"
+          tmt_plan_regex: "fedora-init"
+          pull_request_status_name: "Fedora init test"
+          update_pull_request_status: "true"
+          create_github_summary: "true"
+  test-upgrade:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test upgrade on Fedora VM
+        uses: sclorg/testing-farm-as-github-action@v4
+        with:
+          api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
+          compose: Fedora-Rawhide
+          tmt_path: "tmt"
+          tmt_plan_regex: "fedora-upgrade"
+          pull_request_status_name: "Fedora upgrade test"
+          update_pull_request_status: "true"
+          create_github_summary: "true"
+

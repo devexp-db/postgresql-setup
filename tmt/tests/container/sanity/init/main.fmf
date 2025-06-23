@@ -1,0 +1,17 @@
+summary: Check whether the machine is a container
+require:
+  - make
+  - m4
+  - docbook-utils
+  - help2man
+  - elinks
+  - postgresql-server
+  - coreutils
+  - autoconf
+  - automake
+  - autoconf-archive
+  - git
+framework: shell
+contact: ndavidov@redhat.com
+test: ./init.sh
+
