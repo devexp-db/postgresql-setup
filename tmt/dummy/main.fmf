@@ -1,7 +1,9 @@
-name: dummy
-summary: Dummy test
-description: Always pass
-framework: shell
-test: ./pass.sh
-duration: 1s
+summary: Dummy plan for CI testing
 enabled: true
+discover:
+  how: fmf
+  name: dummy
+  directory: .
+execute:
+  script: ./pass.sh
+
