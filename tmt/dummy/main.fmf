@@ -1,8 +1,7 @@
+name: dummy
 summary: Dummy test
-description: A test that always passes
-contact: ndavidov@redhat.com
-component: dummy
+description: Always pass
 framework: shell
 test: ./pass.sh
 duration: 1s
-
+enabled: true
