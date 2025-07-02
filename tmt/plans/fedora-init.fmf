@@ -1,4 +1,4 @@
-name: /plans/fedora
+name: /plans/fedora-init
 summary: Run tests in a fedora virtual machine environment
 discover:
   how: fmf
