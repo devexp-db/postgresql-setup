@@ -13,10 +13,10 @@ make
 # initialization
 ./bin/postgresql-setup --init
 
-# start postgresql
+# start postgresql and check if it's running
 PGDATA=/var/lib/pgsql/data
 LOGFILE=/var/lib/pgsql/logfile
+su - postgres -c "
 /usr/bin/pg_ctl -D $PGDATA -l $LOGFILE start
-
-# check if it is running
-pg_ctl -D $PGDATA status && echo "PostgreSQL is running" || { echo "PostgreSQL is NOT running"; exit 1; }
+pg_ctl -D $PGDATA status && echo \"PostgreSQL is running\" || { echo \"PostgreSQL is NOT running\"; exit 1; }
+"
