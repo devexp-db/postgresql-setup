@@ -5,10 +5,9 @@ cd repo
 git fetch origin "$TESTING_FARM_GIT_REF"
 git checkout FETCH_HEAD
 
-echo "CONTAINER CHECK:"
-test -f /.dockerenv && echo "Inside Docker/Podman container"
-echo "CHECK 2:"
-cat /proc/1/cgroup
+grep -q systemd /proc/1/comm
+echo "Return value CONTAINER: $?"
+
 # setup
 autoreconf -vfi
 ./configure --prefix=/usr
