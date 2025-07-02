@@ -24,7 +24,7 @@ jobs:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: Fedora-Rawhide
           tmt_path: "tmt"
-          tmt_plan_regex: "fedora-init"
+          tmt_plan_regex: "^fedora-init"
           pull_request_status_name: "Fedora init test"
           update_pull_request_status: "true"
           create_github_summary: "true"
@@ -48,7 +48,7 @@ jobs:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: Fedora-Rawhide
           tmt_path: "tmt"
-          tmt_plan_regex: "fedora-upgrade"
+          tmt_plan_regex: "^fedora-upgrade"
           pull_request_status_name: "Fedora upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
