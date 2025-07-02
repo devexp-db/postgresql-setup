@@ -2,7 +2,7 @@ name: Run tests on Testing Farm
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, container-tests ]
   pull_request:
 
 jobs:
