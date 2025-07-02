@@ -1,4 +1,4 @@
-summary: Check whether the machine is a container
+summary: Postgresql-setup init test in a fedora rawhide container
 require:
   - make
   - m4
@@ -11,7 +11,9 @@ require:
   - automake
   - autoconf-archive
   - git
-framework: shell
-contact: ndavidov@redhat.com
 test: ./init.sh
+framework: shell
+duration: 10m
+tag: fedora-init-container
+contact: ndavidov@redhat.com
 
