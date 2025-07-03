@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test init on Fedora VM
-        uses: thrix/testing-farm-as-github-action@fix-compose-null-handling
+        uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: Fedora-Rawhide
@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test upgrade on Fedora VM
-        uses: thrix/testing-farm-as-github-action@fix-compose-null-handling
+        uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: Fedora-Rawhide
@@ -67,7 +67,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test init on Fedora container
-        uses: thrix/testing-farm-as-github-action@fix-compose-null-handling
+        uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: null
@@ -91,7 +91,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test upgrade on Fedora container
-        uses: thrix/testing-farm-as-github-action@fix-compose-null-handling
+        uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: null
