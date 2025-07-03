@@ -70,7 +70,7 @@ jobs:
         uses: thrix/testing-farm-as-github-action@fix-compose-null-handling
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
-          compose: "null"
+          compose: null
           tmt_path: "tmt"
           tmt_plan_regex: "container-fedora-init"
           pull_request_status_name: "Fedora init test in container"
@@ -94,7 +94,7 @@ jobs:
         uses: thrix/testing-farm-as-github-action@fix-compose-null-handling
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
-          compose: "null"
+          compose: null
           tmt_path: "tmt"
           tmt_plan_regex: "container-fedora-upgrade"
           pull_request_status_name: "Fedora upgrade test in container"
