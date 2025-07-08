@@ -18,7 +18,7 @@ jobs:
     pull-requests: write
     statuses: write
 
-    steps:
+  steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Tests on Fedora VM
