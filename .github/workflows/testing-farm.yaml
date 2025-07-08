@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  test-init:
+  tests-fedora:
     runs-on: ubuntu-latest
 
     permissions:
@@ -17,20 +17,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Test init on Fedora VM
+      - name: Tests on Fedora VM
+        strategy:
+          matrix:
+            regex: [init, upgrade]
         uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: Fedora-Rawhide
           tmt_path: "tmt"
-          tmt_plan_regex: "plans/fedora-init"
-          pull_request_status_name: "Fedora init test"
+          tmt_plan_regex: "plans/fedora-${{ matrix.regex }}"
+          pull_request_status_name: "Fedora ${{ matrix.regex }} test"
           update_pull_request_status: "true"
           create_github_summary: "true"
-
-
-  test-upgrade:
+  
+ tests-container:
     runs-on: ubuntu-latest
 
     permissions:
@@ -42,63 +43,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Test upgrade on Fedora VM
-        uses: sclorg/testing-farm-as-github-action@main
-        with:
-          api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
-          compose: Fedora-Rawhide
-          tmt_path: "tmt"
-          tmt_plan_regex: "plans/fedora-upgrade"
-          pull_request_status_name: "Fedora upgrade test"
-          update_pull_request_status: "true"
-          create_github_summary: "true"
-                                  
-
-  test-init-container:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: write
-      statuses: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Test init on Fedora container
+      - name: Tests on Fedora container
+        strategy:
+          matrix:
+            regex: [init, upgrade]
         uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: null
           tmt_path: "tmt"
-          tmt_plan_regex: "container-fedora-init"
-          pull_request_status_name: "Fedora init test in container"
+          tmt_plan_regex: "container-fedora-${{ matrix.regex }}"
+          pull_request_status_name: "Fedorat ${{ matrix.regex }} test in container"
           update_pull_request_status: "true"
           create_github_summary: "true"
-
-
-  test-upgrade-container:
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      pull-requests: write
-      statuses: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Test upgrade on Fedora container
-        uses: sclorg/testing-farm-as-github-action@main
-        with:
-          api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
-          compose: null
-          tmt_path: "tmt"
-          tmt_plan_regex: "container-fedora-upgrade"
-          pull_request_status_name: "Fedora upgrade test in container"
-          update_pull_request_status: "true"
-          create_github_summary: "true"
-
 
