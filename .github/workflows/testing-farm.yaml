@@ -29,9 +29,8 @@ jobs:
           tmt_plan_regex: "plans/fedora-${{ matrix.regex }}"
           pull_request_status_name: "Fedora ${{ matrix.regex }} test"
           update_pull_request_status: "true"
-          create_github_summary: "true"
-  
- tests-container:
+          create_github_summary: "true"  
+  tests-container:
     runs-on: ubuntu-latest
 
     permissions:
