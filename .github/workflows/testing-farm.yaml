@@ -2,8 +2,8 @@ name: Run tests on Testing Farm
 
 on:
   push:
-    branches: [ master, container-tests ]
-  pull_request:
+    branches: [ master, container-tests, pipeline ]
+  pull_request_target:
 
 jobs:
   tests-fedora:
