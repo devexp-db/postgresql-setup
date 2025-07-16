@@ -3,7 +3,8 @@ name: Run tests on Testing Farm
 on:
   push:
     branches: [ master ]
-  pull_request:
+  pull_request_trigger:
+     types: [opened, synchronize, reopened]
 
 jobs:
   test-init:
