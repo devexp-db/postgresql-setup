@@ -2,7 +2,7 @@ name: Run tests on Testing Farm
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, pipeline ]
   pull_request_target:
      types: [opened, synchronize, reopened]
 
