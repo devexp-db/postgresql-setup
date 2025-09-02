@@ -5,6 +5,9 @@ cd repo
 git fetch origin "$TESTING_FARM_GIT_REF"
 git checkout FETCH_HEAD
 
+grep -q systemd /proc/1/comm
+echo "Return value CONTAINER: $?"
+
 # setup
 autoreconf -vfi
 ./configure --prefix=/usr
@@ -13,10 +16,11 @@ make
 # initialization
 ./bin/postgresql-setup --init
 
-# start postgresql
+# start postgresql and check if it's running
 PGDATA=/var/lib/pgsql/data
 LOGFILE=/var/lib/pgsql/logfile
+su - postgres -c "
 /usr/bin/pg_ctl -D $PGDATA -l $LOGFILE start
+pg_ctl -D $PGDATA status && echo \"PostgreSQL is running\" || { echo \"PostgreSQL is NOT running\"; exit 1; }
+"
 
-# check if it is running
-pg_ctl -D $PGDATA status && echo "PostgreSQL is running" || { echo "PostgreSQL is NOT running"; exit 1; }
