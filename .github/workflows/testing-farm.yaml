@@ -30,6 +30,7 @@ jobs:
           pull_request_status_name: "Fedora init test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
   test-upgrade:
     runs-on: ubuntu-latest
 
@@ -54,6 +55,7 @@ jobs:
           pull_request_status_name: "Fedora upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
   container-test-init:
     runs-on: ubuntu-latest
 
@@ -78,6 +80,7 @@ jobs:
           pull_request_status_name: "Fedora container init test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
   container-test-upgrade:
     runs-on: ubuntu-latest
 
@@ -91,13 +94,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Debug refs
-        run: |
-          echo "event_name=${{ github.event_name }}"
-          echo "base=${{ github.event.pull_request.base.sha }}"
-          echo "head=${{ github.event.pull_request.head.sha }}"
-          echo "ref=${{ github.ref }}"
-          echo "sha=${{ github.sha }}"
         
       - name: Test upgrade on Fedora container
         uses: sclorg/testing-farm-as-github-action@main
@@ -109,5 +105,6 @@ jobs:
           pull_request_status_name: "Fedora container upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};
 
 
