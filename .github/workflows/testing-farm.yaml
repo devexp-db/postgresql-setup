@@ -91,14 +91,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Test upgrade on Fedora container
+      - name: Debug refs
         run: |
           echo "event_name=${{ github.event_name }}"
           echo "base=${{ github.event.pull_request.base.sha }}"
           echo "head=${{ github.event.pull_request.head.sha }}"
           echo "ref=${{ github.ref }}"
           echo "sha=${{ github.sha }}"
+        
+      - name: Test upgrade on Fedora container
         uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
