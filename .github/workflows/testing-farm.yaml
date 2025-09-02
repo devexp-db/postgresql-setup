@@ -105,6 +105,6 @@ jobs:
           pull_request_status_name: "Fedora container upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
-          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
 
 
