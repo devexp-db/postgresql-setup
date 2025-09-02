@@ -1,8 +1,8 @@
 #!/bin/bash
 # prep
-git clone "$TESTING_FARM_GIT_URL" repo
+git clone "$REPO_URL" repo
 cd repo
-git fetch origin "$TESTING_FARM_GIT_REF"
+git fetch origin "$PR_HEAD"
 git checkout FETCH_HEAD
 
 echo "Fedora release:"
