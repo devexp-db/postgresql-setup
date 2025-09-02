@@ -93,7 +93,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Test upgrade on Fedora container
-         run: |
+        run: |
           echo "event_name=${{ github.event_name }}"
           echo "base=${{ github.event.pull_request.base.sha }}"
           echo "head=${{ github.event.pull_request.head.sha }}"
