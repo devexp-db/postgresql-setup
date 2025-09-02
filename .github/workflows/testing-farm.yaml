@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.issue.number }}/head"
 
       - name: Test init on Fedora VM
         uses: sclorg/testing-farm-as-github-action@v4
@@ -40,6 +42,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.issue.number }}/head"
 
       - name: Test upgrade on Fedora VM
         uses: sclorg/testing-farm-as-github-action@v4
@@ -51,4 +55,3 @@ jobs:
           pull_request_status_name: "Fedora upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
-
