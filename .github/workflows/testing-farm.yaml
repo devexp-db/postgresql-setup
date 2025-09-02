@@ -28,9 +28,10 @@ jobs:
           tmt_path: "tmt"
           tmt_plan_regex: "fedora-init"
           pull_request_status_name: "Fedora init test"
-          update_pull_request_status: "true"
           create_github_summary: "true"
-          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
+          update_pull_request_status: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};PR_HEAD=${{ github.event.pull_request.head.sha }};"
+ 
   test-upgrade:
     runs-on: ubuntu-latest
 
@@ -55,7 +56,7 @@ jobs:
           pull_request_status_name: "Fedora upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
-          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};PR_HEAD=${{ github.event.pull_request.head.sha }};"
   container-test-init:
     runs-on: ubuntu-latest
 
@@ -80,7 +81,8 @@ jobs:
           pull_request_status_name: "Fedora container init test"
           update_pull_request_status: "true"
           create_github_summary: "true"
-          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};PR_HEAD=${{ github.event.pull_request.head.sha }};"
+
   container-test-upgrade:
     runs-on: ubuntu-latest
 
@@ -105,6 +107,6 @@ jobs:
           pull_request_status_name: "Fedora container upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
-          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.pull_request.head.sha }};"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};PR_HEAD=${{ github.event.pull_request.head.sha }};"
 
 
