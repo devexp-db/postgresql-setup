@@ -19,8 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: "refs/pull/${{ github.event.issue.number }}/head"
-
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Test init on Fedora VM
         uses: sclorg/testing-farm-as-github-action@main
         with:
@@ -31,6 +30,7 @@ jobs:
           pull_request_status_name: "Fedora init test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
   test-upgrade:
     runs-on: ubuntu-latest
 
@@ -43,7 +43,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: "refs/pull/${{ github.event.issue.number }}/head"
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Test upgrade on Fedora VM
         uses: sclorg/testing-farm-as-github-action@main
@@ -55,6 +55,7 @@ jobs:
           pull_request_status_name: "Fedora upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
   container-test-init:
     runs-on: ubuntu-latest
 
@@ -66,6 +67,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Test init on Fedora container
         uses: sclorg/testing-farm-as-github-action@main
@@ -77,6 +80,7 @@ jobs:
           pull_request_status_name: "Fedora container init test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};"
   container-test-upgrade:
     runs-on: ubuntu-latest
 
@@ -88,7 +92,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+        
       - name: Test upgrade on Fedora container
         uses: sclorg/testing-farm-as-github-action@main
         with:
@@ -99,5 +105,6 @@ jobs:
           pull_request_status_name: "Fedora container upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+          variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.pull_request.head.sha }};"
 
 
