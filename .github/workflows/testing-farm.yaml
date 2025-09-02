@@ -2,7 +2,7 @@ name: Run tests on Testing Farm
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, container-tests ]
   pull_request_target:
      types: [opened, synchronize, reopened]
 
@@ -22,7 +22,7 @@ jobs:
           ref: "refs/pull/${{ github.event.issue.number }}/head"
 
       - name: Test init on Fedora VM
-        uses: sclorg/testing-farm-as-github-action@v4
+        uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: Fedora-Rawhide
@@ -46,7 +46,7 @@ jobs:
           ref: "refs/pull/${{ github.event.issue.number }}/head"
 
       - name: Test upgrade on Fedora VM
-        uses: sclorg/testing-farm-as-github-action@v4
+        uses: sclorg/testing-farm-as-github-action@main
         with:
           api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
           compose: Fedora-Rawhide
@@ -55,3 +55,49 @@ jobs:
           pull_request_status_name: "Fedora upgrade test"
           update_pull_request_status: "true"
           create_github_summary: "true"
+  container-test-init:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test init on Fedora container
+        uses: sclorg/testing-farm-as-github-action@main
+        with:
+          api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
+          compose: null
+          tmt_path: "tmt"
+          tmt_plan_regex: "container-fedora-init"
+          pull_request_status_name: "Fedora container init test"
+          update_pull_request_status: "true"
+          create_github_summary: "true"
+  container-test-upgrade:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test upgrade on Fedora container
+        uses: sclorg/testing-farm-as-github-action@main
+        with:
+          api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
+          compose: null
+          tmt_path: "tmt"
+          tmt_plan_regex: "container-fedora-upgrade"
+          pull_request_status_name: "Fedora container upgrade test"
+          update_pull_request_status: "true"
+          create_github_summary: "true"
+
+
