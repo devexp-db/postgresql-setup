@@ -1,0 +1,12 @@
+name: /plans/fedora-upgrade-container
+summary: Run upgrade test in a fedora container environment
+provision:
+  how: container
+  image: fedora
+discover:
+  how: fmf
+  filter: tag:fedora-container-upgrade
+execute:
+  how: tmt
+
+

@@ -1,0 +1,12 @@
+name: /plans/fedora-init-container
+summary: Run init test in a fedora container environment
+provision:
+  how: container
+  image: fedora:latest
+discover:
+  how: fmf
+  filter: tag:fedora-container-init
+execute:
+  how: tmt
+
+

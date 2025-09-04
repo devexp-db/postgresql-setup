@@ -14,6 +14,6 @@ require:
 test: ./init.sh
 framework: shell
 duration: 10m
-tag: container-init-fedora
+tag: fedora-container-init
 contact: ndavidov@redhat.com
 
