@@ -20,7 +20,7 @@ make
 PGDATA=/var/lib/pgsql/data
 LOGFILE=/var/lib/pgsql/logfile
 su - postgres -c "
-/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE start
-pg_ctl -D $PGDATA status && echo \"PostgreSQL is running\" || { echo \"PostgreSQL is NOT running\"; exit 1; }
+/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE -o \"-c unix_socket_directories=/tmp\" start
+/usr/bin/pg_ctl -D $PGDATA status && echo \"PostgreSQL is running\" || { echo \"PostgreSQL is NOT running\"; exit 1; }
 "
 
