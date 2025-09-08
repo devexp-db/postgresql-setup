@@ -1,0 +1,19 @@
+summary: Postgresql-setup upgrade test in a fedora rawhide container
+require:
+  - make
+  - m4
+  - docbook-utils
+  - help2man
+  - elinks
+  - postgresql-server
+  - coreutils
+  - autoconf
+  - automake
+  - autoconf-archive
+  - git
+test: ./upgrade.sh
+framework: shell
+duration: 10m
+tag: fedora-container-upgrade
+contact: ndavidov@redhat.com
+
