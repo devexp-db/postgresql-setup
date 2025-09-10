@@ -57,7 +57,7 @@ dnf -y install postgresql17-upgrade
 ./bin/postgresql-setup --upgrade
 
 su - postgres -c "
-/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE -o start
+/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE start
 /usr/bin/pg_ctl -D $PGDATA status && echo \"PostgreSQL is running\" || { echo \"PostgreSQL is NOT running\"; exit 1; }
 "
 
