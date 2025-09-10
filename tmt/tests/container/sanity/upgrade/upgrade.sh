@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 # prep
 git clone "$REPO_URL" repo
 cd repo

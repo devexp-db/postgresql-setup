@@ -1,5 +1,6 @@
 #!/bin/bash
 # prep
+set -x
 git clone "$REPO_URL" repo
 cd repo
 git fetch origin "$PR_HEAD"
