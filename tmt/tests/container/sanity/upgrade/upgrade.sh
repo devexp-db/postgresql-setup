@@ -16,11 +16,16 @@ make
 # initialization
 ./bin/postgresql-setup --init
 
+# Create unix_socket directory
+mkdir -p /var/run/postgresql
+chown postgres:postgres /var/run/postgresql
+chmod 2775 /var/run/postgresql
+
 # start postgresql and check if it's running
 PGDATA=/var/lib/pgsql/data
 LOGFILE=/var/lib/pgsql/logfile
 su - postgres -c "
-/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE -o \"-c unix_socket_directories=/tmp\" start
+/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE start
 /usr/bin/pg_ctl -D $PGDATA status && echo \"PostgreSQL is running\" || { echo \"PostgreSQL is NOT running\"; exit 1; }
 "
 
@@ -28,12 +33,12 @@ su - postgres -c "
 su - postgres -c "
 echo \"User switched\";
 
-createdb -h /tmp testdb;
-psql -h /tmp  -U postgres -d testdb -c \"create table users (id serial primary key, name text)\";
-psql -h /tmp -U postgres -d testdb -c \"insert into users (name) values ('Alice'), ('Bob'), ('Celine')\"
+createdb testdb;
+psql -U postgres -d testdb -c \"create table users (id serial primary key, name text)\";
+psql -U postgres -d testdb -c \"insert into users (name) values ('Alice'), ('Bob'), ('Celine')\"
 "
 su - postgres -c '
-psql -h /tmp -U postgres -d testdb -c "select * from users"
+psql -U postgres -d testdb -c "select * from users"
 ' > expected.txt
 
 echo "Expected:"
@@ -51,12 +56,12 @@ dnf -y install postgresql17-upgrade
 ./bin/postgresql-setup --upgrade
 
 su - postgres -c "
-/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE -o \"-c unix_socket_directories=/tmp\" start
+/usr/bin/pg_ctl -D $PGDATA -l $LOGFILE -o start
 /usr/bin/pg_ctl -D $PGDATA status && echo \"PostgreSQL is running\" || { echo \"PostgreSQL is NOT running\"; exit 1; }
 "
 
 su - postgres -c '
-psql -h /tmp -U postgres -d testdb -c "select * from users"
+psql -U postgres -d testdb -c "select * from users"
 ' > actual.txt
 
 echo "Actual:"
