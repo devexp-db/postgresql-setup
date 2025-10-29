@@ -1,4 +1,4 @@
-summary: Postgresql-setup init test in a fedora rawhide container
+summary: Postgresql-setup upgrade test in a fedora rawhide container
 require:
   - make
   - m4
@@ -11,9 +11,9 @@ require:
   - automake
   - autoconf-archive
   - git
-test: ./init.sh
+test: ./upgrade.sh
 framework: shell
 duration: 10m
-tag: fedora-container-init
+tag: fedora-container-upgrade
 contact: ndavidov@redhat.com
 
