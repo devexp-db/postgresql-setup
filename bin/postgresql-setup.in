@@ -213,6 +213,112 @@ old_data_in_use()
 }
 
 
+# Detect locale settings from old cluster datadir
+# Sets: old_cluster_lc_collate, old_cluster_lc_ctype, old_cluster_locale
+detect_old_cluster_locale()
+{
+    local old_datadir="$1"
+    local old_bindir="$2"
+    local old_port="$3"
+    
+    old_cluster_lc_collate=""
+    old_cluster_lc_ctype=""
+    old_cluster_locale=""
+    
+    debug "detecting locale from old cluster at $old_datadir"
+    
+    # Try to get locale from running database using psql
+    # First check if server is running
+    local pidfile="$old_datadir/postmaster.pid"
+    local server_was_running=false
+    local temp_server_started=false
+    
+    if [ -f "$pidfile" ]; then
+        # Check if the PID in the file is actually running
+        local pid=$(head -n 1 "$pidfile" 2>/dev/null)
+        if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+            server_was_running=true
+            debug "old cluster server is running (PID: $pid), querying locale via psql"
+        fi
+    fi
+    
+    # If server is not running, try to start it temporarily
+    if ! $server_was_running; then
+        debug "old cluster server is not running, attempting temporary start to query locale"
+        
+        # Create a temporary socket directory
+        local temp_sockdir=$(mktemp -d 2>/dev/null)
+        if [ $? -ne 0 ] || [ -z "$temp_sockdir" ]; then
+            debug "failed to create temporary socket directory"
+            return 1
+        fi
+        
+        local temp_log="$old_datadir/temp_locale_query.log"
+        
+        # Try to start server with minimal configuration
+        # Use a different port to avoid conflicts
+        local temp_port=$((old_port + 10000))
+        
+        # Start server in background with minimal settings
+        # Use -m fast to speed up startup
+        if "$old_bindir/pg_ctl" -D "$old_datadir" -o "-p $temp_port -c listen_addresses='' -c unix_socket_directories='$temp_sockdir' -c max_connections=5 -c shared_buffers=128kB" start -w -l "$temp_log" -m fast >/dev/null 2>&1; then
+            temp_server_started=true
+            debug "temporarily started old cluster server on port $temp_port"
+            # Give it a moment to be ready
+            sleep 2
+        else
+            debug "failed to start old cluster server temporarily (see $temp_log for details)"
+            rm -rf "$temp_sockdir"
+            rm -f "$temp_log"
+            return 1
+        fi
+    fi
+    
+    # Query locale from template1 database
+    local query="SELECT datcollate, datctype FROM pg_catalog.pg_database WHERE datname = 'template1'"
+    local result
+    local query_port="$old_port"
+    if $temp_server_started; then
+        query_port="$temp_port"
+    fi
+    
+    # Use appropriate connection method
+    local psql_exit_code=0
+    if $temp_server_started; then
+        result=$("$old_bindir/psql" -t -A -h "$temp_sockdir" -p "$query_port" -d template1 -c "$query" 2>/dev/null)
+        psql_exit_code=$?
+    else
+        result=$("$old_bindir/psql" -t -A -p "$query_port" -d template1 -c "$query" 2>/dev/null)
+        psql_exit_code=$?
+    fi
+    
+    # Stop temporary server if we started it
+    if $temp_server_started; then
+        "$old_bindir/pg_ctl" -D "$old_datadir" stop >/dev/null 2>&1
+        rm -rf "$temp_sockdir"
+        rm -f "$temp_log"
+    fi
+    
+    # Parse result
+    if [ $psql_exit_code -eq 0 ] && [ -n "$result" ]; then
+        # Parse result: datcollate|datctype
+        old_cluster_lc_collate=$(echo "$result" | cut -d'|' -f1 | tr -d ' ')
+        old_cluster_lc_ctype=$(echo "$result" | cut -d'|' -f2 | tr -d ' ')
+        old_cluster_locale="$old_cluster_lc_collate"
+        
+        if [ -n "$old_cluster_lc_collate" ] && [ -n "$old_cluster_lc_ctype" ]; then
+            debug "detected locale from old cluster: collate=$old_cluster_lc_collate, ctype=$old_cluster_lc_ctype"
+            return 0
+        fi
+    fi
+    
+    # If we couldn't detect it, return failure
+    warn $"Could not automatically detect locale settings from old cluster."
+    warn_q $"You may need to set PGSETUP_INITDB_OPTIONS manually with --lc-collate, --lc-ctype, and --locale options."
+    return 1
+}
+
+
 upgrade()
 {
     local inplace=false
@@ -274,6 +380,39 @@ upgrade()
     fi
 
     info $"Upgrading database."
+
+    # Automatically detect locale settings from old cluster if not already set
+    # This addresses Bug 1152556: detect --locale from old datadir automatically
+    local locale_already_set=false
+    if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
+        if echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--lc-collate|--lc-ctype|--locale"; then
+            locale_already_set=true
+        fi
+    fi
+    
+    if [ "$locale_already_set" != "true" ]; then
+        debug "attempting to auto-detect locale from old cluster"
+        if detect_old_cluster_locale "$pgdataold" "$upgradefrom_engine" "$PGPORT"; then
+            # Build initdb options with detected locale
+            local detected_opts="--lc-collate=$old_cluster_lc_collate --lc-ctype=$old_cluster_lc_ctype"
+            if [ -n "$old_cluster_locale" ]; then
+                detected_opts="$detected_opts --locale=$old_cluster_locale"
+            fi
+            
+            # Append to existing PGSETUP_INITDB_OPTIONS if set, otherwise set it
+            if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
+                export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS $detected_opts"
+            else
+                export PGSETUP_INITDB_OPTIONS="$detected_opts"
+            fi
+            
+            info $"Auto-detected locale settings from old cluster: $detected_opts"
+        else
+            debug "locale auto-detection failed, proceeding with system default locale"
+        fi
+    else
+        debug "locale options already set in PGSETUP_INITDB_OPTIONS, skipping auto-detection"
+    fi
 
     scls_upgrade_hacks=
     test -n "$upgradefrom_scls" && {
