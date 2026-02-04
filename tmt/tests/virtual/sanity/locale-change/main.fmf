@@ -1,0 +1,19 @@
+summary: Check if upgrading a database works when using a different locale
+name: locale-change
+require:
+  - make
+  - m4
+  - docbook-utils
+  - help2man
+  - elinks
+  - coreutils
+  - autoconf
+  - automake
+  - autoconf-archive
+  - git
+framework: beakerlib
+contact: pkhartsk@redhat.com
+tag:
+  - fedora-upgrade
+test: ./locale.sh
+

@@ -225,80 +225,55 @@ detect_old_cluster_locale()
     old_cluster_lc_ctype=""
     old_cluster_locale=""
     
-    debug "detecting locale from old cluster at $old_datadir"
-    
-    # Try to get locale from running database using psql
-    # First check if server is running
-    local pidfile="$old_datadir/postmaster.pid"
-    local server_was_running=false
-    local temp_server_started=false
-    
-    if [ -f "$pidfile" ]; then
-        # Check if the PID in the file is actually running
-        local pid=$(head -n 1 "$pidfile" 2>/dev/null)
-        if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-            server_was_running=true
-            debug "old cluster server is running (PID: $pid), querying locale via psql"
-        fi
+    if old_data_in_use; then
+      return 1
     fi
     
     # If server is not running, try to start it temporarily
-    if ! $server_was_running; then
-        debug "old cluster server is not running, attempting temporary start to query locale"
-        
-        # Create a temporary socket directory
-        local temp_sockdir=$(mktemp -d 2>/dev/null)
-        if [ $? -ne 0 ] || [ -z "$temp_sockdir" ]; then
-            debug "failed to create temporary socket directory"
-            return 1
-        fi
-        
-        local temp_log="$old_datadir/temp_locale_query.log"
-        
-        # Try to start server with minimal configuration
-        # Use a different port to avoid conflicts
-        local temp_port=$((old_port + 10000))
-        
-        # Start server in background with minimal settings
-        # Use -m fast to speed up startup
-        if "$old_bindir/pg_ctl" -D "$old_datadir" -o "-p $temp_port -c listen_addresses='' -c unix_socket_directories='$temp_sockdir' -c max_connections=5 -c shared_buffers=128kB" start -w -l "$temp_log" -m fast >/dev/null 2>&1; then
-            temp_server_started=true
-            debug "temporarily started old cluster server on port $temp_port"
-            # Give it a moment to be ready
-            sleep 2
-        else
-            debug "failed to start old cluster server temporarily (see $temp_log for details)"
-            rm -rf "$temp_sockdir"
-            rm -f "$temp_log"
-            return 1
-        fi
+    debug "old cluster server is not running, attempting temporary start to query locale"
+
+    # Create a temporary socket directory
+    local temp_sockdir=$(mktemp -d 2>/dev/null)
+    if [ $? -ne 0 ] || [ -z "$temp_sockdir" ]; then
+        debug "failed to create temporary socket directory"
+        return 1
     fi
+
+    local temp_log="$old_datadir/temp_locale_query.log"
+
+    # Try to start server with minimal configuration
+    # Use a different port to avoid conflicts
+    local temp_port=$((old_port + 10000))
+
+    # Start server in background with minimal settings
+    # Use -m fast to speed up startup
+    if "$old_bindir/pg_ctl" -D "$old_datadir" -o "-p $temp_port -c listen_addresses='' -c unix_socket_directories='$temp_sockdir' -c max_connections=5 -c shared_buffers=128kB" start -w -l "$temp_log" -m fast >/dev/null 2>&1; then
+        debug "temporarily started old cluster server on port $temp_port"
+        # Give it a moment to be ready
+        sleep 2
+    else
+        debug "failed to start old cluster server temporarily (see $temp_log for details)"
+        rm -rf "$temp_sockdir"
+        rm -f "$temp_log"
+        return 1
+    fi
+
     
     # Query locale from template1 database
     local query="SELECT datcollate, datctype FROM pg_catalog.pg_database WHERE datname = 'template1'"
     local result
-    local query_port="$old_port"
-    if $temp_server_started; then
-        query_port="$temp_port"
-    fi
-    
-    # Use appropriate connection method
+    local query_port="$temp_port"
+
+    # Perform query
     local psql_exit_code=0
-    if $temp_server_started; then
-        result=$("$old_bindir/psql" -t -A -h "$temp_sockdir" -p "$query_port" -d template1 -c "$query" 2>/dev/null)
-        psql_exit_code=$?
-    else
-        result=$("$old_bindir/psql" -t -A -p "$query_port" -d template1 -c "$query" 2>/dev/null)
-        psql_exit_code=$?
-    fi
-    
-    # Stop temporary server if we started it
-    if $temp_server_started; then
-        "$old_bindir/pg_ctl" -D "$old_datadir" stop >/dev/null 2>&1
-        rm -rf "$temp_sockdir"
-        rm -f "$temp_log"
-    fi
-    
+    result=$(psql -t -A -h "$temp_sockdir" -p "$query_port" -d template1 -c "$query" 2>/dev/null)
+    psql_exit_code=$?
+
+    # Stop temporary server
+    "$old_bindir/pg_ctl" -D "$old_datadir" stop >/dev/null 2>&1
+    rm -rf "$temp_sockdir"
+    rm -f "$temp_log"
+
     # Parse result
     if [ $psql_exit_code -eq 0 ] && [ -n "$result" ]; then
         # Parse result: datcollate|datctype
