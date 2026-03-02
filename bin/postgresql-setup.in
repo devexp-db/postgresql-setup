@@ -207,9 +207,18 @@ initdb()
 old_data_in_use()
 {
     local pidfile="$pgdataold/postmaster.pid"
-    test -f "$pidfile" || return 1
-    error   $"The pidfile '$pidfile' exists.  Verify that there is no postmaster"
-    error_q $"running the $pgdataold directory."
+    if [ -f "$pidfile" ]; then
+        # Check if the PID in the file is actually running
+        local pid
+        pid=$(head -n 1 "$pidfile" 2>/dev/null)
+        if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+            error $"Old cluster server is running (PID: $pid). Verify that there is no postmaster"
+            error_q $"running in the $pgdataold directory."
+        else
+            warn "Old pidfile found but no process uses it. Please remove $pidfile to continue."
+        fi
+        exit 1
+    fi
 }
 
 
@@ -225,15 +234,12 @@ detect_old_cluster_locale()
     old_cluster_lc_ctype=""
     old_cluster_locale=""
     
-    if old_data_in_use; then
-      return 1
-    fi
-    
-    # If server is not running, try to start it temporarily
+    # Try starting old postgresql server
     debug "old cluster server is not running, attempting temporary start to query locale"
 
     # Create a temporary socket directory
-    local temp_sockdir=$(mktemp -d 2>/dev/null)
+    local temp_sockdir
+    temp_sockdir=$(mktemp -d 2>/dev/null)
     if [ $? -ne 0 ] || [ -z "$temp_sockdir" ]; then
         debug "failed to create temporary socket directory"
         return 1
@@ -266,7 +272,7 @@ detect_old_cluster_locale()
 
     # Perform query
     local psql_exit_code=0
-    result=$(psql -t -A -h "$temp_sockdir" -p "$query_port" -d template1 -c "$query" 2>/dev/null)
+    result=$("$PGENGINE/psql" -t -A -h "$temp_sockdir" -p "$query_port" -d template1 -c "$query" 2>/dev/null)
     psql_exit_code=$?
 
     # Stop temporary server
@@ -296,6 +302,8 @@ detect_old_cluster_locale()
 
 upgrade()
 {
+    # Fail fast if there is a postgresql server running using the data to be updated
+    old_data_in_use
     local inplace=false
     test "$pgdata" = "$upgradefrom_data" && inplace=true
 
@@ -405,11 +413,7 @@ upgrade()
     }
 
     local failure_cleanup=true
-    if old_data_in_use; then
-        script_result=1
-        # Cleanup makes sense once perform_initdb gets called.
-        failure_cleanup=false
-    elif ! check_not_initialized; then
+    if ! check_not_initialized; then
         # Don't try to re-init initialized data directory and also do not
         # remove it after this unsuccessful upgrade.
         script_result=1
