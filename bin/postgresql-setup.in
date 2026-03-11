@@ -59,6 +59,16 @@ option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 srvsuff=
 test 0 -eq @WANT_SYSVINIT@ && srvsuff=".service"
 
+if [ @PGMAJORVERSION@ -ge 18 ]; then
+    checksums_default_line="
+                             Default behavior when initializing (not upgrading).
+                             To upgrade to PostgreSQL @PGMAJORVERSION@ without
+                             enabling data checksums, add --no-data-checksums
+                             to PGSETUP_INITDB_OPTIONS (will override this flag)
+                             If data checksums are already enabled, there is no
+                             need to specify this flag."
+fi
+
 USAGE_STRING=$"\
 Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]
 
@@ -97,6 +107,9 @@ Options:
   --upgrade-from=ID          Specify id \"old\" postgresql stack to upgrade
                              from.  List of available IDs can be listed by
                              --upgrade-ids.  Default is '$option_upgradefrom'.
+  --data-checksums           Enable data checksums for the data directory.
+                             If upgrading, they will be enabled before
+                             performing the upgrade.${checksums_default_line}
 
 Other options:
   --help                     show this help
@@ -229,11 +242,11 @@ detect_old_cluster_locale()
     local old_datadir="$1"
     local old_bindir="$2"
     local old_port="$3"
-    
+
     old_cluster_lc_collate=""
     old_cluster_lc_ctype=""
     old_cluster_locale=""
-    
+
     # Try starting old postgresql server
     debug "old cluster server is not running, attempting temporary start to query locale"
 
@@ -264,7 +277,7 @@ detect_old_cluster_locale()
         return 1
     fi
 
-    
+
     # Query locale from template1 database
     local query="SELECT datcollate, datctype FROM pg_catalog.pg_database WHERE datname = 'template1'"
     local result
@@ -286,13 +299,13 @@ detect_old_cluster_locale()
         old_cluster_lc_collate=$(echo "$result" | cut -d'|' -f1 | tr -d ' ')
         old_cluster_lc_ctype=$(echo "$result" | cut -d'|' -f2 | tr -d ' ')
         old_cluster_locale="$old_cluster_lc_collate"
-        
+
         if [ -n "$old_cluster_lc_collate" ] && [ -n "$old_cluster_lc_ctype" ]; then
             debug "detected locale from old cluster: collate=$old_cluster_lc_collate, ctype=$old_cluster_lc_ctype"
             return 0
         fi
     fi
-    
+
     # If we couldn't detect it, return failure
     warn $"Could not automatically detect locale settings from old cluster."
     warn_q $"You may need to set PGSETUP_INITDB_OPTIONS manually with --lc-collate, --lc-ctype, and --locale options."
@@ -300,10 +313,64 @@ detect_old_cluster_locale()
 }
 
 
+enable_checksums()
+{
+    local old_datadir="$1"
+    local old_bindir="$2"
+
+    if [ $option_data_checksums -eq 1 ] \
+    && ! echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--no-data-checksums"; then
+        debug "enabling data checksums"
+        local enable_checksums_result
+        enable_checksums_result=$("$old_bindir/pg_checksums -e $old_datadir 2>&1")
+        local enable_checksums_code=$?
+        if [ $enable_checksums_code -ne 0 ]; then
+            error "Could not enable checksums!"
+            error_q "$enable_checksums_result"
+            return 1
+        fi
+        if [ @PGMAJORVERSION@ -lt 18 ]; then
+            if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
+                export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS --data-checksums"
+            else
+                export PGSETUP_INITDB_OPTIONS="--data-checksums"
+            fi
+        fi
+    elif [ $option_data_checksums -eq 1 ]; then
+        warn "Both --data-checksums and --no-data-checksums flags specified,"
+        warn_q "upgrading without enabling data checksums!"
+        option_data_checksums=0
+    fi
+}
+
+
 upgrade()
 {
     # Fail fast if there is a postgresql server running using the data to be updated
     old_data_in_use
+
+    info "Checking data checksums"
+    # timeout for large databases, if checksums are disabled, this command will fail fast
+    checksums_result=$("timeout 1 $upgradefrom_engine/pg_checksums $upgradefrom_data 2>&1")
+    checksums_code=$?
+    # if timed out, the exit code is 124
+    if [ $checksums_code -ne 0 ] && [ $checksums_code -ne 124 ]; then
+        if echo $checksums_result | grep -q "not enabled" \
+        && [ @PGMAJORVERSION@ -ge 18 ] && [ $option_data_checksums -ne 1 ] \
+        && ! echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--(no-)?data-checksums"; then
+            error "PostgreSQL @PGMAJORVERSION@ has data checksums enabled by default,"
+            error_q "while your current data directory does not. Please either use the"
+            error_q "--data-checksums flag to enable them before upgrading, or add"
+            error_q "--no-data-checksums to the PGSETUP_INITDB_OPTIONS environment variable."
+            exit 1
+        else
+            # this means that checksums are enabled but something else failed
+            error "Checksum check failed! Output from pg_checksums:"
+            error_q $checksums_result
+            exit 1
+        fi
+    fi
+
     local inplace=false
     test "$pgdata" = "$upgradefrom_data" && inplace=true
 
@@ -364,6 +431,8 @@ upgrade()
 
     info $"Upgrading database."
 
+    enable_checksums "$pgdataold" "$upgradefrom_engine"
+
     # Automatically detect locale settings from old cluster if not already set
     # This addresses Bug 1152556: detect --locale from old datadir automatically
     local locale_already_set=false
@@ -372,7 +441,7 @@ upgrade()
             locale_already_set=true
         fi
     fi
-    
+
     if [ "$locale_already_set" != "true" ]; then
         debug "attempting to auto-detect locale from old cluster"
         if detect_old_cluster_locale "$pgdataold" "$upgradefrom_engine" "$PGPORT"; then
@@ -381,14 +450,14 @@ upgrade()
             if [ -n "$old_cluster_locale" ]; then
                 detected_opts="$detected_opts --locale=$old_cluster_locale"
             fi
-            
+
             # Append to existing PGSETUP_INITDB_OPTIONS if set, otherwise set it
             if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
                 export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS $detected_opts"
             else
                 export PGSETUP_INITDB_OPTIONS="$detected_opts"
             fi
-            
+
             info $"Auto-detected locale settings from old cluster: $detected_opts"
         else
             debug "locale auto-detection failed, proceeding with system default locale"
@@ -760,7 +829,7 @@ long_opts="\
 initdb,upgrade,\
 new-systemd-unit,upgrade-ids,\
 unit:,service:,port:,datadir:,upgrade-from:,upgrade-from-unit:,\
-debug,\
+data-checksums,debug,\
 version,help,usage"
 
 args=`getopt -o "$short_opts" -l "$long_opts" -n "@NAME_BINARYBASE@-setup" -- "$@"` \
@@ -817,6 +886,11 @@ while true; do
         --upgrade-ids)
             parse_upgrade_setup help
             exit 0
+            ;;
+
+        --data-checksums)
+            option_data_checksums=1
+            shift
             ;;
 
         --version)

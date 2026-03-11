@@ -1,0 +1,18 @@
+summary: Check if upgrading to postgres 18 with contradictory flags works
+name: locale-change
+require:
+  - make
+  - m4
+  - docbook-utils
+  - help2man
+  - elinks
+  - coreutils
+  - autoconf
+  - automake
+  - autoconf-archive
+  - git
+framework: beakerlib
+contact: pkhartsk@redhat.com
+tag:
+  - fedora-checksums
+test: ./test.sh
