@@ -1,0 +1,2 @@
+summary: Check if upgrading to postgres 18 with --data-checksums only in PGSETUP_INITDB_OPTIONS works
+name: checksums-duplicate-enable-flags
