@@ -1,0 +1,2 @@
+summary: Check if upgrading to postgres 18 with already enabled checksums but disabling them during the upgrade works
+name: checksums-disable-after-enabling

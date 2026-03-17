@@ -62,21 +62,18 @@ test 0 -eq @WANT_SYSVINIT@ && srvsuff=".service"
 if [ @PGMAJORVERSION@ -ge 18 ]; then
     checksums_default_line="
                              Default behavior when initializing (not upgrading).
-                             To upgrade to PostgreSQL @PGMAJORVERSION@ without
-                             enabling data checksums, add --no-data-checksums
-                             to PGSETUP_INITDB_OPTIONS (will override this flag)
-                             If data checksums are already enabled, there is no
-                             need to specify this flag."
+  --no-data-checksums        Do not enable data checksums for the data directory.
+                             Will not disable them if they are already enabled."
 fi
 
 USAGE_STRING=$"\
 Usage: $0 MODE_OPTION [--unit=UNIT_NAME] [OPTION...]
 
-Script is aimed to help sysadmin with basic database cluster administration.
+The script is aimed to help sysadmins with basic database cluster administration.
 Usually, \"@NAME_BINARYBASE@-setup --initdb\" and \"@NAME_BINARYBASE@-setup --upgrade\" is
 enough, however there are other options described below.
 
-For more info and howto/when use this script please look at the documentation
+For more info and how/when to use this script please look at the documentation
 file $README_DIST.
 
 Available operation mode:
@@ -176,11 +173,7 @@ perform_initdb()
 
     # add option to enable data checksums if flag provided
     if [ "${option_data_checksums:-0}" -eq 1 ] && [ @PGMAJORVERSION@ -lt 18 ]; then
-            if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
-                export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS --data-checksums"
-            else
-                export PGSETUP_INITDB_OPTIONS="--data-checksums"
-            fi
+        add_initdb_options "--data-checksums"
     fi
 
     # Initialize the database
@@ -321,6 +314,23 @@ detect_old_cluster_locale()
     return 1
 }
 
+# Try adding an option into $PGSETUP_INITDB_OPTIONS
+# Returns 1 if it already exists there
+add_initdb_options()
+{
+    local to_add="$1"
+    if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
+        if ! echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "$to_add"; then
+            export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS $to_add"
+        else
+            return 1
+        fi
+    else
+        export PGSETUP_INITDB_OPTIONS="$to_add"
+    fi
+    return 0
+}
+
 
 enable_checksums()
 {
@@ -339,9 +349,8 @@ enable_checksums()
             return 1
         fi
     elif [ "${option_data_checksums:-0}" -eq 1 ]; then
-        warn "Both --data-checksums and --no-data-checksums flags specified,"
-        warn_q "upgrading without enabling data checksums!"
-        option_data_checksums=0
+        error "Both --data-checksums and --no-data-checksums flag specified!"
+        return 1
     fi
 }
 
@@ -380,10 +389,13 @@ upgrade()
     fi
 
     info "Checking data checksums"
+    if echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--data-checksums"; then
+        option_data_checksums=1
+    fi
     # timeout for large databases, if checksums are disabled, this command will fail fast
     checksums_result=$(timeout 1 "$upgradefrom_engine"/pg_checksums "$upgradefrom_data" 2>&1)
     checksums_code=$?
-    # if timed out, the exit code is 124
+    # if timed out (which means checksums are enabled), the exit code is 124
     if [ $checksums_code -ne 0 ] && [ $checksums_code -ne 124 ]; then
         if echo "$checksums_result" | grep -q "not enabled"; then
             if [ "${option_data_checksums:-0}" -ne 1 ] \
@@ -391,18 +403,26 @@ upgrade()
             && [ @PGMAJORVERSION@ -ge 18 ]; then
                 error "PostgreSQL @PGMAJORVERSION@ has data checksums enabled by default,"
                 error_q "while your current data directory does not. Please either use the"
-                error_q "--data-checksums flag to enable them before upgrading, or add"
-                error_q "--no-data-checksums to the PGSETUP_INITDB_OPTIONS environment variable."
+                error_q "--data-checksums flag to enable them before upgrading, or the"
+                error_q "--no-data-checksums to keep them disabled."
                 exit 1
             else
                 debug "checksums flags provided"
             fi
         else
-            # this means that checksums are enabled but something else failed
+            # pg_checksums failed for another reason than them not being enabled
             error "Checksum check failed! Output from pg_checksums:"
             error_q $"$checksums_result"
             exit 1
         fi
+    elif [ $checksums_code -eq 0 ] || [ $checksums_code -eq 124 ] \
+    && echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--no-data-checksums"; then
+        error "You have specified the --no-data-checksums flag, but they are already enabled."
+        error_q "Disabling existing checksums while upgrading is not supported:"
+        error_q "If you are sure you want to do that, please run"
+        error_q "${upgradefrom_engine}/pg_checksums -d ${upgradefrom_data}"
+        error_q "yourself. Please remove the flag otherwise."
+        exit 1
     fi
 
     # Set up log file for pg_upgrade
@@ -437,7 +457,9 @@ upgrade()
 
     info $"Upgrading database."
 
-    enable_checksums "$pgdataold" "$upgradefrom_engine"
+    if ! enable_checksums "$pgdataold" "$upgradefrom_engine"; then
+        script_result=1
+    fi
 
     # Automatically detect locale settings from old cluster if not already set
     # This addresses Bug 1152556: detect --locale from old datadir automatically
@@ -448,7 +470,7 @@ upgrade()
         fi
     fi
 
-    if [ "$locale_already_set" != "true" ]; then
+    if [ $script_result -eq 0 ] && [ "$locale_already_set" != "true" ]; then
         debug "attempting to auto-detect locale from old cluster"
         if detect_old_cluster_locale "$pgdataold" "$upgradefrom_engine" "$PGPORT"; then
             # Build initdb options with detected locale
@@ -458,17 +480,13 @@ upgrade()
             fi
 
             # Append to existing PGSETUP_INITDB_OPTIONS if set, otherwise set it
-            if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
-                export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS $detected_opts"
-            else
-                export PGSETUP_INITDB_OPTIONS="$detected_opts"
-            fi
+            add_initdb_options "$detected_opts"
 
             info $"Auto-detected locale settings from old cluster: $detected_opts"
         else
             debug "locale auto-detection failed, proceeding with system default locale"
         fi
-    else
+    elif [ $script_result -eq 0 ]; then
         debug "locale options already set in PGSETUP_INITDB_OPTIONS, skipping auto-detection"
     fi
 
@@ -488,7 +506,9 @@ upgrade()
     }
 
     local failure_cleanup=true
-    if ! check_not_initialized; then
+    if [ $script_result -ne 0 ]; then
+        debug "script failed, skipping initdb..."
+    elif ! check_not_initialized; then
         # Don't try to re-init initialized data directory and also do not
         # remove it after this unsuccessful upgrade.
         script_result=1
@@ -835,7 +855,7 @@ long_opts="\
 initdb,upgrade,\
 new-systemd-unit,upgrade-ids,\
 unit:,service:,port:,datadir:,upgrade-from:,upgrade-from-unit:,\
-data-checksums,debug,\
+data-checksums,no-data-checksums,debug,\
 version,help,usage"
 
 args=`getopt -o "$short_opts" -l "$long_opts" -n "@NAME_BINARYBASE@-setup" -- "$@"` \
@@ -896,6 +916,11 @@ while true; do
 
         --data-checksums)
             option_data_checksums=1
+            shift
+            ;;
+
+        --no-data-checksums)
+            add_initdb_options "--no-data-checksums"
             shift
             ;;
 
