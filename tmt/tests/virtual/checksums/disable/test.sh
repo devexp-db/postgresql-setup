@@ -41,7 +41,7 @@ rlJournalStart
     rlRun "make"
 
     rlRun "./bin/postgresql-setup --upgrade" 1 "Upgrading without checksums flags"
-    rlRun "PGSETUP_INITDB_OPTIONS='--no-data-checksums' ./bin/postgresql-setup --upgrade" 0 "Upgrading with checksums flag"
+    rlRun "./bin/postgresql-setup --upgrade --no-data-checksums" 0 "Upgrading with checksums flag"
 
     rlRun "systemctl start postgresql" 0 "Starting service again"
     rlRun "systemctl is-active postgresql" 0 "Verifying service running"

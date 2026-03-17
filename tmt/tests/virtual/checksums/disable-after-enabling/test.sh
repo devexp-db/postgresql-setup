@@ -15,7 +15,7 @@ rlJournalStart
     rlRun "autoreconf -vfi" 0 "Building and installing postgresql-setup"
     rlRun "./configure --prefix=/usr"
     rlRun "make"
-    rlRun "./bin/postgresql-setup --init" 0 "Initializing database dir"
+    rlRun "./bin/postgresql-setup --init --data-checksums" 0 "Initializing database dir"
     rlRun "systemctl start postgresql" 0 "Starting service"
     rlRun "systemctl is-active postgresql" 0 "Verifying service running"
   rlPhaseEnd
@@ -36,13 +36,12 @@ rlJournalStart
     rlRun "dnf -y remove postgresql17*" 0 "Removing postgresql 17"
     rlRun "dnf -y install postgresql18-upgrade" 0 "Installing postgresql 18"
 
+    rlRun "./bin/postgresql-setup --upgrade --no-data-checksums" 1 "Trying to upgrade with invalid flag"
+    rlRun "./bin/postgresql-setup --upgrade" 0 "Removed invalid flag"
+
     rlRun "autoreconf -vfi" 0 "Building and installing postgresql-setup"
     rlRun "./configure --prefix=/usr"
     rlRun "make"
-
-    rlRun "./bin/postgresql-setup --upgrade" 1 "Upgrading without checksums flags"
-    rlRun "./bin/postgresql-setup --upgrade --data-checksums --no-data-checksums" 1 "Upgrading with contradictory flags"
-    rlRun "PGSETUP_INITDB_OPTIONS='--no-data-checksums' ./bin/postgresql-setup --upgrade --no-data-checksums" 0 "Upgrading with duplicate flags"
 
     rlRun "systemctl start postgresql" 0 "Starting service again"
     rlRun "systemctl is-active postgresql" 0 "Verifying service running"
@@ -56,7 +55,7 @@ rlJournalStart
 
     rlAssertNotDiffer expected.txt actual18.txt
     rlRun "systemctl stop postgresql" 0 "Stop service"
-    rlRun "pg_checksums /var/lib/pgsql/data" 1 "Verify checksums not enabled"
+    rlRun "pg_checksums /var/lib/pgsql/data" 0 "Verify checksums enabled"
   rlPhaseEnd
 
   rlPhaseStartCleanup
