@@ -36,6 +36,10 @@ rlJournalStart
     rlRun "dnf -y remove postgresql16*" 0 "Removing postgresql 16"
     rlRun "dnf -y install postgresql17-upgrade" 0 "Installing postgresql 17"
 
+    rlRun "autoreconf -vfi" 0 "Building and installing postgresql-setup"
+    rlRun "./configure --prefix=/usr"
+    rlRun "make"
+
     rlRun "./bin/postgresql-setup --upgrade --data-checksums" 0 "Upgrading with checksums flag"
 
     rlRun "systemctl start postgresql" 0 "Starting service again"
@@ -49,6 +53,7 @@ rlJournalStart
     cat actual17.txt
 
     rlAssertNotDiffer expected.txt actual17.txt
+    rlRun "systemctl stop postgresql" 0 "Stop service"
     rlRun "pg_checksums /var/lib/pgsql/data" 0 "Verify checksums enabled"
   rlPhaseEnd
 

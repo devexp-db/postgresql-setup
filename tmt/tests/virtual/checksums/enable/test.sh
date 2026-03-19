@@ -36,6 +36,15 @@ rlJournalStart
     rlRun "dnf -y remove postgresql17*" 0 "Removing postgresql 17"
     rlRun "dnf -y install postgresql18-upgrade" 0 "Installing postgresql 18"
 
+    ./bin/postgresql-setup --help > pre
+
+    rlRun "autoreconf -vfi" 0 "Building and installing postgresql-setup"
+    rlRun "./configure --prefix=/usr"
+    rlRun "make"
+
+    ./bin/postgresql-setup --help > post
+    rlRun "diff pre post" 1 "Verifying help strings differ"
+
     rlRun "./bin/postgresql-setup --upgrade" 1 "Upgrading without checksums flags"
     rlRun "./bin/postgresql-setup --upgrade --data-checksums" 0 "Upgrading with checksums flag"
 
@@ -50,6 +59,7 @@ rlJournalStart
     cat actual18.txt
 
     rlAssertNotDiffer expected.txt actual18.txt
+    rlRun "systemctl stop postgresql" 0 "Stop service"
     rlRun "pg_checksums /var/lib/pgsql/data" 0 "Verify checksums enabled"
   rlPhaseEnd
 

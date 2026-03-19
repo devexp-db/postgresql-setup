@@ -42,6 +42,10 @@ rlJournalStart
 
     rlRun "./bin/postgresql-setup --upgrade" 0 "Upgrading"
 
+    rlRun "autoreconf -vfi" 0 "Building and installing postgresql-setup"
+    rlRun "./configure --prefix=/usr"
+    rlRun "make"
+
     rlRun "systemctl start postgresql" 0 "Starting service again"
     rlRun "systemctl is-active postgresql" 0 "Verifying service running"
 
@@ -53,6 +57,7 @@ rlJournalStart
     cat actual18.txt
 
     rlAssertNotDiffer expected.txt actual18.txt
+    rlRun "systemctl stop postgresql" 0 "Stop service"
     rlRun "pg_checksums /var/lib/pgsql/data" 0 "Verify checksums enabled"
   rlPhaseEnd
 
