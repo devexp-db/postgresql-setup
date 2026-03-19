@@ -174,6 +174,15 @@ perform_initdb()
     $RESTORECON "$initdb_log"
     test -w "$initdb_log" || echo "$initdb_log is not writeable by $USER"
 
+    # add option to enable data checksums if flag provided
+    if [ "${option_data_checksums:-0}" -eq 1 ] && [ @PGMAJORVERSION@ -lt 18 ]; then
+            if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
+                export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS --data-checksums"
+            else
+                export PGSETUP_INITDB_OPTIONS="--data-checksums"
+            fi
+    fi
+
     # Initialize the database
     initdbcmd+=( "$PGENGINE"/initdb --pgdata="$pgdata" --auth=ident )
     eval "initdbcmd+=( $PGSETUP_INITDB_OPTIONS )"
@@ -318,25 +327,18 @@ enable_checksums()
     local old_datadir="$1"
     local old_bindir="$2"
 
-    if [ $option_data_checksums -eq 1 ] \
+    if [ "${option_data_checksums:-0}" -eq 1 ] \
     && ! echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--no-data-checksums"; then
         debug "enabling data checksums"
         local enable_checksums_result
-        enable_checksums_result=$("$old_bindir/pg_checksums -e $old_datadir 2>&1")
+        enable_checksums_result=$("$old_bindir"/pg_checksums -e "$old_datadir" 2>&1)
         local enable_checksums_code=$?
         if [ $enable_checksums_code -ne 0 ]; then
             error "Could not enable checksums!"
-            error_q "$enable_checksums_result"
+            error_q $"$enable_checksums_result"
             return 1
         fi
-        if [ @PGMAJORVERSION@ -lt 18 ]; then
-            if [ -n "$PGSETUP_INITDB_OPTIONS" ]; then
-                export PGSETUP_INITDB_OPTIONS="$PGSETUP_INITDB_OPTIONS --data-checksums"
-            else
-                export PGSETUP_INITDB_OPTIONS="--data-checksums"
-            fi
-        fi
-    elif [ $option_data_checksums -eq 1 ]; then
+    elif [ "${option_data_checksums:-0}" -eq 1 ]; then
         warn "Both --data-checksums and --no-data-checksums flags specified,"
         warn_q "upgrading without enabling data checksums!"
         option_data_checksums=0
@@ -348,28 +350,6 @@ upgrade()
 {
     # Fail fast if there is a postgresql server running using the data to be updated
     old_data_in_use
-
-    info "Checking data checksums"
-    # timeout for large databases, if checksums are disabled, this command will fail fast
-    checksums_result=$("timeout 1 $upgradefrom_engine/pg_checksums $upgradefrom_data 2>&1")
-    checksums_code=$?
-    # if timed out, the exit code is 124
-    if [ $checksums_code -ne 0 ] && [ $checksums_code -ne 124 ]; then
-        if echo $checksums_result | grep -q "not enabled" \
-        && [ @PGMAJORVERSION@ -ge 18 ] && [ $option_data_checksums -ne 1 ] \
-        && ! echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--(no-)?data-checksums"; then
-            error "PostgreSQL @PGMAJORVERSION@ has data checksums enabled by default,"
-            error_q "while your current data directory does not. Please either use the"
-            error_q "--data-checksums flag to enable them before upgrading, or add"
-            error_q "--no-data-checksums to the PGSETUP_INITDB_OPTIONS environment variable."
-            exit 1
-        else
-            # this means that checksums are enabled but something else failed
-            error "Checksum check failed! Output from pg_checksums:"
-            error_q $checksums_result
-            exit 1
-        fi
-    fi
 
     local inplace=false
     test "$pgdata" = "$upgradefrom_data" && inplace=true
@@ -397,6 +377,32 @@ upgrade()
         # still a thing.
         error $"Please install the @NAME_PACKAGE@-upgrade package."
         exit 5
+    fi
+
+    info "Checking data checksums"
+    # timeout for large databases, if checksums are disabled, this command will fail fast
+    checksums_result=$(timeout 1 "$upgradefrom_engine"/pg_checksums "$upgradefrom_data" 2>&1)
+    checksums_code=$?
+    # if timed out, the exit code is 124
+    if [ $checksums_code -ne 0 ] && [ $checksums_code -ne 124 ]; then
+        if echo "$checksums_result" | grep -q "not enabled"; then
+            if [ "${option_data_checksums:-0}" -ne 1 ] \
+            && ! echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--(no-)?data-checksums" \
+            && [ @PGMAJORVERSION@ -ge 18 ]; then
+                error "PostgreSQL @PGMAJORVERSION@ has data checksums enabled by default,"
+                error_q "while your current data directory does not. Please either use the"
+                error_q "--data-checksums flag to enable them before upgrading, or add"
+                error_q "--no-data-checksums to the PGSETUP_INITDB_OPTIONS environment variable."
+                exit 1
+            else
+                debug "checksums flags provided"
+            fi
+        else
+            # this means that checksums are enabled but something else failed
+            error "Checksum check failed! Output from pg_checksums:"
+            error_q $"$checksums_result"
+            exit 1
+        fi
     fi
 
     # Set up log file for pg_upgrade

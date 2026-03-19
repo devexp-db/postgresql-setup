@@ -6,4 +6,3 @@ discover:
   filter: tag:fedora-checksums
 execute:
   how: tmt
-
