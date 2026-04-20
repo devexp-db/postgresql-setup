@@ -10,11 +10,13 @@ rlJournalStart
     rlRun "git fetch origin \"$PR_HEAD\""
     rlRun "git checkout FETCH_HEAD"
     rlRun "cat /etc/fedora-release"
-    rlRun "dnf -y install postgresql16-server"
+    rlRun "dnf -y install postgresql18-upgrade" 0 "Installing postgresql 18"
 
     rlRun "autoreconf -vfi" 0 "Building and installing postgresql-setup"
     rlRun "./configure --prefix=/usr"
     rlRun "make"
+    rlRun "dnf -y remove postgresql-server"
+    rlRun "dnf -y install postgresql16-server"
     rlRun "./bin/postgresql-setup --init" 0 "Initializing database dir"
     rlRun "systemctl start postgresql" 0 "Starting service"
     rlRun "systemctl is-active postgresql" 0 "Verifying service running"
@@ -36,11 +38,7 @@ rlJournalStart
     rlRun "dnf -y remove postgresql16*" 0 "Removing postgresql 16"
     rlRun "dnf -y install postgresql17-upgrade" 0 "Installing postgresql 17"
 
-    rlRun "autoreconf -vfi" 0 "Building and installing postgresql-setup"
-    rlRun "./configure --prefix=/usr"
-    rlRun "make"
-
-    rlRun "./bin/postgresql-setup --upgrade --data-checksums" 0 "Upgrading with checksums flag"
+    rlRun "./bin/postgresql-setup --upgrade" 0 "Upgrading without checksums flag"
 
     rlRun "systemctl start postgresql" 0 "Starting service again"
     rlRun "systemctl is-active postgresql" 0 "Verifying service running"
@@ -54,7 +52,7 @@ rlJournalStart
 
     rlAssertNotDiffer expected.txt actual17.txt
     rlRun "systemctl stop postgresql" 0 "Stop service"
-    rlRun "pg_checksums /var/lib/pgsql/data" 0 "Verify checksums enabled"
+    rlRun "pg_checksums /var/lib/pgsql/data" 1 "Verify checksums not enabled"
   rlPhaseEnd
 
   rlPhaseStartCleanup

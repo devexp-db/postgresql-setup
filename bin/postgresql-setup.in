@@ -33,6 +33,9 @@ USER=$(id -u -n)
 # Directory containing the postgres executable
 PGENGINE=@bindir@
 
+# PostgreSQL major version from currently installed package
+PGMAJORVER=$("$PGENGINE"/postgres -V | grep -o -P '(?<=\(PostgreSQL\) )\d+(?=\D)')
+
 # Distribution README file
 README_DIST=@README_DIST@
 
@@ -59,7 +62,7 @@ option_upgradefrom="@NAME_DEFAULT_PREV_SERVICE@"
 srvsuff=
 test 0 -eq @WANT_SYSVINIT@ && srvsuff=".service"
 
-if [ @PGMAJORVERSION@ -ge 18 ]; then
+if [ "$PGMAJORVER" -ge 18 ]; then
     checksums_default_line="
                              Default behavior when initializing (not upgrading).
   --no-data-checksums        Do not enable data checksums for the data directory.
@@ -172,7 +175,7 @@ perform_initdb()
     test -w "$initdb_log" || echo "$initdb_log is not writeable by $USER"
 
     # add option to enable data checksums if flag provided
-    if [ "${option_data_checksums:-0}" -eq 1 ] && [ @PGMAJORVERSION@ -lt 18 ]; then
+    if [ "${option_data_checksums:-0}" -eq 1 ] && [ "$PGMAJORVER" -lt 18 ]; then
         add_initdb_options "--data-checksums"
     fi
 
@@ -400,8 +403,8 @@ upgrade()
         if echo "$checksums_result" | grep -q "not enabled"; then
             if [ "${option_data_checksums:-0}" -ne 1 ] \
             && ! echo "$PGSETUP_INITDB_OPTIONS" | grep -qE -- "--(no-)?data-checksums" \
-            && [ @PGMAJORVERSION@ -ge 18 ]; then
-                error "PostgreSQL @PGMAJORVERSION@ has data checksums enabled by default,"
+            && [ "$PGMAJORVER" -ge 18 ]; then
+                error "PostgreSQL $PGMAJORVER has data checksums enabled by default,"
                 error_q "while your current data directory does not. Please either use the"
                 error_q "--data-checksums flag to enable them before upgrading, or the"
                 error_q "--no-data-checksums to keep them disabled."
@@ -1070,7 +1073,7 @@ if @MOUNTPOINT@ -q "$pgdata" || @MOUNTPOINT@ -q "$(dirname "$pgdata")"; then
     warn_q $"filesystem layout should ideally look like:"
     warn_q $"/ROOT_OWNED_MOUNTPOINT/POSTGRES_OWNED_DIRECTORY/DATADIR."
     warn_q $"See the upstream documentation for more info:"
-    warn_q $"http://www.postgresql.org/docs/@PGMAJORVERSION@/static/creating-cluster.html"
+    warn_q $"http://www.postgresql.org/docs/$PGMAJORVER/static/creating-cluster.html"
 fi
 
 # See how we were called.
