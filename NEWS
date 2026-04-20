@@ -2,7 +2,7 @@
 
 New in 8.12 version:
 
-*
+* Detect PostgreSQL major version from currently installed postgres binary
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
