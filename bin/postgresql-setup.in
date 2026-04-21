@@ -601,8 +601,8 @@ handle_service_envfiles()
 
     test -z "$envfiles" && return
 
-    envfiles=$(echo $envfiles | \
-        sed -e 's/^EnvironmentFile=//' \
+    envfiles=$(echo "$envfiles" | \
+        sed -e 's/^EnvironmentFiles=//' \
             -e 's| ([^)]*)$||'
     )
 
