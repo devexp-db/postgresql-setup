@@ -670,13 +670,14 @@ handle_service_envfiles()
     local mode="$1"
     local service="$2"
 
-    local envfiles="$(systemctl show -p EnvironmentFiles "${service}.service")"\
+    local envfiles
+    envfiles="$(systemctl show -p EnvironmentFiles "${service}.service")" \
         || return
 
     test -z "$envfiles" && return
 
-    envfiles=$(echo $envfiles | \
-        sed -e 's/^EnvironmentFile=//' \
+    envfiles=$(echo "$envfiles" | \
+        sed -e 's/^EnvironmentFiles=//' \
             -e 's| ([^)]*)$||'
     )
 
